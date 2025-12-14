@@ -37,9 +37,9 @@ This file acts as the **technical contract** of the project.
 
 The application is structured into three **strictly separated layers**:
 
-presentation/
-domain/
-data/
+    presentation/
+    domain/
+    data/
 
 
 ❗ Responsibilities must **never be mixed** across layers.
@@ -116,18 +116,17 @@ data/
 
 ## 🔄 Dependency Flow (MANDATORY)
 
-Compose UI
-↓
-ViewModel
-↓
-UseCase
-↓
-Repository (interface)
-↓
-RepositoryImpl
-↓
-Firebase / DataSource
-
+    Compose UI
+    ↓
+    ViewModel
+    ↓
+    UseCase
+    ↓
+    Repository (interface)
+    ↓
+    RepositoryImpl
+    ↓
+    Firebase / DataSource
 
 ❌ Shortcuts or layer skipping are not allowed.
 
