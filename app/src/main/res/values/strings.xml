@@ -1,3 +1,30 @@
 <resources>
-    <string name="app_name">Duo</string>
+    <string name="app_name">DUO</string>
+    <string name="welcome_message">Un semáforo íntimo para dos. Sin rastro, solo disponibilidad. Compartido solo con quien importa.</string>
+    <string name="privacy_policy">Tus datos nunca sale de tu dispositivo.</string>
+    <string name="privacy_policy_link">Política de Privacidad.</string>
+    <string name="go_to_pairing_title">Vincular con mi pareja</string>
+    <string name="go_to_pairing_description">Inicia el vínculo con tu pareja</string>
+    <string name="connect_message">Para comenzar, vincula tu dispositivo de forma segura.</string>
+    <string name="qr_code_title">Mostrar mi código</string>
+    <string name="qr_code_description">Genera un QR único</string>
+    <string name="code_insert_title">Inserta tu código</string>
+    <string name="code_insert_description">Usa tu cámara para unir</string>
+    <string name="manual_code_title">Introducir código manualmente</string>
+    <string name="manual_code_description">Escribe el código compartido</string>
+    <string name="trafic_light_message">Pulsa para cambiar tu estado</string>
+    <string name="semaphore_partner_message_available">Tu pareja está receptiva</string>
+    <string name="semaphore_partner_message_busi">Tu pareja necesita paz</string>
+    <string name="semaphore_user_message">Tu estado</string>
+    <string name="login_title">Inicia Sesión</string>
+    <string name="login_google_title">Continuar con Google</string>
+    <string name="login_google_description">Acceso rápido y seguro</string>
+    <string name="login_email_title">Usar correo electrónico</string>
+    <string name="login_email_description">Inicia con tu email y contraseña</string>
+    
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_unlink_title">Desvincular pareja</string>
+    <string name="settings_unlink_description">Romper la conexión actual</string>
+    <string name="settings_logout_title">Cerrar Sesión</string>
+    <string name="settings_logout_description">Salir de la aplicación</string>
 </resources>

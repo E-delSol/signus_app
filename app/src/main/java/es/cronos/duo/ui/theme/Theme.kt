@@ -1,6 +1,5 @@
 package es.cronos.duo.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -12,25 +11,29 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = PrimaryBlue,
+    onPrimary = TextDark,
+    background = BackgroundDark,
+    surface = SurfaceDark,
+    onBackground = TextDark, // Texto principal en fondo
+    onSurface = TextDark,     // Texto principal en superficie
+    secondary = SecondaryTextDark, // Para texto secundario/ítems menos prominentes
+    tertiary = SecondaryTextDark,  // Para texto menos prominente, como los grises de slate-400
+    // Añadir más colores si son necesarios (ej. error, outline)
+    outline = BorderDark // Usado a menudo para bordes (como ring-1 ring-white/5)
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    primary = PrimaryBlue,
+    onPrimary = TextDark, // El texto sobre el botón azul debe ser blanco/casi negro
+    background = BackgroundLight,
+    surface = SurfaceLight,
+    onBackground = TextLight,
+    onSurface = TextLight,
+    secondary = SecondaryTextLight,
+    tertiary = SecondaryTextLight,
+    // Añadir más colores si son necesarios (ej. error, outline)
+    outline = BorderLight
 )
 
 @Composable
