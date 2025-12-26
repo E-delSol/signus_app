@@ -2,6 +2,7 @@ package es.cronos.duo.data.repository
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import es.cronos.duo.domain.model.SemaphoreStatus
 import es.cronos.duo.domain.model.User
 import es.cronos.duo.domain.repository.UserRepository
@@ -13,7 +14,12 @@ import kotlinx.coroutines.tasks.await
 class UserRepositoryImpl : UserRepository {
 
     private val firestore by lazy { FirebaseFirestore.getInstance() }
-    private val currentUserUid by lazy { FirebaseAuth.getInstance().currentUser?.uid }
+    private val auth by lazy { FirebaseAuth.getInstance() }
+
+    // Corregido: Usar un getter para obtener siempre el usuario actual, 
+    // en lugar de 'by lazy' que podría capturar null si se inicializa muy pronto.
+    private val currentUserUid: String?
+        get() = auth.currentUser?.uid
 
     override suspend fun getUser(): User? {
         return currentUserUid?.let { uid ->
@@ -22,10 +28,31 @@ class UserRepositoryImpl : UserRepository {
         }
     }
 
+    override fun observeUser(): Flow<User?> = callbackFlow {
+        val uid = currentUserUid
+        if (uid == null) {
+            trySend(null)
+            close()
+            return@callbackFlow
+        }
+
+        val registration = firestore.collection("users").document(uid)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                val user = snapshot?.toObject(User::class.java)
+                trySend(user)
+            }
+
+        awaitClose { registration.remove() }
+    }
+
     override suspend fun updateUserStatus(status: SemaphoreStatus) {
         currentUserUid?.let {
-            // Save as String to ensure consistency with getString() in getPartnerStatus
-            firestore.collection("users").document(it).update("status", status.name).await()
+            val userData = mapOf("status" to status.name)
+            firestore.collection("users").document(it).set(userData, SetOptions.merge()).await()
         }
     }
 

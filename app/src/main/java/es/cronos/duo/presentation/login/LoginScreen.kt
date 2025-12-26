@@ -68,8 +68,8 @@ fun LoginScreen(
     // Efecto para navegar si el usuario se loguea correctamente
     LaunchedEffect(state.user) {
         if (state.user != null) {
-            navController.navigate("pairing") {
-                // Opcional: limpiar la pila para no volver al login con "atrás"
+            // Navegar a Splash para que decida el destino final (Pairing o Semaphore)
+            navController.navigate("splash") {
                 popUpTo("login") { inclusive = true }
             }
         }

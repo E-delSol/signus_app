@@ -8,7 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CenterFocusWeak
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.DoNotDisturb
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -19,6 +20,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -33,6 +35,7 @@ import es.cronos.duo.components.PartnerLinkButton
 import es.cronos.duo.components.PrivacyIndicator
 import es.cronos.duo.components.TitleApp
 import es.cronos.duo.components.TrafficLight
+import es.cronos.duo.domain.model.SemaphoreStatus
 
 @Composable
 fun SemaphoreScreen(
@@ -55,12 +58,9 @@ fun SemaphoreScreen(
             TitleApp()
             Spacer(modifier = Modifier.weight(1f))
 
-            // --- 1. Semáforo Central ---
-            // Se usa TrafficLight directamente para evitar el recorte circular de CentralImage
+            // --- 1. Semáforo Central (Solo Partner) ---
             TrafficLight(
-                userStatus = state.userStatus,
-                partnerStatus = state.partnerStatus,
-                onUserStatusClick = { viewModel.onUserStatusClick() }
+                partnerStatus = state.partnerStatus
             )
 
             Spacer(modifier = Modifier.height(48.dp))
@@ -68,23 +68,23 @@ fun SemaphoreScreen(
             // --- 2. Texto Explicativo ---
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = stringResource(R.string.trafic_light_message),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Light,
-                color = MaterialTheme.colorScheme.tertiary,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 32.dp)
-            )
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Botones
+            // --- 3. Botón de Estado del Usuario ---
+            // Cambia de color y texto según el estado actual del usuario
+            val isAvailable = state.userStatus == SemaphoreStatus.AVAILABLE
+            
             PartnerLinkButton(
-                title = stringResource(R.string.code_insert_title),
-                description = stringResource(R.string.code_insert_description),
-                icon = Icons.Filled.CenterFocusWeak,
-                onClick = { /* Acción futura o navegación */ }
+                title = if (isAvailable) "Estás Disponible" else "Estás Ocupado",
+                description = if (isAvailable) "Pulsa para cambiar a ocupado" else "Pulsa para cambiar a disponible",
+                icon = if (isAvailable) Icons.Filled.CheckCircle else Icons.Filled.DoNotDisturb,
+                containerColor = if (isAvailable) Color(0xFF4CAF50) else Color(0xFFF44336), // Verde / Rojo
+                contentColor = Color.White,
+                iconBackgroundColor = Color.White.copy(alpha = 0.2f),
+                titleColor = Color.White,
+                descriptionColor = Color.White.copy(alpha = 0.8f),
+                onClick = { viewModel.onUserStatusClick() }
             )
 
             Spacer(modifier = Modifier.height(32.dp))

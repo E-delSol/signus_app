@@ -2,6 +2,7 @@ package es.cronos.duo.data.repository
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import es.cronos.duo.domain.repository.QrCodeRepository
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
@@ -14,8 +15,7 @@ class QrCodeRepositoryImpl : QrCodeRepository {
     override suspend fun generateUniqueCode(): String {
         val userId = auth.currentUser?.uid ?: throw Exception("User not logged in")
         
-        // 1. Limpieza preventiva: Borrar cualquier sesión previa creada por este usuario
-        // para asegurar que solo tenga una sesión activa.
+        // 1. Limpieza preventiva
         try {
             val oldSessions = firestore.collection("sessions")
                 .whereEqualTo("user1Id", userId)
@@ -26,7 +26,6 @@ class QrCodeRepositoryImpl : QrCodeRepository {
                 document.reference.delete().await()
             }
         } catch (e: Exception) {
-            // Ignorar errores de limpieza si es la primera vez o hay problemas de red
             e.printStackTrace()
         }
 
@@ -55,6 +54,7 @@ class QrCodeRepositoryImpl : QrCodeRepository {
                 val user1Id = snapshot.getString("user1Id")
                 
                 if (user1Id != null && user1Id != userId) {
+                    // 1. Actualizar la sesión
                     docRef.update(
                         mapOf(
                             "user2Id" to userId,
@@ -62,6 +62,19 @@ class QrCodeRepositoryImpl : QrCodeRepository {
                             "linkedAt" to System.currentTimeMillis()
                         )
                     ).await()
+
+                    // 2. Actualizar el perfil del Usuario 1 (Creador) con el ID del Usuario 2 (Invitado)
+                    val updateMap1 = mapOf("partnerId" to userId)
+                    firestore.collection("users").document(user1Id)
+                        .set(updateMap1, SetOptions.merge())
+                        .await()
+
+                    // 3. Actualizar el perfil del Usuario 2 (Invitado) con el ID del Usuario 1 (Creador)
+                    val updateMap2 = mapOf("partnerId" to user1Id)
+                    firestore.collection("users").document(userId)
+                        .set(updateMap2, SetOptions.merge())
+                        .await()
+
                     return true
                 }
             }

@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
     suspend fun getUser(): User?
+    fun observeUser(): Flow<User?>
     suspend fun updateUserStatus(status: SemaphoreStatus)
     fun getPartnerStatus(partnerId: String): Flow<SemaphoreStatus>
 }

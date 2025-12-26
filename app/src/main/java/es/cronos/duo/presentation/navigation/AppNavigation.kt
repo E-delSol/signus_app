@@ -8,12 +8,14 @@ import es.cronos.duo.presentation.login.LoginScreen
 import es.cronos.duo.presentation.pairing.PairingScreen
 import es.cronos.duo.presentation.semaphore.SemaphoreScreen
 import es.cronos.duo.presentation.settings.SettingsScreen
+import es.cronos.duo.presentation.splash.SplashScreen
 import es.cronos.duo.presentation.welcome.WelcomeScreen
 
 @Composable
 fun AppNavigation(startDestination: String) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = startDestination) {
+        composable("splash") { SplashScreen(navController) }
         composable("welcome") { WelcomeScreen(navController) }
         composable("login") { LoginScreen(navController) }
         composable("pairing") { PairingScreen(navController) }
