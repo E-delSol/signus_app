@@ -11,24 +11,31 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DoNotDisturb
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import es.cronos.duo.R
@@ -44,14 +51,47 @@ fun SemaphoreScreen(
     viewModel: SemaphoreViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    var showUnlinkedDialog by remember { mutableStateOf(false) }
+    
+    // Obtenemos el ciclo de vida actual para saber si la pantalla está visible
+    val lifecycleOwner = LocalLifecycleOwner.current
 
-    // Navegar a pairing si se pierde el vínculo
+    // Detectar si se pierde el vínculo
     LaunchedEffect(state.isPaired) {
         if (!state.isPaired) {
-            navController.navigate("pairing") {
-                popUpTo("semaphore") { inclusive = true }
+            // Solo mostramos el diálogo si esta pantalla está ACTIVA (RESUMED).
+            // Si el usuario está en Ajustes desvinculando, esta pantalla estará en PAUSED/STOPPED,
+            // por lo que no mostrará el diálogo (lo cual es correcto, ya que Ajustes maneja la navegación).
+            if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                showUnlinkedDialog = true
             }
         }
+    }
+
+    // Popup de aviso de desvinculación
+    if (showUnlinkedDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showUnlinkedDialog = false
+                navController.navigate("pairing") {
+                    popUpTo("semaphore") { inclusive = true }
+                }
+            },
+            title = { Text("Pareja desvinculada") },
+            text = { Text("Tu pareja se ha desvinculado del dispositivo. Volverás a la pantalla de emparejamiento.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showUnlinkedDialog = false
+                        navController.navigate("pairing") {
+                            popUpTo("semaphore") { inclusive = true }
+                        }
+                    }
+                ) {
+                    Text("Entendido")
+                }
+            }
+        )
     }
 
     Box(
@@ -90,14 +130,13 @@ fun SemaphoreScreen(
             Spacer(modifier = Modifier.weight(1f))
 
             // --- 3. Botón de Estado del Usuario ---
-            // Cambia de color y texto según el estado actual del usuario
             val isAvailable = state.userStatus == SemaphoreStatus.AVAILABLE
             
             PartnerLinkButton(
                 title = if (isAvailable) "Estás Disponible" else "Estás Ocupado",
                 description = if (isAvailable) "Pulsa para cambiar a ocupado" else "Pulsa para cambiar a disponible",
                 icon = if (isAvailable) Icons.Filled.CheckCircle else Icons.Filled.DoNotDisturb,
-                containerColor = if (isAvailable) Color(0xFF4CAF50) else Color(0xFFF44336), // Verde / Rojo
+                containerColor = if (isAvailable) Color(0xFF4CAF50) else Color(0xFFF44336),
                 contentColor = Color.White,
                 iconBackgroundColor = Color.White.copy(alpha = 0.2f),
                 titleColor = Color.White,
@@ -113,7 +152,7 @@ fun SemaphoreScreen(
             Spacer(modifier = Modifier.height(48.dp))
         }
 
-        // Botón discreto de Ajustes en la esquina superior derecha
+        // Botón discreto de Ajustes
         IconButton(
             onClick = { navController.navigate("settings") },
             modifier = Modifier
@@ -123,7 +162,7 @@ fun SemaphoreScreen(
             Icon(
                 imageVector = Icons.Filled.Settings,
                 contentDescription = "Settings",
-                tint = MaterialTheme.colorScheme.tertiary // Color discreto
+                tint = MaterialTheme.colorScheme.tertiary
             )
         }
     }
