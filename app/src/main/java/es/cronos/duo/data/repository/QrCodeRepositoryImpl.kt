@@ -1,6 +1,7 @@
 package es.cronos.duo.data.repository
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import es.cronos.duo.domain.repository.QrCodeRepository
@@ -89,6 +90,22 @@ class QrCodeRepositoryImpl : QrCodeRepository {
         val userId = auth.currentUser?.uid ?: return
         
         try {
+            // 1. Obtener el usuario actual para ver quién es su pareja
+            val userDoc = firestore.collection("users").document(userId).get().await()
+            val partnerId = userDoc.getString("partnerId")
+
+            // 2. Eliminar partnerId de ambos usuarios (si existe partner)
+            val updates = mapOf<String, Any>("partnerId" to FieldValue.delete())
+            
+            // Actualizar usuario actual
+            firestore.collection("users").document(userId).update(updates).await()
+
+            // Actualizar pareja (si existe)
+            if (partnerId != null && partnerId.isNotBlank()) {
+                firestore.collection("users").document(partnerId).update(updates).await()
+            }
+
+            // 3. Limpiar colección de sesiones (comportamiento original)
             // Borrar donde soy el creador (user1)
             val sessionsAsUser1 = firestore.collection("sessions")
                 .whereEqualTo("user1Id", userId)

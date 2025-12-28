@@ -16,6 +16,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -44,6 +45,15 @@ fun SemaphoreScreen(
 ) {
     val state by viewModel.state.collectAsState()
 
+    // Navegar a pairing si se pierde el vínculo
+    LaunchedEffect(state.isPaired) {
+        if (!state.isPaired) {
+            navController.navigate("pairing") {
+                popUpTo("semaphore") { inclusive = true }
+            }
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -68,6 +78,14 @@ fun SemaphoreScreen(
             // --- 2. Texto Explicativo ---
             Spacer(modifier = Modifier.height(16.dp))
 
+            Text(
+                text = stringResource(R.string.trafic_light_message),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Light,
+                color = MaterialTheme.colorScheme.tertiary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 32.dp)
+            )
 
             Spacer(modifier = Modifier.weight(1f))
 

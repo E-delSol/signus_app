@@ -4,7 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import es.cronos.duo.presentation.navigation.AppNavigation
@@ -20,8 +22,12 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             DuoTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { _ ->
-                    AppNavigation(startDestination = startDestination)
+                // Scaffold nos proporciona los 'innerPadding' necesarios para evitar las barras de sistema
+                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    // Aplicamos ese padding al contenedor de la navegación
+                    Box(modifier = Modifier.padding(innerPadding)) {
+                        AppNavigation(startDestination = startDestination)
+                    }
                 }
             }
         }

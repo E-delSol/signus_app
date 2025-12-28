@@ -37,12 +37,18 @@ class SemaphoreViewModel : ViewModel() {
                 }
 
                 val partnerId = user?.partnerId
+                
                 if (partnerId.isNullOrBlank()) {
-                    // If there's no partner, set a default status
-                    _state.update { it.copy(partnerStatus = SemaphoreStatus.BUSY) }
+                    // If there's no partner, set default status AND update isPaired to false
+                    _state.update { it.copy(
+                        partnerStatus = SemaphoreStatus.BUSY,
+                        isPaired = false
+                    ) }
                 } else {
-                    // If there is a partner, collect their status. This inner collect
-                    // will be cancelled and restarted if partnerId changes.
+                    // If there is a partner, set isPaired to true and collect status
+                    _state.update { it.copy(isPaired = true) }
+                    
+                    // This inner collect will be cancelled and restarted if partnerId changes.
                     getPartnerStatusUseCase(partnerId).collect { partnerStatus ->
                         _state.update { it.copy(partnerStatus = partnerStatus) }
                     }
