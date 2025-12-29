@@ -77,8 +77,8 @@ fun SemaphoreScreen(
                     popUpTo("semaphore") { inclusive = true }
                 }
             },
-            title = { Text("Pareja desvinculada") },
-            text = { Text("Tu pareja se ha desvinculado del dispositivo. Volverás a la pantalla de emparejamiento.") },
+            title = { Text(stringResource(R.string.dialog_partner_unlinked_title)) },
+            text = { Text(stringResource(R.string.dialog_partner_unlinked_message)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -88,7 +88,7 @@ fun SemaphoreScreen(
                         }
                     }
                 ) {
-                    Text("Entendido")
+                    Text(stringResource(R.string.action_understood))
                 }
             }
         )
@@ -133,8 +133,8 @@ fun SemaphoreScreen(
             val isAvailable = state.userStatus == SemaphoreStatus.AVAILABLE
             
             PartnerLinkButton(
-                title = if (isAvailable) "Estás Disponible" else "Estás Ocupado",
-                description = if (isAvailable) "Pulsa para cambiar a ocupado" else "Pulsa para cambiar a disponible",
+                title = if (isAvailable) stringResource(R.string.status_available_title) else stringResource(R.string.status_busy_title),
+                description = if (isAvailable) stringResource(R.string.status_available_desc) else stringResource(R.string.status_busy_desc),
                 icon = if (isAvailable) Icons.Filled.CheckCircle else Icons.Filled.DoNotDisturb,
                 containerColor = if (isAvailable) Color(0xFF4CAF50) else Color(0xFFF44336),
                 contentColor = Color.White,

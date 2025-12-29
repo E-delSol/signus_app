@@ -51,8 +51,8 @@ fun SettingsScreen(
     if (showUnlinkDialog) {
         AlertDialog(
             onDismissRequest = { showUnlinkDialog = false },
-            title = { Text(text = "Desvincular pareja") },
-            text = { Text("¿Estás seguro de que quieres romper el vínculo con tu pareja? Esta acción eliminará la sesión actual.") },
+            title = { Text(text = stringResource(R.string.dialog_unlink_title)) },
+            text = { Text(stringResource(R.string.dialog_unlink_message)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -66,12 +66,12 @@ fun SettingsScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("Desvincular")
+                    Text(stringResource(R.string.action_unlink))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showUnlinkDialog = false }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.action_cancel))
                 }
             }
         )

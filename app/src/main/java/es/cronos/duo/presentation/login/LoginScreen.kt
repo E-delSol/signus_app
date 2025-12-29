@@ -183,7 +183,7 @@ fun EmailLoginForm(
     Column(modifier = Modifier.fillMaxWidth()) {
         
         Text(
-            text = if (isRegisterMode) "Crear cuenta nueva" else "Acceder con tu cuenta",
+            text = if (isRegisterMode) stringResource(R.string.login_create_account_title) else stringResource(R.string.login_access_account_title),
             style = MaterialTheme.typography.titleMedium,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
@@ -192,7 +192,7 @@ fun EmailLoginForm(
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Email") },
+            label = { Text(stringResource(R.string.field_email)) },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             singleLine = true,
@@ -204,7 +204,7 @@ fun EmailLoginForm(
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Contraseña") },
+            label = { Text(stringResource(R.string.field_password)) },
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -226,8 +226,8 @@ fun EmailLoginForm(
 
         // Botón principal
         PartnerLinkButton(
-            title = if (isRegisterMode) "Registrarse" else "Iniciar Sesión",
-            description = if (isRegisterMode) "Crea tu cuenta ahora" else "Acceder a mi cuenta",
+            title = if (isRegisterMode) stringResource(R.string.action_register) else stringResource(R.string.action_login),
+            description = if (isRegisterMode) stringResource(R.string.login_create_account_desc) else stringResource(R.string.login_access_account_desc),
             icon = if (isRegisterMode) Icons.Filled.AppRegistration else Icons.AutoMirrored.Filled.Login,
             onClick = { 
                 if (isRegisterMode) {
@@ -245,7 +245,7 @@ fun EmailLoginForm(
             onClick = { isRegisterMode = !isRegisterMode },
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
-            Text(if (isRegisterMode) "¿Ya tienes cuenta? Inicia Sesión" else "¿No tienes cuenta? Regístrate")
+            Text(if (isRegisterMode) stringResource(R.string.login_toggle_to_login) else stringResource(R.string.login_toggle_to_register))
         }
         
         Spacer(modifier = Modifier.height(8.dp))
@@ -256,7 +256,7 @@ fun EmailLoginForm(
         ) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, modifier = Modifier.size(16.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Volver al inicio")
+            Text(stringResource(R.string.action_back_home))
         }
     }
 }

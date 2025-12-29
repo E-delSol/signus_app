@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -31,6 +32,7 @@ import com.google.zxing.DecodeHintType
 import com.google.zxing.MultiFormatReader
 import com.google.zxing.PlanarYUVLuminanceSource
 import com.google.zxing.common.HybridBinarizer
+import es.cronos.duo.R
 
 @Composable
 fun QrCodeScanner(
@@ -64,19 +66,19 @@ fun QrCodeScanner(
         if (showPermissionRationale) {
             AlertDialog(
                 onDismissRequest = { showPermissionRationale = false },
-                title = { Text("Permiso de Cámara Requerido") },
-                text = { Text("Para escanear el código QR necesitamos acceso a la cámara.") },
+                title = { Text(stringResource(R.string.camera_permission_title)) },
+                text = { Text(stringResource(R.string.camera_permission_message)) },
                 confirmButton = {
                     Button(onClick = { 
                         showPermissionRationale = false
                         launcher.launch(Manifest.permission.CAMERA)
                     }) {
-                        Text("Continuar")
+                        Text(stringResource(R.string.action_continue))
                     }
                 },
                 dismissButton = {
                     Button(onClick = { showPermissionRationale = false }) {
-                        Text("Cancelar")
+                        Text(stringResource(R.string.action_cancel))
                     }
                 }
             )
@@ -85,14 +87,14 @@ fun QrCodeScanner(
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             if (!showPermissionRationale) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Se requiere acceso a la cámara.")
+                    Text(stringResource(R.string.camera_access_required))
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(onClick = { showPermissionRationale = true }) {
-                        Text("Solicitar permiso")
+                        Text(stringResource(R.string.action_request_permission))
                     }
                 }
             } else {
-                Text("Esperando permiso...")
+                Text(stringResource(R.string.camera_waiting_permission))
             }
         }
     }
