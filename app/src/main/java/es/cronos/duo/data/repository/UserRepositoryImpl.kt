@@ -49,14 +49,26 @@ class UserRepositoryImpl : UserRepository {
         awaitClose { registration.remove() }
     }
 
-    override suspend fun updateUserStatus(status: SemaphoreStatus) {
+    override suspend fun updateUserStatus(status: SemaphoreStatus, expirationTimestamp: Long?, statusDuration: Long?) {
         currentUserUid?.let {
-            val userData = mapOf("status" to status.name)
-            firestore.collection("users").document(it).set(userData, SetOptions.merge()).await()
+            val updates = mutableMapOf<String, Any>("status" to status.name)
+            if (expirationTimestamp != null) {
+                updates["statusExpiration"] = expirationTimestamp
+            } else {
+                updates["statusExpiration"] = com.google.firebase.firestore.FieldValue.delete()
+            }
+            
+            if (statusDuration != null) {
+                updates["statusDuration"] = statusDuration
+            } else {
+                updates["statusDuration"] = com.google.firebase.firestore.FieldValue.delete()
+            }
+
+            firestore.collection("users").document(it).set(updates, SetOptions.merge()).await()
         }
     }
 
-    override fun getPartnerStatus(partnerId: String): Flow<SemaphoreStatus> = callbackFlow {
+    override fun getPartnerStatus(partnerId: String): Flow<User?> = callbackFlow {
         val docRef = firestore.collection("users").document(partnerId)
 
         val subscription = docRef.addSnapshotListener { snapshot, e ->
@@ -65,19 +77,20 @@ class UserRepositoryImpl : UserRepository {
                 return@addSnapshotListener
             }
             if (snapshot != null && snapshot.exists()) {
-                val partnerStatus = snapshot.getString("status")?.let {
-                    try {
-                        SemaphoreStatus.valueOf(it)
-                    } catch (e: IllegalArgumentException) {
-                        null
-                    }
-                } ?: SemaphoreStatus.BUSY // Default to BUSY if status is missing or invalid
-                trySend(partnerStatus)
+                val user = snapshot.toObject(User::class.java)
+                trySend(user)
             } else {
-                trySend(SemaphoreStatus.BUSY) // Partner not found, assume busy
+                trySend(null) // Partner not found
             }
         }
 
         awaitClose { subscription.remove() }
+    }
+
+    override suspend fun saveFcmToken(token: String) {
+        currentUserUid?.let { uid ->
+            val data = mapOf("fcmToken" to token)
+            firestore.collection("users").document(uid).set(data, SetOptions.merge()).await()
+        }
     }
 }

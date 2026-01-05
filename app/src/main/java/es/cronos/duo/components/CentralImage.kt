@@ -27,12 +27,11 @@ fun CentralImage(
     centralImage: @Composable () -> Unit = {
         // Contenido por defecto (LogoImage interno)
         Box(modifier = Modifier.fillMaxSize()) {
-            // Usamos el PNG directo de drawable para evitar problemas con iconos adaptativos XML en Compose
+            // Usamos el recurso mipmap que sabemos que existe para corregir el error de compilación
             Image(
                 painter = painterResource(id = R.drawable.logo_signus),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize().shadow(elevation = 12.dp, shape = CircleShape)
-
             )
 
             Box(
@@ -58,16 +57,6 @@ fun CentralImage(
     Box(
         modifier = Modifier
             .size(256.dp),
-//            .drawBehind {
-//                drawCircle(
-//                    color = primaryColor.copy(alpha = 0.1f),
-//                    radius = size.minDimension / 2 + 16.dp.toPx(),
-//                    center = Offset(size.width / 2, size.height / 2),
-//                )
-//            }
-//            .clip(CircleShape)
-//            .background(MaterialTheme.colorScheme.surface)
-//            .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
         centralImage()

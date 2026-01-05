@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -39,6 +40,7 @@ import es.cronos.duo.R
  * @param modifier Modificador para aplicar al botón.
  * @param containerColor El color de fondo del botón.
  * @param contentColor El color del texto e ícono.
+ * @param trailingContent Contenido opcional para mostrar a la derecha del botón.
  */
 @Composable
 fun PartnerLinkButton(
@@ -53,8 +55,7 @@ fun PartnerLinkButton(
     iconBackgroundColor: Color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.4f), // Gris oscuro semi-transparente
     titleColor: Color = MaterialTheme.colorScheme.onSurface,
     descriptionColor: Color = MaterialTheme.colorScheme.tertiary,
-
-
+    trailingContent: (@Composable RowScope.() -> Unit)? = null
 ) {
     Button(
         onClick = onClick,
@@ -102,14 +103,22 @@ fun PartnerLinkButton(
 
                 // Columna de Textos
                 Column {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.SemiBold
-                        ),
-                        color = titleColor
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.SemiBold
+                            ),
+                            color = titleColor
+                        )
+                        // Contenido opcional a la derecha
+                        if (trailingContent != null) {
+                            Spacer(modifier = Modifier.weight(1f))
+                            trailingContent()
+                        }
+
+                    }
                     Text(
                         text = description,
                         style = MaterialTheme.typography.bodyMedium,
@@ -117,8 +126,7 @@ fun PartnerLinkButton(
                     )
                 }
             }
+
         }
-
-
     }
 }
