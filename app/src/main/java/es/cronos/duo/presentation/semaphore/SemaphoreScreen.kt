@@ -36,13 +36,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import es.cronos.duo.R
@@ -54,6 +52,7 @@ import es.cronos.duo.components.TrafficLight
 import es.cronos.duo.domain.model.SemaphoreStatus
 import java.util.concurrent.TimeUnit
 import java.util.Locale
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun SemaphoreScreen(
@@ -61,62 +60,39 @@ fun SemaphoreScreen(
     viewModel: SemaphoreViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    var showUnlinkedDialog by remember { mutableStateOf(false) }
-    var showTimerDialog by remember { mutableStateOf(false) }
-    
-    // Obtenemos el ciclo de vida actual para saber si la pantalla está visible
-    val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
+    
+    var showTimerDialog by remember { mutableStateOf(false) }
+    var showUnlinkedDialog by remember { mutableStateOf(false) }
 
-    // Estado para controlar el sonido y evitar que suene al iniciar la app
-    var previousPartnerStatus by remember { mutableStateOf<SemaphoreStatus?>(null) }
-
-    // Detectar cambios en el estado del partner para reproducir sonido
-    LaunchedEffect(state.partnerStatus) {
-        // Solo reproducimos si no es la primera carga (previous no es null) y el estado ha cambiado
-        if (previousPartnerStatus != null && previousPartnerStatus != state.partnerStatus) {
-            try {
-                val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-                val r = RingtoneManager.getRingtone(context, notification)
-                r.play()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-        // Actualizamos el estado previo para la siguiente comparación
-        previousPartnerStatus = state.partnerStatus
-    }
-
-    // Detectar si se pierde el vínculo
-    LaunchedEffect(state.isPaired) {
-        if (!state.isPaired) {
-            // Solo mostramos el diálogo si esta pantalla está ACTIVA (RESUMED).
-            // Si el usuario está en Ajustes desvinculando, esta pantalla estará en PAUSED/STOPPED,
-            // por lo que no mostrará el diálogo (lo cual es correcto, ya que Ajustes maneja la navegación).
-            if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
-                showUnlinkedDialog = true
+    LaunchedEffect(key1 = true) {
+        viewModel.eventFlow.collectLatest { event ->
+            when (event) {
+                is SemaphoreViewModel.UiEvent.PlayNotificationSound -> {
+                    try {
+                        val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+                        RingtoneManager.getRingtone(context, notification).play()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+                is SemaphoreViewModel.UiEvent.ShowTimerDialog -> showTimerDialog = true
+                is SemaphoreViewModel.UiEvent.HideTimerDialog -> showTimerDialog = false
+                is SemaphoreViewModel.UiEvent.ShowUnlinkedDialog -> showUnlinkedDialog = true
             }
         }
     }
 
-    // Popup de aviso de desvinculación
     if (showUnlinkedDialog) {
         AlertDialog(
-            onDismissRequest = {
-                showUnlinkedDialog = false
-                navController.navigate("pairing") {
-                    popUpTo("semaphore") { inclusive = true }
-                }
-            },
+            onDismissRequest = { /* Controlled by user action */ },
             title = { Text(stringResource(R.string.dialog_partner_unlinked_title)) },
             text = { Text(stringResource(R.string.dialog_partner_unlinked_message)) },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        showUnlinkedDialog = false
-                        navController.navigate("pairing") {
-                            popUpTo("semaphore") { inclusive = true }
-                        }
+                        showUnlinkedDialog = false 
+                        navController.navigate("pairing") { popUpTo("semaphore") { inclusive = true } }
                     }
                 ) {
                     Text(stringResource(R.string.action_understood))
@@ -125,14 +101,10 @@ fun SemaphoreScreen(
         )
     }
 
-    // Popup del temporizador
     if (showTimerDialog) {
         TimerPickerDialog(
-            onDismissRequest = { showTimerDialog = false },
-            onConfirm = { hours, minutes ->
-                showTimerDialog = false
-                viewModel.onTimerSelected(hours, minutes)
-            }
+            onDismissRequest = { viewModel.onDismissTimerDialog() },
+            onConfirm = { hours, minutes -> viewModel.onTimerSelected(hours, minutes) }
         )
     }
 
@@ -150,30 +122,25 @@ fun SemaphoreScreen(
             TitleApp()
             Spacer(modifier = Modifier.weight(1f))
 
-            // --- 1. Semáforo Central (Solo Partner) ---
-            // Usamos un Box para controlar el ancho y la proporción
             Box(
                 modifier = Modifier
-                    .fillMaxWidth() // Ocupa todo el ancho (igual que los botones)
-                    .aspectRatio(1f), // Mantiene forma cuadrada (círculo inscrito)
+                    .fillMaxWidth()
+                    .aspectRatio(1f),
                 contentAlignment = Alignment.Center
             ) {
-                // Pasamos un valor por defecto (BUSY) si es null mientras carga
                 TrafficLight(
                     partnerStatus = state.partnerStatus ?: SemaphoreStatus.BUSY,
                     partnerStatusExpiration = state.partnerStatusExpiration,
-                    modifier = Modifier.fillMaxSize() // El semáforo llena este contenedor cuadrado
+                    modifier = Modifier.fillMaxSize()
                 )
             }
 
             Spacer(modifier = Modifier.weight(0.5f))
 
-            // --- 3. Botón de Estado del Usuario ---
             val isAvailable = state.userStatus == SemaphoreStatus.AVAILABLE
             val buttonColor = if (isAvailable) Color(0xFF4CAF50) else Color(0xFFF44336)
             
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                // PartnerLinkButton modificado para usar trailingContent
                 PartnerLinkButton(
                     title = if (isAvailable) stringResource(R.string.status_available_title) else stringResource(R.string.status_busy_title),
                     description = if (isAvailable) stringResource(R.string.status_available_desc) else stringResource(R.string.status_busy_desc),
@@ -186,13 +153,12 @@ fun SemaphoreScreen(
                     onClick = { viewModel.onUserStatusClick() },
                     modifier = Modifier.fillMaxWidth(),
                     trailingContent = {
-                        // Solo mostramos la cuenta atrás SI ya hay expiración (timer iniciado)
                          state.userStatusExpiration?.let { expiration ->
                             CountdownTimer(
                                 targetTimeMillis = expiration,
                                 modifier = Modifier.padding(start = 8.dp),
                                 style = MaterialTheme.typography.titleMedium,
-                                color = Color.White // Texto blanco sobre fondo de botón
+                                color = Color.White
                             )
                         }
                     }
@@ -200,9 +166,8 @@ fun SemaphoreScreen(
                 
                 Spacer(modifier = Modifier.height(8.dp))
                 
-                // Botón "Temporizar estado"
                 Button(
-                    onClick = { showTimerDialog = true },
+                    onClick = { viewModel.onShowTimerDialog() },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -223,8 +188,6 @@ fun SemaphoreScreen(
                         
                         Spacer(modifier = Modifier.weight(1f))
                         
-                        // Tiempo seleccionado (armado) dentro del botón
-                        // Solo si NO ha comenzado la cuenta atrás (expiration == null) pero tenemos duration (seleccionado)
                         if (state.userStatusExpiration == null) {
                             state.userStatusDuration?.let { duration ->
                                 val hours = TimeUnit.MILLISECONDS.toHours(duration)
@@ -250,13 +213,11 @@ fun SemaphoreScreen(
 
             Spacer(modifier = Modifier.weight(3f))
 
-            // Indicador de seguridad
             PrivacyIndicator()
 
             Spacer(modifier = Modifier.height(48.dp))
         }
 
-        // Botón discreto de Ajustes
         IconButton(
             onClick = { navController.navigate("settings") },
             modifier = Modifier
