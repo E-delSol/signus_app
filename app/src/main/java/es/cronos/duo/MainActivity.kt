@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import es.cronos.duo.presentation.navigation.AppNavigation
+import es.cronos.duo.presentation.navigation.Splash
 import es.cronos.duo.ui.theme.DuoTheme
 
 class MainActivity : ComponentActivity() {
@@ -17,7 +18,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         
         // Start with splash screen to handle async user status check
-        val startDestination = "splash"
+        val startDestination = Splash
 
         enableEdgeToEdge()
         setContent {

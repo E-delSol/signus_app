@@ -53,6 +53,8 @@ import es.cronos.duo.components.CentralImage
 import es.cronos.duo.components.PartnerLinkButton
 import es.cronos.duo.components.PrivacyIndicator
 import es.cronos.duo.components.TitleApp
+import es.cronos.duo.presentation.navigation.Login
+import es.cronos.duo.presentation.navigation.Splash
 
 @Composable
 fun LoginScreen(
@@ -69,8 +71,8 @@ fun LoginScreen(
     LaunchedEffect(state.user) {
         if (state.user != null) {
             // Navegar a Splash para que decida el destino final (Pairing o Semaphore)
-            navController.navigate("splash") {
-                popUpTo("login") { inclusive = true }
+            navController.navigate(Splash) {
+                popUpTo(Login) { inclusive = true }
             }
         }
     }

@@ -10,6 +10,10 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import es.cronos.duo.data.repository.UserRepositoryImpl
+import es.cronos.duo.presentation.navigation.Pairing
+import es.cronos.duo.presentation.navigation.Semaphore
+import es.cronos.duo.presentation.navigation.Splash
+import es.cronos.duo.presentation.navigation.Welcome
 
 @Composable
 fun SplashScreen(navController: NavController) {
@@ -25,8 +29,8 @@ fun SplashScreen(navController: NavController) {
         val currentUser = auth.currentUser
 
         if (currentUser == null) {
-            navController.navigate("welcome") {
-                popUpTo("splash") { inclusive = true }
+            navController.navigate(Welcome) {
+                popUpTo(Splash) { inclusive = true }
             }
         } else {
             // Check if user has a partner
@@ -35,12 +39,12 @@ fun SplashScreen(navController: NavController) {
                 val user = userRepository.getUser()
                 
                 if (user?.partnerId != null && user.partnerId.isNotBlank()) {
-                    navController.navigate("semaphore") {
-                        popUpTo("splash") { inclusive = true }
+                    navController.navigate(Semaphore) {
+                        popUpTo(Splash) { inclusive = true }
                     }
                 } else {
-                    navController.navigate("pairing") {
-                        popUpTo("splash") { inclusive = true }
+                    navController.navigate(Pairing) {
+                        popUpTo(Splash) { inclusive = true }
                     }
                 }
             } catch (e: Exception) {
@@ -49,8 +53,8 @@ fun SplashScreen(navController: NavController) {
                 // For safety, let's go to pairing if user is logged in but check failed? 
                 // Or welcome if we suspect auth issue.
                 // Let's go to pairing, worst case they can't pair.
-                navController.navigate("pairing") {
-                    popUpTo("splash") { inclusive = true }
+                navController.navigate(Pairing) {
+                    popUpTo(Splash) { inclusive = true }
                 }
             }
         }

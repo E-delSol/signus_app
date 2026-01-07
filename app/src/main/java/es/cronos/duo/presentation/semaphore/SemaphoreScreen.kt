@@ -50,6 +50,9 @@ import es.cronos.duo.components.TimerPickerDialog
 import es.cronos.duo.components.TitleApp
 import es.cronos.duo.components.TrafficLight
 import es.cronos.duo.domain.model.SemaphoreStatus
+import es.cronos.duo.presentation.navigation.Pairing
+import es.cronos.duo.presentation.navigation.Semaphore
+import es.cronos.duo.presentation.navigation.Settings
 import java.util.concurrent.TimeUnit
 import java.util.Locale
 import kotlinx.coroutines.flow.collectLatest
@@ -92,7 +95,7 @@ fun SemaphoreScreen(
                 TextButton(
                     onClick = {
                         showUnlinkedDialog = false 
-                        navController.navigate("pairing") { popUpTo("semaphore") { inclusive = true } }
+                        navController.navigate(Pairing) { popUpTo(Semaphore) { inclusive = true } }
                     }
                 ) {
                     Text(stringResource(R.string.action_understood))
@@ -219,7 +222,7 @@ fun SemaphoreScreen(
         }
 
         IconButton(
-            onClick = { navController.navigate("settings") },
+            onClick = { navController.navigate(Settings) },
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(top = 16.dp)

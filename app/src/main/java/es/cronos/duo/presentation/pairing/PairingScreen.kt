@@ -43,6 +43,9 @@ import es.cronos.duo.components.PrivacyIndicator
 import es.cronos.duo.components.QrCodeDialog
 import es.cronos.duo.components.QrCodeScanner
 import es.cronos.duo.components.TitleApp
+import es.cronos.duo.presentation.navigation.Pairing
+import es.cronos.duo.presentation.navigation.Semaphore
+import es.cronos.duo.presentation.navigation.Settings
 
 @Composable
 fun PairingScreen(
@@ -56,9 +59,9 @@ fun PairingScreen(
     // Automatic navigation if paired
     LaunchedEffect(state.isPaired) {
         if (state.isPaired) {
-            navController.navigate("semaphore") {
+            navController.navigate(Semaphore) {
                 // Prevents returning to the pairing screen
-                popUpTo("pairing") { inclusive = true }
+                popUpTo(Pairing) { inclusive = true }
             }
         }
     }
@@ -168,7 +171,7 @@ fun PairingScreen(
             }
 
             IconButton(
-                onClick = { navController.navigate("settings") },
+                onClick = { navController.navigate(Settings) },
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(top = 16.dp)
