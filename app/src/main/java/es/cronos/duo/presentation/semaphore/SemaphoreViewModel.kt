@@ -2,8 +2,6 @@ package es.cronos.duo.presentation.semaphore
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.messaging.FirebaseMessaging
-import es.cronos.duo.data.repository.UserRepositoryImpl
 import es.cronos.duo.domain.model.SemaphoreStatus
 import es.cronos.duo.domain.repository.UserRepository
 import es.cronos.duo.domain.usecase.GetPartnerStatusUseCase
@@ -19,9 +17,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
-class SemaphoreViewModel : ViewModel() {
+class SemaphoreViewModel(
+    private val userRepository: UserRepository,
+    private val observeUserUseCase: ObserveUserUseCase,
+    private val updateUserStatusUseCase: UpdateUserStatusUseCase,
+    private val getPartnerStatusUseCase: GetPartnerStatusUseCase
+) : ViewModel() {
 
     private val _state = MutableStateFlow(SemaphoreState())
     val state: StateFlow<SemaphoreState> = _state.asStateFlow()
@@ -29,23 +31,13 @@ class SemaphoreViewModel : ViewModel() {
     private val _eventFlow = MutableSharedFlow<UiEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
-    // In a real app, these would be injected by a DI framework like Hilt
-    private val userRepository: UserRepository = UserRepositoryImpl()
-    private val observeUserUseCase = ObserveUserUseCase(userRepository)
-    private val updateUserStatusUseCase = UpdateUserStatusUseCase(userRepository)
-    private val getPartnerStatusUseCase = GetPartnerStatusUseCase(userRepository)
-
     private var pendingDurationMillis: Long? = null
     private var expirationJob: Job? = null
 
     init {
         viewModelScope.launch {
-            // Save FCM token
-            try {
-                userRepository.saveFcmToken(FirebaseMessaging.getInstance().token.await())
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            // Sync FCM token using the repository (abstracted from Firebase)
+            userRepository.syncFcmToken()
 
             var previousPartnerStatus: SemaphoreStatus? = null
 

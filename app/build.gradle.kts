@@ -58,6 +58,15 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
     implementation("com.google.zxing:core:3.5.3")
     
+    // Koin
+    implementation(libs.koin.android)
+    implementation(libs.koin.androidx.compose)
+
+    // Credentials & Google Identity
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.auth)
+    implementation(libs.googleid)
+    
     // CameraX dependencies
     val cameraxVersion = "1.3.1"
     implementation("androidx.camera:camera-core:$cameraxVersion")
@@ -73,7 +82,6 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-messaging-ktx")
-    implementation("com.google.android.gms:play-services-auth:21.2.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

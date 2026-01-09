@@ -8,10 +8,10 @@ import es.cronos.duo.domain.repository.QrCodeRepository
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
-class QrCodeRepositoryImpl : QrCodeRepository {
-    
-    private val auth by lazy { FirebaseAuth.getInstance() }
-    private val firestore by lazy { FirebaseFirestore.getInstance() }
+class QrCodeRepositoryImpl(
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+) : QrCodeRepository {
 
     override suspend fun generateUniqueCode(): String {
         val userId = auth.currentUser?.uid ?: throw Exception("User not logged in")

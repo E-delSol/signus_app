@@ -8,15 +8,20 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
-import com.google.firebase.auth.FirebaseAuth
-import es.cronos.duo.data.repository.UserRepositoryImpl
+import es.cronos.duo.domain.repository.AuthRepository
+import es.cronos.duo.domain.repository.UserRepository
 import es.cronos.duo.presentation.navigation.Pairing
 import es.cronos.duo.presentation.navigation.Semaphore
 import es.cronos.duo.presentation.navigation.Splash
 import es.cronos.duo.presentation.navigation.Welcome
+import org.koin.compose.koinInject
 
 @Composable
-fun SplashScreen(navController: NavController) {
+fun SplashScreen(
+    navController: NavController,
+    authRepository: AuthRepository = koinInject(),
+    userRepository: UserRepository = koinInject()
+) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -25,8 +30,7 @@ fun SplashScreen(navController: NavController) {
     }
 
     LaunchedEffect(Unit) {
-        val auth = FirebaseAuth.getInstance()
-        val currentUser = auth.currentUser
+        val currentUser = authRepository.currentUser
 
         if (currentUser == null) {
             navController.navigate(Welcome) {
@@ -35,7 +39,6 @@ fun SplashScreen(navController: NavController) {
         } else {
             // Check if user has a partner
             try {
-                val userRepository = UserRepositoryImpl()
                 val user = userRepository.getUser()
                 
                 if (user?.partnerId != null && user.partnerId.isNotBlank()) {
@@ -48,11 +51,7 @@ fun SplashScreen(navController: NavController) {
                     }
                 }
             } catch (e: Exception) {
-                // In case of error, go to welcome or stay here? 
-                // Let's assume session is invalid or network error, maybe go to welcome or retry.
-                // For safety, let's go to pairing if user is logged in but check failed? 
-                // Or welcome if we suspect auth issue.
-                // Let's go to pairing, worst case they can't pair.
+                // In case of error, assume login is valid but maybe network error
                 navController.navigate(Pairing) {
                     popUpTo(Splash) { inclusive = true }
                 }

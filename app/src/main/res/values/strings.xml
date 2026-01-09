@@ -77,4 +77,7 @@
     <string name="camera_permission_message">Para escanear el código QR necesitamos acceso a la cámara.</string>
     <string name="camera_access_required">Se requiere acceso a la cámara.</string>
     <string name="camera_waiting_permission">Esperando permiso...</string>
+
+    <!-- Web Client ID -->
+    <string name="default_web_client_id">932600907616-965o0aeipebasilp1gi626822qm12uhd.apps.googleusercontent.com</string>
 </resources>

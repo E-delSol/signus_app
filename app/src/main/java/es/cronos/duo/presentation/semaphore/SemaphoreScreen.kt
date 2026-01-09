@@ -41,7 +41,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import es.cronos.duo.R
 import es.cronos.duo.components.PartnerLinkButton
@@ -56,11 +55,12 @@ import es.cronos.duo.presentation.navigation.Settings
 import java.util.concurrent.TimeUnit
 import java.util.Locale
 import kotlinx.coroutines.flow.collectLatest
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun SemaphoreScreen(
     navController: NavController,
-    viewModel: SemaphoreViewModel = viewModel()
+    viewModel: SemaphoreViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current

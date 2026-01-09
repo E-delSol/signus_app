@@ -1,6 +1,5 @@
 package es.cronos.duo.presentation.login
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +19,7 @@ import androidx.compose.material.icons.filled.AppRegistration
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,6 +33,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,7 +47,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import es.cronos.duo.R
 import es.cronos.duo.components.CentralImage
@@ -55,17 +55,28 @@ import es.cronos.duo.components.PrivacyIndicator
 import es.cronos.duo.components.TitleApp
 import es.cronos.duo.presentation.navigation.Login
 import es.cronos.duo.presentation.navigation.Splash
+import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun LoginScreen(
     navController: NavController,
-    viewModel: LoginViewModel = viewModel(factory = LoginViewModel.Factory)
+    viewModel: LoginViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     
     // Estado local para alternar entre botones y formulario
     var showEmailForm by remember { mutableStateOf(false) }
+    
+    // Estado para mostrar errores en un diálogo (para que sea más visible)
+    var errorDialogMessage by remember { mutableStateOf<String?>(null) }
+
+    // Google Auth Client modernizado con CredentialManager
+    val googleAuthUiClient = remember {
+        GoogleAuthUiClient(context)
+    }
 
     // Efecto para navegar si el usuario se loguea correctamente
     LaunchedEffect(state.user) {
@@ -77,11 +88,25 @@ fun LoginScreen(
         }
     }
 
-    // Efecto para mostrar errores
+    // Efecto para mostrar errores del ViewModel (Firebase)
     LaunchedEffect(state.error) {
         if (state.error != null) {
-            Toast.makeText(context, state.error, Toast.LENGTH_LONG).show()
+            errorDialogMessage = state.error
         }
+    }
+
+    // Diálogo de Error
+    if (errorDialogMessage != null) {
+        AlertDialog(
+            onDismissRequest = { errorDialogMessage = null },
+            title = { Text("Error de Inicio de Sesión") },
+            text = { Text(errorDialogMessage ?: "Error desconocido") },
+            confirmButton = {
+                TextButton(onClick = { errorDialogMessage = null }) {
+                    Text("Aceptar")
+                }
+            }
+        )
     }
 
     Box(
@@ -130,7 +155,16 @@ fun LoginScreen(
                 )
             } else {
                 LoginSelectionButtons(
-                    onGoogleClick = { /* TODO: Implementar Google Sign In */ },
+                    onGoogleClick = { 
+                        scope.launch {
+                            val result = googleAuthUiClient.signIn()
+                            if (result.idToken != null) {
+                                viewModel.onGoogleSignIn(result.idToken)
+                            } else if (result.errorMessage != null) {
+                                errorDialogMessage = result.errorMessage
+                            }
+                        }
+                    },
                     onEmailClick = { showEmailForm = true }
                 )
             }

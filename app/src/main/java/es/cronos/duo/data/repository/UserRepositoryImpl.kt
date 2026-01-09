@@ -3,6 +3,7 @@ package es.cronos.duo.data.repository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
+import com.google.firebase.messaging.FirebaseMessaging
 import es.cronos.duo.domain.model.SemaphoreStatus
 import es.cronos.duo.domain.model.User
 import es.cronos.duo.domain.repository.UserRepository
@@ -11,13 +12,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
-class UserRepositoryImpl : UserRepository {
+class UserRepositoryImpl(
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
+    private val fcm: FirebaseMessaging = FirebaseMessaging.getInstance()
+) : UserRepository {
 
-    private val firestore by lazy { FirebaseFirestore.getInstance() }
-    private val auth by lazy { FirebaseAuth.getInstance() }
-
-    // Corregido: Usar un getter para obtener siempre el usuario actual, 
-    // en lugar de 'by lazy' que podría capturar null si se inicializa muy pronto.
     private val currentUserUid: String?
         get() = auth.currentUser?.uid
 
@@ -91,6 +91,15 @@ class UserRepositoryImpl : UserRepository {
         currentUserUid?.let { uid ->
             val data = mapOf("fcmToken" to token)
             firestore.collection("users").document(uid).set(data, SetOptions.merge()).await()
+        }
+    }
+
+    override suspend fun syncFcmToken() {
+        try {
+            val token = fcm.token.await()
+            saveFcmToken(token)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 }
