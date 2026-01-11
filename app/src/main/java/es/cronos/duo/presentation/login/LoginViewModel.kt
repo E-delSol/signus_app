@@ -1,11 +1,10 @@
 package es.cronos.duo.presentation.login
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import es.cronos.duo.data.repository.AuthRepositoryImpl
 import es.cronos.duo.domain.usecase.LoginWithEmailUseCase
 import es.cronos.duo.domain.usecase.RegisterWithEmailUseCase
+import es.cronos.duo.domain.usecase.SignInWithGoogleUseCase
 import es.cronos.duo.domain.util.Resource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +15,8 @@ import kotlinx.coroutines.launch
 
 class LoginViewModel(
     private val loginWithEmailUseCase: LoginWithEmailUseCase,
-    private val registerWithEmailUseCase: RegisterWithEmailUseCase
+    private val registerWithEmailUseCase: RegisterWithEmailUseCase,
+    private val signInWithGoogleUseCase: SignInWithGoogleUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(LoginState())
@@ -38,6 +38,23 @@ class LoginViewModel(
         }
     }
 
+    fun onGoogleSignIn(idToken: String) {
+        viewModelScope.launch {
+            _state.value = LoginState(isLoading = true)
+            when (val result = signInWithGoogleUseCase(idToken)) {
+                is Resource.Success -> {
+                    _state.value = LoginState(user = result.data)
+                }
+                is Resource.Error -> {
+                    _state.value = LoginState(error = result.message ?: "Error al iniciar sesión con Google")
+                }
+                is Resource.Loading -> {
+                    _state.value = LoginState(isLoading = true)
+                }
+            }
+        }
+    }
+
     private fun handleAuthResult(result: Resource<es.cronos.duo.domain.model.User>) {
         when (result) {
             is Resource.Success -> {
@@ -48,18 +65,6 @@ class LoginViewModel(
             }
             is Resource.Loading -> {
                 _state.value = LoginState(isLoading = true)
-            }
-        }
-    }
-
-    companion object {
-        val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val repository = AuthRepositoryImpl()
-                val loginUseCase = LoginWithEmailUseCase(repository)
-                val registerUseCase = RegisterWithEmailUseCase(repository)
-                return LoginViewModel(loginUseCase, registerUseCase) as T
             }
         }
     }

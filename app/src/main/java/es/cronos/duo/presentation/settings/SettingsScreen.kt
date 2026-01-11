@@ -33,26 +33,26 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import es.cronos.duo.R
 import es.cronos.duo.components.CentralImage
 import es.cronos.duo.components.PartnerLinkButton
 import es.cronos.duo.components.PrivacyIndicator
 import es.cronos.duo.components.TitleApp
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun SettingsScreen(
     navController: NavController,
-    viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
+    viewModel: SettingsViewModel = koinViewModel()
 ) {
     var showUnlinkDialog by remember { mutableStateOf(false) }
 
     if (showUnlinkDialog) {
         AlertDialog(
             onDismissRequest = { showUnlinkDialog = false },
-            title = { Text(text = "Desvincular pareja") },
-            text = { Text("¿Estás seguro de que quieres romper el vínculo con tu pareja? Esta acción eliminará la sesión actual.") },
+            title = { Text(text = stringResource(R.string.dialog_unlink_title)) },
+            text = { Text(stringResource(R.string.dialog_unlink_message)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -66,12 +66,12 @@ fun SettingsScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("Desvincular")
+                    Text(stringResource(R.string.action_unlink))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showUnlinkDialog = false }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.action_cancel))
                 }
             }
         )

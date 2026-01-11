@@ -18,9 +18,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import es.cronos.duo.R
 
 @Composable
 fun ManualLinkDialog(
@@ -33,7 +35,7 @@ fun ManualLinkDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Introducir código",
+                text = stringResource(R.string.manual_link_title),
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
@@ -45,14 +47,14 @@ fun ManualLinkDialog(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "Introduce el código de tu pareja para vincular los dispositivos.",
+                    text = stringResource(R.string.manual_link_message),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
                     value = code,
                     onValueChange = { code = it },
-                    label = { Text("Código") },
+                    label = { Text(stringResource(R.string.manual_link_hint)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
@@ -68,12 +70,12 @@ fun ManualLinkDialog(
                 },
                 enabled = code.isNotBlank()
             ) {
-                Text("Vincular")
+                Text(stringResource(R.string.action_link))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar")
+                Text(stringResource(R.string.action_cancel))
             }
         },
         shape = RoundedCornerShape(16.dp),

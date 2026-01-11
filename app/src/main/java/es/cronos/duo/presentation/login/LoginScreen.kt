@@ -1,6 +1,5 @@
 package es.cronos.duo.presentation.login
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +19,7 @@ import androidx.compose.material.icons.filled.AppRegistration
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,6 +33,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,40 +47,66 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import es.cronos.duo.R
 import es.cronos.duo.components.CentralImage
 import es.cronos.duo.components.PartnerLinkButton
 import es.cronos.duo.components.PrivacyIndicator
 import es.cronos.duo.components.TitleApp
+import es.cronos.duo.presentation.navigation.Login
+import es.cronos.duo.presentation.navigation.Splash
+import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun LoginScreen(
     navController: NavController,
-    viewModel: LoginViewModel = viewModel(factory = LoginViewModel.Factory)
+    viewModel: LoginViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     
     // Estado local para alternar entre botones y formulario
     var showEmailForm by remember { mutableStateOf(false) }
+    
+    // Estado para mostrar errores en un diálogo (para que sea más visible)
+    var errorDialogMessage by remember { mutableStateOf<String?>(null) }
+
+    // Google Auth Client modernizado con CredentialManager
+    val googleAuthUiClient = remember {
+        GoogleAuthUiClient(context)
+    }
 
     // Efecto para navegar si el usuario se loguea correctamente
     LaunchedEffect(state.user) {
         if (state.user != null) {
-            navController.navigate("pairing") {
-                // Opcional: limpiar la pila para no volver al login con "atrás"
-                popUpTo("login") { inclusive = true }
+            // Navegar a Splash para que decida el destino final (Pairing o Semaphore)
+            navController.navigate(Splash) {
+                popUpTo(Login) { inclusive = true }
             }
         }
     }
 
-    // Efecto para mostrar errores
+    // Efecto para mostrar errores del ViewModel (Firebase)
     LaunchedEffect(state.error) {
         if (state.error != null) {
-            Toast.makeText(context, state.error, Toast.LENGTH_LONG).show()
+            errorDialogMessage = state.error
         }
+    }
+
+    // Diálogo de Error
+    if (errorDialogMessage != null) {
+        AlertDialog(
+            onDismissRequest = { errorDialogMessage = null },
+            title = { Text("Error de Inicio de Sesión") },
+            text = { Text(errorDialogMessage ?: "Error desconocido") },
+            confirmButton = {
+                TextButton(onClick = { errorDialogMessage = null }) {
+                    Text("Aceptar")
+                }
+            }
+        )
     }
 
     Box(
@@ -128,7 +155,16 @@ fun LoginScreen(
                 )
             } else {
                 LoginSelectionButtons(
-                    onGoogleClick = { /* TODO: Implementar Google Sign In */ },
+                    onGoogleClick = { 
+                        scope.launch {
+                            val result = googleAuthUiClient.signIn()
+                            if (result.idToken != null) {
+                                viewModel.onGoogleSignIn(result.idToken)
+                            } else if (result.errorMessage != null) {
+                                errorDialogMessage = result.errorMessage
+                            }
+                        }
+                    },
                     onEmailClick = { showEmailForm = true }
                 )
             }
@@ -183,7 +219,7 @@ fun EmailLoginForm(
     Column(modifier = Modifier.fillMaxWidth()) {
         
         Text(
-            text = if (isRegisterMode) "Crear cuenta nueva" else "Acceder con tu cuenta",
+            text = if (isRegisterMode) stringResource(R.string.login_create_account_title) else stringResource(R.string.login_access_account_title),
             style = MaterialTheme.typography.titleMedium,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
@@ -192,7 +228,7 @@ fun EmailLoginForm(
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Email") },
+            label = { Text(stringResource(R.string.field_email)) },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             singleLine = true,
@@ -204,7 +240,7 @@ fun EmailLoginForm(
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Contraseña") },
+            label = { Text(stringResource(R.string.field_password)) },
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -226,8 +262,8 @@ fun EmailLoginForm(
 
         // Botón principal
         PartnerLinkButton(
-            title = if (isRegisterMode) "Registrarse" else "Iniciar Sesión",
-            description = if (isRegisterMode) "Crea tu cuenta ahora" else "Acceder a mi cuenta",
+            title = if (isRegisterMode) stringResource(R.string.action_register) else stringResource(R.string.action_login),
+            description = if (isRegisterMode) stringResource(R.string.login_create_account_desc) else stringResource(R.string.login_access_account_desc),
             icon = if (isRegisterMode) Icons.Filled.AppRegistration else Icons.AutoMirrored.Filled.Login,
             onClick = { 
                 if (isRegisterMode) {
@@ -245,7 +281,7 @@ fun EmailLoginForm(
             onClick = { isRegisterMode = !isRegisterMode },
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
-            Text(if (isRegisterMode) "¿Ya tienes cuenta? Inicia Sesión" else "¿No tienes cuenta? Regístrate")
+            Text(if (isRegisterMode) stringResource(R.string.login_toggle_to_login) else stringResource(R.string.login_toggle_to_register))
         }
         
         Spacer(modifier = Modifier.height(8.dp))
@@ -256,7 +292,7 @@ fun EmailLoginForm(
         ) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, modifier = Modifier.size(16.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Volver al inicio")
+            Text(stringResource(R.string.action_back_home))
         }
     }
 }

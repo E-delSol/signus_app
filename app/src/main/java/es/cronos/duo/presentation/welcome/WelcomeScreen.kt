@@ -27,6 +27,7 @@ import es.cronos.duo.components.CentralImage
 import es.cronos.duo.components.PartnerLinkButton
 import es.cronos.duo.components.PrivacyIndicator
 import es.cronos.duo.components.TitleApp
+import es.cronos.duo.presentation.navigation.Login
 
 @Composable
 fun WelcomeScreen(navController: NavController) {
@@ -71,7 +72,7 @@ fun WelcomeScreen(navController: NavController) {
                 title = stringResource(R.string.go_to_pairing_title),
                 description = stringResource(R.string.go_to_pairing_description),
                 icon = Icons.Filled.AddLink,
-                onClick = { navController.navigate("login") }
+                onClick = { navController.navigate(Login) }
             )
 
             Spacer(modifier = Modifier.height(32.dp)) // mt-8

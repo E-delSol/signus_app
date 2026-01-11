@@ -1,7 +1,8 @@
 <resources>
-    <string name="app_name">DUO</string>
+    <string name="app_name">Signus</string>
+    <string name="app_name_store">Signus: Private Couple Sync</string>
     <string name="welcome_message">Un semáforo íntimo para dos. Sin rastro, solo disponibilidad. Compartido solo con quien importa.</string>
-    <string name="privacy_policy">Tus datos nunca sale de tu dispositivo.</string>
+    <string name="privacy_policy">Tus datos nunca salen de tu dispositivo.</string>
     <string name="privacy_policy_link">Política de Privacidad.</string>
     <string name="go_to_pairing_title">Vincular con mi pareja</string>
     <string name="go_to_pairing_description">Inicia el vínculo con tu pareja</string>
@@ -16,15 +17,67 @@
     <string name="semaphore_partner_message_available">Tu pareja está receptiva</string>
     <string name="semaphore_partner_message_busi">Tu pareja necesita paz</string>
     <string name="semaphore_user_message">Tu estado</string>
+    
+    <!-- Login -->
     <string name="login_title">Inicia Sesión</string>
     <string name="login_google_title">Continuar con Google</string>
     <string name="login_google_description">Acceso rápido y seguro</string>
     <string name="login_email_title">Usar correo electrónico</string>
     <string name="login_email_description">Inicia con tu email y contraseña</string>
+    <string name="login_create_account_title">Crear cuenta nueva</string>
+    <string name="login_access_account_title">Acceder con tu cuenta</string>
+    <string name="login_create_account_desc">Crea tu cuenta ahora</string>
+    <string name="login_access_account_desc">Acceder a mi cuenta</string>
+    <string name="login_toggle_to_login">¿Ya tienes cuenta? Inicia Sesión</string>
+    <string name="login_toggle_to_register">¿No tienes cuenta? Regístrate</string>
+    <string name="field_email">Email</string>
+    <string name="field_password">Contraseña</string>
+    <string name="action_register">Registrarse</string>
+    <string name="action_login">Iniciar Sesión</string>
+    <string name="action_back_home">Volver al inicio</string>
     
+    <!-- Settings -->
     <string name="settings_title">Ajustes</string>
     <string name="settings_unlink_title">Desvincular pareja</string>
     <string name="settings_unlink_description">Romper la conexión actual</string>
     <string name="settings_logout_title">Cerrar Sesión</string>
     <string name="settings_logout_description">Salir de la aplicación</string>
+    
+    <!-- Dialogs & Popups -->
+    <string name="dialog_unlink_title">Desvincular pareja</string>
+    <string name="dialog_unlink_message">¿Estás seguro de que quieres romper el vínculo con tu pareja? Esta acción eliminará la sesión actual.</string>
+    <string name="dialog_partner_unlinked_title">Pareja desvinculada</string>
+    <string name="dialog_partner_unlinked_message">Tu pareja se ha desvinculado del dispositivo. Volverás a la pantalla de emparejamiento.</string>
+    <string name="manual_link_title">Introducir código</string>
+    <string name="manual_link_message">Introduce el código de tu pareja para vincular los dispositivos.</string>
+    <string name="manual_link_hint">Código</string>
+    
+    <!-- Timer Dialog -->
+    <string name="timer_dialog_title">Temporizar estado</string>
+    <string name="timer_dialog_description">Selecciona la duración del nuevo estado</string>
+    <string name="timer_button_text">Temporizar estado</string>
+    <string name="action_accept">Aceptar</string>
+
+    <!-- Actions -->
+    <string name="action_unlink">Desvincular</string>
+    <string name="action_link">Vincular</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_understood">Entendido</string>
+    <string name="action_continue">Continuar</string>
+    <string name="action_request_permission">Solicitar permiso</string>
+    
+    <!-- Status Button -->
+    <string name="status_available_title">Estás Disponible</string>
+    <string name="status_busy_title">Estás Ocupado</string>
+    <string name="status_available_desc">Pulsa para cambiar a ocupado</string>
+    <string name="status_busy_desc">Pulsa para cambiar a disponible</string>
+    
+    <!-- Camera Permission -->
+    <string name="camera_permission_title">Permiso de Cámara Requerido</string>
+    <string name="camera_permission_message">Para escanear el código QR necesitamos acceso a la cámara.</string>
+    <string name="camera_access_required">Se requiere acceso a la cámara.</string>
+    <string name="camera_waiting_permission">Esperando permiso...</string>
+
+    <!-- Web Client ID -->
+    <string name="default_web_client_id">932600907616-965o0aeipebasilp1gi626822qm12uhd.apps.googleusercontent.com</string>
 </resources>

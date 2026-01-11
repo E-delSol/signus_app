@@ -2,15 +2,12 @@ package es.cronos.duo.components
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.util.Size
-import android.view.ViewGroup
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
-import androidx.camera.core.Preview
-import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.CameraController
+import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,14 +22,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import com.google.zxing.BarcodeFormat
 import com.google.zxing.BinaryBitmap
+import com.google.zxing.DecodeHintType
 import com.google.zxing.MultiFormatReader
 import com.google.zxing.PlanarYUVLuminanceSource
 import com.google.zxing.common.HybridBinarizer
-import java.util.concurrent.Executors
+import es.cronos.duo.R
 
 @Composable
 fun QrCodeScanner(
@@ -48,15 +48,12 @@ fun QrCodeScanner(
         )
     }
     
-    // Controlar si debemos mostrar el diálogo inicial (solo la primera vez o si se reinicia el flujo)
     var showPermissionRationale by remember { mutableStateOf(!hasCameraPermission) }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { granted ->
             hasCameraPermission = granted
-            // IMPORTANTE: No volvemos a poner showPermissionRationale a true aquí automáticamente
-            // para evitar bucles infinitos si el sistema deniega automáticamente.
             if (!granted) {
                 showPermissionRationale = false 
             }
@@ -66,48 +63,38 @@ fun QrCodeScanner(
     if (hasCameraPermission) {
         CameraPreview(onCodeScanned)
     } else {
-        // 1. Diálogo inicial explicativo (Pop-up)
         if (showPermissionRationale) {
             AlertDialog(
-                onDismissRequest = { 
-                    // Si el usuario descarta el diálogo (click fuera), asumimos que no quiere dar permiso por ahora
-                    showPermissionRationale = false 
-                },
-                title = { Text("Permiso de Cámara Requerido") },
-                text = { Text("Para vincularte con tu pareja escaneando su código QR, necesitamos acceso a la cámara.") },
+                onDismissRequest = { showPermissionRationale = false },
+                title = { Text(stringResource(R.string.camera_permission_title)) },
+                text = { Text(stringResource(R.string.camera_permission_message)) },
                 confirmButton = {
                     Button(onClick = { 
-                        // Lanzamos la petición del sistema y ocultamos nuestro diálogo
                         showPermissionRationale = false
                         launcher.launch(Manifest.permission.CAMERA)
                     }) {
-                        Text("Continuar")
+                        Text(stringResource(R.string.action_continue))
                     }
                 },
                 dismissButton = {
                     Button(onClick = { showPermissionRationale = false }) {
-                        Text("Cancelar")
+                        Text(stringResource(R.string.action_cancel))
                     }
                 }
             )
         }
         
-        // 2. Estado de "Permiso Denegado" o "Esperando" (Pantalla de fondo)
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             if (!showPermissionRationale) {
-                // Si ya cerramos el diálogo y no tenemos permiso, mostramos opción manual
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Se requiere acceso a la cámara.")
+                    Text(stringResource(R.string.camera_access_required))
                     Spacer(modifier = Modifier.height(8.dp))
-                    Button(onClick = { 
-                        // Intento manual de pedir permiso de nuevo (o mostrar diálogo)
-                        showPermissionRationale = true 
-                    }) {
-                        Text("Solicitar permiso")
+                    Button(onClick = { showPermissionRationale = true }) {
+                        Text(stringResource(R.string.action_request_permission))
                     }
                 }
             } else {
-                Text("Esperando permiso...")
+                Text(stringResource(R.string.camera_waiting_permission))
             }
         }
     }
@@ -117,79 +104,124 @@ fun QrCodeScanner(
 fun CameraPreview(onCodeScanned: (String) -> Unit) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
+    
+    // Usamos LifecycleCameraController que maneja automáticamente el ciclo de vida,
+    // y lo más importante: ENFOQUE AUTOMÁTICO y ZOOM.
+    val cameraController = remember { 
+        LifecycleCameraController(context).apply {
+            cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+            // Solo habilitamos el análisis de imagen. 
+            // La vista previa (Preview) se gestiona automáticamente al enlazar con PreviewView.
+            setEnabledUseCases(CameraController.IMAGE_ANALYSIS)
+        }
+    }
+
+    // Configuración optimizada para QR
+    val reader = remember { 
+        MultiFormatReader().apply {
+            val hints = mapOf(
+                DecodeHintType.POSSIBLE_FORMATS to listOf(BarcodeFormat.QR_CODE),
+                DecodeHintType.TRY_HARDER to true
+            )
+            setHints(hints)
+        }
+    }
 
     AndroidView(
         factory = { ctx ->
-            val previewView = PreviewView(ctx).apply {
-                layoutParams = ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
-                )
+            PreviewView(ctx).apply {
+                this.controller = cameraController
+                cameraController.bindToLifecycle(lifecycleOwner)
             }
-            
-            val executor = ContextCompat.getMainExecutor(ctx)
-            
-            cameraProviderFuture.addListener({
-                val cameraProvider = cameraProviderFuture.get()
-                val preview = Preview.Builder().build().also {
-                    it.setSurfaceProvider(previewView.surfaceProvider)
-                }
-
-                val imageAnalysis = ImageAnalysis.Builder()
-                    .setTargetResolution(Size(1280, 720))
-                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                    .build()
-
-                imageAnalysis.setAnalyzer(Executors.newSingleThreadExecutor()) { imageProxy ->
-                    processImageProxy(imageProxy, onCodeScanned)
-                }
-
-                try {
-                    cameraProvider.unbindAll()
-                    cameraProvider.bindToLifecycle(
-                        lifecycleOwner,
-                        CameraSelector.DEFAULT_BACK_CAMERA,
-                        preview,
-                        imageAnalysis
-                    )
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }, executor)
-
-            previewView
         },
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        update = {
+            // Establecer el analizador cada vez que se recompone o actualiza
+            cameraController.setImageAnalysisAnalyzer(
+                ContextCompat.getMainExecutor(context)
+            ) { imageProxy ->
+                processImageProxy(imageProxy, reader, onCodeScanned)
+            }
+        }
     )
 }
 
-private fun processImageProxy(imageProxy: ImageProxy, onCodeScanned: (String) -> Unit) {
-    if (imageProxy.planes.isEmpty()) {
-        imageProxy.close()
-        return
-    }
-    
-    val buffer = imageProxy.planes[0].buffer
-    val data = ByteArray(buffer.remaining())
-    buffer.get(data)
-    
-    val height = imageProxy.height
-    val width = imageProxy.width
-    
-    // Nota: Esta conversión asume formato YUV estándar.
-    val source = PlanarYUVLuminanceSource(
-        data, width, height, 0, 0, width, height, false
-    )
-    
-    val binaryBitmap = BinaryBitmap(HybridBinarizer(source))
-    
+private fun processImageProxy(
+    imageProxy: ImageProxy, 
+    reader: MultiFormatReader, 
+    onCodeScanned: (String) -> Unit
+) {
     try {
-        val result = MultiFormatReader().decode(binaryBitmap)
+        if (imageProxy.planes.isEmpty()) {
+            return
+        }
+        
+        // 1. Obtener datos YUV limpios
+        val buffer = imageProxy.planes[0].buffer
+        val width = imageProxy.width
+        val height = imageProxy.height
+        val rowStride = imageProxy.planes[0].rowStride
+        val pixelStride = imageProxy.planes[0].pixelStride
+        
+        val data = ByteArray(width * height)
+        
+        if (pixelStride == 1 && rowStride == width) {
+            buffer.get(data)
+        } else {
+            for (y in 0 until height) {
+                val pos = y * rowStride
+                buffer.position(pos)
+                buffer.get(data, y * width, width)
+            }
+        }
+        
+        // 2. Manejar Rotación
+        // CameraX nos dice cuántos grados hay que rotar la imagen para que esté derecha.
+        // Para ZXing, necesitamos rotar los bytes.
+        val rotationDegrees = imageProxy.imageInfo.rotationDegrees
+        
+        val (rotatedData, finalWidth, finalHeight) = when (rotationDegrees) {
+            90 -> rotate90(data, width, height)
+            180 -> Triple(data.reversedArray(), width, height)
+            270 -> rotate270(data, width, height)
+            else -> Triple(data, width, height)
+        }
+
+        // 3. Decodificar
+        val source = PlanarYUVLuminanceSource(
+            rotatedData, finalWidth, finalHeight, 0, 0, finalWidth, finalHeight, false
+        )
+        val binaryBitmap = BinaryBitmap(HybridBinarizer(source))
+        
+        val result = reader.decode(binaryBitmap)
         onCodeScanned(result.text)
+        
     } catch (e: Exception) {
         // No QR found
     } finally {
         imageProxy.close()
     }
+}
+
+// Función auxiliar para rotar 90 grados en el sentido de las agujas del reloj
+private fun rotate90(data: ByteArray, width: Int, height: Int): Triple<ByteArray, Int, Int> {
+    val rotatedData = ByteArray(data.size)
+    for (y in 0 until height) {
+        for (x in 0 until width) {
+            // (x, y) -> (y, height - 1 - x)
+            rotatedData[x * height + (height - 1 - y)] = data[y * width + x]
+        }
+    }
+    return Triple(rotatedData, height, width)
+}
+
+private fun rotate270(data: ByteArray, width: Int, height: Int): Triple<ByteArray, Int, Int> {
+    val rotatedData = ByteArray(data.size)
+    for (y in 0 until height) {
+        for (x in 0 until width) {
+            // (x, y) -> (width - 1 - x, y)
+            rotatedData[(width - 1 - x) * height + y] = data[y * width + x]
+        }
+    }
+    return Triple(rotatedData, height, width)
 }

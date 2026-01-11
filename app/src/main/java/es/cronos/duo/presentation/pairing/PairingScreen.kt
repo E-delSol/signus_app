@@ -33,7 +33,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import es.cronos.duo.R
 import es.cronos.duo.components.CentralImage
@@ -43,21 +42,26 @@ import es.cronos.duo.components.PrivacyIndicator
 import es.cronos.duo.components.QrCodeDialog
 import es.cronos.duo.components.QrCodeScanner
 import es.cronos.duo.components.TitleApp
+import es.cronos.duo.presentation.navigation.Pairing
+import es.cronos.duo.presentation.navigation.Semaphore
+import es.cronos.duo.presentation.navigation.Settings
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun PairingScreen(
     navController: NavController,
-    viewModel: PairingViewModel = viewModel(factory = PairingViewModel.Factory)
+    viewModel: PairingViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
     var showCamera by remember { mutableStateOf(false) }
     var showManualLinkDialog by remember { mutableStateOf(false) }
 
-    // Navegación automática si se empareja
+    // Automatic navigation if paired
     LaunchedEffect(state.isPaired) {
         if (state.isPaired) {
-            navController.navigate("semaphore") {
-                popUpTo("pairing") { inclusive = true }
+            navController.navigate(Semaphore) {
+                // Prevents returning to the pairing screen
+                popUpTo(Pairing) { inclusive = true }
             }
         }
     }
@@ -70,7 +74,7 @@ fun PairingScreen(
                     viewModel.onCodeScanned(code)
                 }
             )
-            // Botón para cerrar cámara
+            // Button to close camera
             IconButton(
                 onClick = { showCamera = false },
                 modifier = Modifier
@@ -80,13 +84,13 @@ fun PairingScreen(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Close,
-                    contentDescription = "Cerrar cámara",
+                    contentDescription = "Close camera",
                     tint = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
     } else {
-        // Contenido normal de la pantalla
+        // Normal screen content
         if (state.showQrCode && state.uniqueCode != null) {
             QrCodeDialog(
                 code = state.uniqueCode!!,
@@ -118,14 +122,10 @@ fun PairingScreen(
                 TitleApp()
                 Spacer(modifier = Modifier.weight(1f))
 
-                // --- 1. Imagen Central ---
                 val primaryColor = MaterialTheme.colorScheme.primary
                 CentralImage(primaryColor)
 
                 Spacer(modifier = Modifier.height(48.dp))
-
-                // --- 2. Títulos de Texto ---
-                Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
                     text = stringResource(R.string.connect_message),
@@ -138,7 +138,6 @@ fun PairingScreen(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                // Botones
                 PartnerLinkButton(
                     title = stringResource(R.string.qr_code_title),
                     description = stringResource(R.string.qr_code_description),
@@ -152,12 +151,11 @@ fun PairingScreen(
                     title = stringResource(R.string.code_insert_title),
                     description = stringResource(R.string.code_insert_description),
                     icon = Icons.Filled.CenterFocusWeak,
-                    onClick = { showCamera = true } // Activar cámara
+                    onClick = { showCamera = true } // Activate camera
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                // Botón Manual Link
                 PartnerLinkButton(
                     title = stringResource(R.string.manual_code_title),
                     description = stringResource(R.string.manual_code_description),
@@ -167,15 +165,13 @@ fun PairingScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Indicador de seguridad
                 PrivacyIndicator()
 
                 Spacer(modifier = Modifier.height(48.dp))
             }
 
-            // Botón discreto de Ajustes en la esquina superior derecha
             IconButton(
-                onClick = { navController.navigate("settings") },
+                onClick = { navController.navigate(Settings) },
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(top = 16.dp)
@@ -183,7 +179,7 @@ fun PairingScreen(
                 Icon(
                     imageVector = Icons.Filled.Settings,
                     contentDescription = "Settings",
-                    tint = MaterialTheme.colorScheme.tertiary // Color discreto
+                    tint = MaterialTheme.colorScheme.tertiary // Discreet color
                 )
             }
         }

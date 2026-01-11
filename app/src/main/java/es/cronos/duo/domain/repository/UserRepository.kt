@@ -6,6 +6,9 @@ import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
     suspend fun getUser(): User?
-    suspend fun updateUserStatus(status: SemaphoreStatus)
-    fun getPartnerStatus(partnerId: String): Flow<SemaphoreStatus>
+    fun observeUser(): Flow<User?>
+    suspend fun updateUserStatus(status: SemaphoreStatus, expirationTimestamp: Long? = null, statusDuration: Long? = null)
+    fun getPartnerStatus(partnerId: String): Flow<User?>
+    suspend fun saveFcmToken(token: String)
+    suspend fun syncFcmToken()
 }
