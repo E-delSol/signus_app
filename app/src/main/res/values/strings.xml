@@ -78,6 +78,17 @@
     <string name="camera_access_required">Se requiere acceso a la cámara.</string>
     <string name="camera_waiting_permission">Esperando permiso...</string>
 
+    <!-- Privacy Policy Content -->
+    <string name="privacy_title">Política de Privacidad de Signus</string>
+    <string name="privacy_content">
+        En Signus, la privacidad es nuestra máxima prioridad. Esta aplicación ha sido diseñada para facilitar una comunicación íntima y segura entre parejas.\n\n
+        1. Compromiso de Privacidad: No vendemos, comercializamos ni compartimos su información personal con terceros. Sus datos de disponibilidad solo son visibles para la persona con la que ha decidido vincularse.\n\n
+        2. Datos Recopilados: Únicamente recopilamos la información esencial para el funcionamiento del servicio: su correo electrónico para la autenticación segura y un token de notificación para que su pareja reciba sus cambios de estado en tiempo real.\n\n
+        3. Seguridad: Utilizamos infraestructura de Google Firebase con protocolos de cifrado de extremo a extremo en tránsito para asegurar que su información permanezca privada.\n\n
+        4. Control Total: Usted tiene el control total sobre su vínculo. En cualquier momento puede desvincular su dispositivo o eliminar su cuenta, lo cual borrará su asociación de nuestros servidores.\n\n
+        Al utilizar Signus, usted acepta el tratamiento de sus datos bajo estos términos de confidencialidad.
+    </string>
+
     <!-- Web Client ID -->
     <string name="default_web_client_id">932600907616-965o0aeipebasilp1gi626822qm12uhd.apps.googleusercontent.com</string>
 </resources>

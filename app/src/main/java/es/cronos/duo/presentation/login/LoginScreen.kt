@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Login
@@ -73,6 +75,9 @@ fun LoginScreen(
     // Estado para mostrar errores en un diálogo (para que sea más visible)
     var errorDialogMessage by remember { mutableStateOf<String?>(null) }
 
+    // Estado para mostrar la política de privacidad
+    var showPrivacyPolicy by remember { mutableStateOf(false) }
+
     // Google Auth Client modernizado con CredentialManager
     val googleAuthUiClient = remember {
         GoogleAuthUiClient(context)
@@ -106,6 +111,41 @@ fun LoginScreen(
                     Text("Aceptar")
                 }
             }
+        )
+    }
+
+    // Diálogo de Política de Privacidad
+    if (showPrivacyPolicy) {
+        AlertDialog(
+            onDismissRequest = { showPrivacyPolicy = false },
+            title = { 
+                Text(
+                    text = stringResource(R.string.privacy_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                ) 
+            },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .verticalScroll(rememberScrollState())
+                        .padding(vertical = 8.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.privacy_content),
+                        style = MaterialTheme.typography.bodyMedium,
+                        lineHeight = 20.sp
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showPrivacyPolicy = false }) {
+                    Text(stringResource(R.string.action_understood))
+                }
+            },
+            shape = RoundedCornerShape(28.dp),
+            containerColor = MaterialTheme.colorScheme.surface,
+            tonalElevation = 6.dp
         )
     }
 
@@ -172,7 +212,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             // Indicador de seguridad
-            PrivacyIndicator()
+            PrivacyIndicator(onPrivacyClick = { showPrivacyPolicy = true })
 
             Spacer(modifier = Modifier.height(48.dp))
         }
