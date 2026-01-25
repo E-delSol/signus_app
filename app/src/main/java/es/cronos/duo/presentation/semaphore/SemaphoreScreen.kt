@@ -36,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -116,6 +117,7 @@ fun SemaphoreScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 24.dp)
+            .testTag("semaphore_screen")
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -226,6 +228,7 @@ fun SemaphoreScreen(
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(top = 16.dp)
+                .testTag("settings_button")
         ) {
             Icon(
                 imageVector = Icons.Filled.Settings,

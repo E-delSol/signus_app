@@ -40,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -69,38 +70,28 @@ fun LoginScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     
-    // Estado local para alternar entre botones y formulario
     var showEmailForm by remember { mutableStateOf(false) }
-    
-    // Estado para mostrar errores en un diálogo (para que sea más visible)
     var errorDialogMessage by remember { mutableStateOf<String?>(null) }
-
-    // Estado para mostrar la política de privacidad
     var showPrivacyPolicy by remember { mutableStateOf(false) }
 
-    // Google Auth Client modernizado con CredentialManager
     val googleAuthUiClient = remember {
         GoogleAuthUiClient(context)
     }
 
-    // Efecto para navegar si el usuario se loguea correctamente
     LaunchedEffect(state.user) {
         if (state.user != null) {
-            // Navegar a Splash para que decida el destino final (Pairing o Semaphore)
             navController.navigate(Splash) {
                 popUpTo(Login) { inclusive = true }
             }
         }
     }
 
-    // Efecto para mostrar errores del ViewModel (Firebase)
     LaunchedEffect(state.error) {
         if (state.error != null) {
             errorDialogMessage = state.error
         }
     }
 
-    // Diálogo de Error
     if (errorDialogMessage != null) {
         AlertDialog(
             onDismissRequest = { errorDialogMessage = null },
@@ -114,7 +105,6 @@ fun LoginScreen(
         )
     }
 
-    // Diálogo de Política de Privacidad
     if (showPrivacyPolicy) {
         AlertDialog(
             onDismissRequest = { showPrivacyPolicy = false },
@@ -154,6 +144,7 @@ fun LoginScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 24.dp)
+            .testTag("login_screen")
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -161,13 +152,11 @@ fun LoginScreen(
         ) {
             Spacer(modifier = Modifier.weight(0.5f))
 
-            // --- 1. Imagen Central ---
             val primaryColor = MaterialTheme.colorScheme.primary
             CentralImage(primaryColor)
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // --- 2. Títulos de Texto ---
             TitleApp()
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -183,8 +172,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.weight(0.5f))
 
-            // --- 3. Contenido Dinámico (Botones o Formulario) ---
-            
             if (state.isLoading) {
                 CircularProgressIndicator()
             } else if (showEmailForm) {
@@ -211,7 +198,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Indicador de seguridad
             PrivacyIndicator(onPrivacyClick = { showPrivacyPolicy = true })
 
             Spacer(modifier = Modifier.height(48.dp))
@@ -224,23 +210,23 @@ fun LoginSelectionButtons(
     onGoogleClick: () -> Unit,
     onEmailClick: () -> Unit
 ) {
-    Column {
-        // Botón Google
+    Column(modifier = Modifier.testTag("login_selection_buttons")) {
         PartnerLinkButton(
             title = stringResource(R.string.login_google_title),
             description = stringResource(R.string.login_google_description),
-            icon = Icons.Default.Email, // Idealmente icono de Google
-            onClick = onGoogleClick
+            icon = Icons.Default.Email,
+            onClick = onGoogleClick,
+            modifier = Modifier.testTag("google_login_button")
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Botón Email
         PartnerLinkButton(
             title = stringResource(R.string.login_email_title),
             description = stringResource(R.string.login_email_description),
             icon = Icons.Default.Email,
-            onClick = onEmailClick
+            onClick = onEmailClick,
+            modifier = Modifier.testTag("email_login_button")
         )
     }
 }
@@ -256,7 +242,7 @@ fun EmailLoginForm(
     var passwordVisible by remember { mutableStateOf(false) }
     var isRegisterMode by remember { mutableStateOf(false) }
 
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = Modifier.fillMaxWidth().testTag("email_login_form")) {
         
         Text(
             text = if (isRegisterMode) stringResource(R.string.login_create_account_title) else stringResource(R.string.login_access_account_title),
@@ -269,7 +255,7 @@ fun EmailLoginForm(
             value = email,
             onValueChange = { email = it },
             label = { Text(stringResource(R.string.field_email)) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().testTag("email_field"),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             singleLine = true,
             shape = RoundedCornerShape(12.dp)
@@ -281,7 +267,7 @@ fun EmailLoginForm(
             value = password,
             onValueChange = { password = it },
             label = { Text(stringResource(R.string.field_password)) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().testTag("password_field"),
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             singleLine = true,
@@ -300,7 +286,6 @@ fun EmailLoginForm(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Botón principal
         PartnerLinkButton(
             title = if (isRegisterMode) stringResource(R.string.action_register) else stringResource(R.string.action_login),
             description = if (isRegisterMode) stringResource(R.string.login_create_account_desc) else stringResource(R.string.login_access_account_desc),
@@ -311,15 +296,15 @@ fun EmailLoginForm(
                 } else {
                     onLoginClick(email, password)
                 }
-            }
+            },
+            modifier = Modifier.testTag("submit_login_button")
         )
         
         Spacer(modifier = Modifier.height(16.dp))
         
-        // Botón para alternar modo
         TextButton(
             onClick = { isRegisterMode = !isRegisterMode },
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+            modifier = Modifier.align(Alignment.CenterHorizontally).testTag("toggle_register_button")
         ) {
             Text(if (isRegisterMode) stringResource(R.string.login_toggle_to_login) else stringResource(R.string.login_toggle_to_register))
         }
@@ -328,7 +313,7 @@ fun EmailLoginForm(
         
         TextButton(
             onClick = onBackClick,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+            modifier = Modifier.align(Alignment.CenterHorizontally).testTag("back_to_selection_button")
         ) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, modifier = Modifier.size(16.dp))
             Spacer(modifier = Modifier.width(8.dp))

@@ -23,9 +23,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             DuoTheme {
-                // Scaffold nos proporciona los 'innerPadding' necesarios para evitar las barras de sistema
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    // Aplicamos ese padding al contenedor de la navegación
                     Box(modifier = Modifier.padding(innerPadding)) {
                         AppNavigation(startDestination = startDestination)
                     }

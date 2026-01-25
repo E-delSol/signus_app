@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -35,57 +36,51 @@ fun WelcomeScreen(navController: NavController) {
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(horizontal = 24.dp) // px-6 y px-8 del HTML
+            .padding(horizontal = 24.dp)
+            .testTag("welcome_screen")
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Spacer para empujar el contenido hacia el centro verticalmente
             Spacer(modifier = Modifier.weight(1f))
 
-            // --- 1. Imagen Central (Placeholder) ---
-            // Se puede reemplazar con una imagen real o un componente más complejo.
             val primaryColor = MaterialTheme.colorScheme.primary
             CentralImage(primaryColor)
 
-            Spacer(modifier = Modifier.height(48.dp)) // mb-12
+            Spacer(modifier = Modifier.height(48.dp))
 
-            // --- 2. Títulos de Texto ---
             TitleApp()
 
-            Spacer(modifier = Modifier.height(16.dp)) // gap-4
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = stringResource(R.string.welcome_message), // "Comunicación sin límites,..."
+                text = stringResource(R.string.welcome_message),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Light,
-                color = MaterialTheme.colorScheme.tertiary, // text-slate-500 / text-slate-400
+                color = MaterialTheme.colorScheme.tertiary,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 32.dp) // max-w-[280px] mx-auto
+                modifier = Modifier.padding(horizontal = 32.dp)
             )
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // --- 3. Botón y Privacidad ---
             PartnerLinkButton(
                 title = stringResource(R.string.go_to_pairing_title),
                 description = stringResource(R.string.go_to_pairing_description),
                 icon = Icons.Filled.AddLink,
-                onClick = { navController.navigate(Login) }
+                onClick = { navController.navigate(Login) },
+                modifier = Modifier.testTag("start_button")
             )
 
-            Spacer(modifier = Modifier.height(32.dp)) // mt-8
+            Spacer(modifier = Modifier.height(32.dp))
 
-            // Indicador de seguridad
             PrivacyIndicator()
 
-            Spacer(modifier = Modifier.height(48.dp)) // pb-12
+            Spacer(modifier = Modifier.height(48.dp))
         }
     }
-
 }
-
 
 @Preview(showBackground = true)
 @Composable

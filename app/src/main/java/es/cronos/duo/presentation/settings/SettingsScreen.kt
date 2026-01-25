@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -39,6 +40,9 @@ import es.cronos.duo.components.CentralImage
 import es.cronos.duo.components.PartnerLinkButton
 import es.cronos.duo.components.PrivacyIndicator
 import es.cronos.duo.components.TitleApp
+import es.cronos.duo.presentation.navigation.Pairing
+import es.cronos.duo.presentation.navigation.Semaphore
+import es.cronos.duo.presentation.navigation.Welcome
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -58,13 +62,12 @@ fun SettingsScreen(
                     onClick = {
                         showUnlinkDialog = false
                         viewModel.onUnlinkPartner()
-                        navController.navigate("pairing") {
-                            // Al desvincular, volvemos a la pantalla de emparejamiento
-                            // eliminando el historial hasta pairing para evitar volver atrás
-                            popUpTo("semaphore") { inclusive = true }
+                        navController.navigate(Pairing) {
+                            popUpTo(Semaphore) { inclusive = true }
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                    modifier = Modifier.testTag("confirm_unlink_button")
                 ) {
                     Text(stringResource(R.string.action_unlink))
                 }
@@ -73,7 +76,8 @@ fun SettingsScreen(
                 TextButton(onClick = { showUnlinkDialog = false }) {
                     Text(stringResource(R.string.action_cancel))
                 }
-            }
+            },
+            modifier = Modifier.testTag("unlink_dialog")
         )
     }
 
@@ -82,6 +86,7 @@ fun SettingsScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 24.dp)
+            .testTag("settings_screen")
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -91,13 +96,11 @@ fun SettingsScreen(
             TitleApp()
             Spacer(modifier = Modifier.weight(1f))
 
-            // --- 1. Imagen Central ---
             val primaryColor = MaterialTheme.colorScheme.primary
             CentralImage(primaryColor)
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            // --- 2. Título de la pantalla ---
             Text(
                 text = stringResource(R.string.settings_title),
                 fontSize = 22.sp,
@@ -108,9 +111,6 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // --- 3. Botones de Acción ---
-            
-            // Botón Desvincular
             PartnerLinkButton(
                 title = stringResource(R.string.settings_unlink_title),
                 description = stringResource(R.string.settings_unlink_description),
@@ -118,43 +118,42 @@ fun SettingsScreen(
                 onClick = {
                     showUnlinkDialog = true
                 },
+                modifier = Modifier.testTag("unlink_partner_button")
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Botón Cerrar Sesión
             PartnerLinkButton(
                 title = stringResource(R.string.settings_logout_title),
                 description = stringResource(R.string.settings_logout_description),
                 icon = Icons.AutoMirrored.Filled.Logout,
                 onClick = {
                     viewModel.onLogout()
-                    navController.navigate("welcome") {
-                        // Al hacer logout, limpiamos toda la pila de navegación
+                    navController.navigate(Welcome) {
                         popUpTo(0) { inclusive = true }
                     }
-                }
+                },
+                modifier = Modifier.testTag("logout_button")
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Indicador de seguridad
             PrivacyIndicator()
 
             Spacer(modifier = Modifier.height(48.dp))
         }
 
-        // Botón discreto "Atrás" en la esquina superior izquierda
         IconButton(
             onClick = { navController.popBackStack() },
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .padding(top = 16.dp)
+                .testTag("back_button")
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = "Volver",
-                tint = MaterialTheme.colorScheme.tertiary // Color discreto consistente con el resto de la app
+                tint = MaterialTheme.colorScheme.tertiary
             )
         }
     }
