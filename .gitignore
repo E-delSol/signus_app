@@ -7,9 +7,23 @@
 /.idea/workspace.xml
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
+.idea/
+.kotlin/
 .DS_Store
 /build
 /captures
 .externalNativeBuild
 .cxx
 local.properties
+
+# Firebase
+app/google-services.json
+app/src/debug/google-services.json
+app/src/release/google-services.json
+
+# Firebase local config (si aplica)
+.firebaserc
+firebase.json
+
+**/serviceAccount*.json
+**/*secret*.json

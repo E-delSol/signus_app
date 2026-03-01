@@ -8,9 +8,7 @@ plugins {
 
 android {
     namespace = "es.cronos.duo"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "es.cronos.duo"
@@ -23,14 +21,25 @@ android {
     }
 
     buildTypes {
-        release {
+        debug {
+            // Se mantiene el applicationId sin sufijo para que coincida con el google-services.json actual
+            applicationIdSuffix = ""
+            versionNameSuffix = "-debug"
             isMinifyEnabled = false
+            manifestPlaceholders["appName"] = "Signus Debug"
+        }
+        release {
+            manifestPlaceholders += mapOf("appName" to "Signus")
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
+    
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -40,6 +49,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
