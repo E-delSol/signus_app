@@ -31,6 +31,7 @@
     <string name="login_toggle_to_login">¿Ya tienes cuenta? Inicia Sesión</string>
     <string name="login_toggle_to_register">¿No tienes cuenta? Regístrate</string>
     <string name="field_email">Email</string>
+    <string name="field_display_name">Nombre para mostrar</string>
     <string name="field_password">Contraseña</string>
     <string name="action_register">Registrarse</string>
     <string name="action_login">Iniciar Sesión</string>

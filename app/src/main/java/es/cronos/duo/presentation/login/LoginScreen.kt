@@ -78,8 +78,8 @@ fun LoginScreen(
         GoogleAuthUiClient(context)
     }
 
-    LaunchedEffect(state.user) {
-        if (state.user != null) {
+    LaunchedEffect(state.isLoggedIn, state.user) {
+        if (state.isLoggedIn || state.user != null) {
             navController.navigate(Splash) {
                 popUpTo(Login) { inclusive = true }
             }
@@ -177,7 +177,9 @@ fun LoginScreen(
             } else if (showEmailForm) {
                 EmailLoginForm(
                     onLoginClick = { email, password -> viewModel.login(email, password) },
-                    onRegisterClick = { email, password -> viewModel.register(email, password) },
+                    onRegisterClick = { email, password, displayName ->
+                        viewModel.register(email, password, displayName)
+                    },
                     onBackClick = { showEmailForm = false }
                 )
             } else {
@@ -234,11 +236,12 @@ fun LoginSelectionButtons(
 @Composable
 fun EmailLoginForm(
     onLoginClick: (String, String) -> Unit,
-    onRegisterClick: (String, String) -> Unit,
+    onRegisterClick: (String, String, String) -> Unit,
     onBackClick: () -> Unit
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var displayName by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var isRegisterMode by remember { mutableStateOf(false) }
 
@@ -262,6 +265,19 @@ fun EmailLoginForm(
         )
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        if (isRegisterMode) {
+            OutlinedTextField(
+                value = displayName,
+                onValueChange = { displayName = it },
+                label = { Text(stringResource(R.string.field_display_name)) },
+                modifier = Modifier.fillMaxWidth().testTag("display_name_field"),
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
         OutlinedTextField(
             value = password,
@@ -292,7 +308,7 @@ fun EmailLoginForm(
             icon = if (isRegisterMode) Icons.Filled.AppRegistration else Icons.AutoMirrored.Filled.Login,
             onClick = { 
                 if (isRegisterMode) {
-                    onRegisterClick(email, password)
+                    onRegisterClick(email, password, displayName)
                 } else {
                     onLoginClick(email, password)
                 }

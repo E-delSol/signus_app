@@ -4,6 +4,7 @@ import es.cronos.duo.domain.model.User
 
 data class LoginState(
     val isLoading: Boolean = false,
+    val isLoggedIn: Boolean = false,
     val user: User? = null,
     val error: String? = null
 )

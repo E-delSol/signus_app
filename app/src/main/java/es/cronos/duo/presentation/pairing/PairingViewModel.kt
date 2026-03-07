@@ -2,9 +2,12 @@ package es.cronos.duo.presentation.pairing
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import es.cronos.duo.domain.repository.UserRepository
+import es.cronos.duo.domain.model.LinkSessionStatus
 import es.cronos.duo.domain.usecase.GenerateQrCodeUseCase
+import es.cronos.duo.domain.usecase.GetLinkSessionStatusUseCase
 import es.cronos.duo.domain.usecase.LinkPartnerUseCase
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,41 +17,104 @@ import kotlinx.coroutines.launch
 class PairingViewModel(
     private val generateQrCodeUseCase: GenerateQrCodeUseCase,
     private val linkPartnerUseCase: LinkPartnerUseCase,
-    private val userRepository: UserRepository
+    private val getLinkSessionStatusUseCase: GetLinkSessionStatusUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PairingState())
     val state: StateFlow<PairingState> = _state.asStateFlow()
+    private var statusPollingJob: Job? = null
 
-    init {
-        listenForPairingChanges()
+    fun onGenerateQrClick() {
+        viewModelScope.launch {
+            runCatching { generateQrCodeUseCase() }
+                .onSuccess { linkSession ->
+                    startSessionStatusPolling(linkSession.sessionId)
+                    _state.update {
+                        it.copy(
+                            linkCode = linkSession.linkCode,
+                            sessionId = linkSession.sessionId,
+                            showQrCode = true,
+                            isPollingStatus = true,
+                            errorMessage = null
+                        )
+                    }
+                }
+                .onFailure {
+                    _state.update { state ->
+                        state.copy(errorMessage = "No se pudo crear la sesión de vinculación")
+                    }
+                }
+        }
     }
 
-    private fun listenForPairingChanges() {
+    fun onDismissQr() {
+        stopSessionStatusPolling()
+        _state.update { it.copy(showQrCode = false, isPollingStatus = false, linkCode = null, sessionId = null) }
+    }
+
+    fun onCodeScanned(code: String) {
         viewModelScope.launch {
-            userRepository.observeUser().collect { user ->
-                if (!user?.partnerId.isNullOrBlank()) {
-                    _state.update { it.copy(isPaired = true) }
+            val linked = linkPartnerUseCase(code)
+            _state.update { state ->
+                if (linked) {
+                    state.copy(isPaired = true, errorMessage = null)
+                } else {
+                    state.copy(errorMessage = "No se pudo confirmar la sesión de vinculación")
                 }
             }
         }
     }
 
-    fun onGenerateQrClick() {
-        viewModelScope.launch {
-            val code = generateQrCodeUseCase()
-            _state.update { it.copy(uniqueCode = code, showQrCode = true) }
+    fun clearError() {
+        _state.update { it.copy(errorMessage = null) }
+    }
+
+    override fun onCleared() {
+        stopSessionStatusPolling()
+        super.onCleared()
+    }
+
+    private fun startSessionStatusPolling(sessionId: String) {
+        stopSessionStatusPolling()
+        statusPollingJob = viewModelScope.launch {
+            while (true) {
+                val status = runCatching { getLinkSessionStatusUseCase(sessionId) }.getOrNull()
+                when (status) {
+                    LinkSessionStatus.CONFIRMED -> {
+                        _state.update {
+                            it.copy(
+                                isPaired = true,
+                                showQrCode = false,
+                                isPollingStatus = false,
+                                errorMessage = null
+                            )
+                        }
+                        break
+                    }
+                    LinkSessionStatus.EXPIRED -> {
+                        _state.update {
+                            it.copy(
+                                showQrCode = false,
+                                isPollingStatus = false,
+                                errorMessage = "La sesión de vinculación expiró"
+                            )
+                        }
+                        break
+                    }
+                    LinkSessionStatus.PENDING -> Unit
+                    null -> {
+                        _state.update {
+                            it.copy(errorMessage = "No se pudo consultar la sesión de vinculación")
+                        }
+                    }
+                }
+                delay(2000L)
+            }
         }
     }
 
-    fun onDismissQr() {
-        _state.update { it.copy(showQrCode = false) }
-    }
-
-    fun onCodeScanned(code: String) {
-        viewModelScope.launch {
-            // The listener will automatically update the state, so we just call the use case
-            linkPartnerUseCase(code)
-        }
+    private fun stopSessionStatusPolling() {
+        statusPollingJob?.cancel()
+        statusPollingJob = null
     }
 }
