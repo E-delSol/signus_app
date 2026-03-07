@@ -9,6 +9,7 @@ import es.cronos.duo.data.network.NetworkHttpClientProvider
 import es.cronos.duo.data.remote.AuthApi
 import es.cronos.duo.data.remote.HealthApi
 import es.cronos.duo.data.remote.PairingApi
+import es.cronos.duo.data.remote.StatusApi
 import es.cronos.duo.data.repository.AuthRepositoryImpl
 import es.cronos.duo.data.repository.HealthRepositoryImpl
 import es.cronos.duo.data.repository.QrCodeRepositoryImpl
@@ -44,6 +45,7 @@ val appModule = module {
     singleOf(::AuthApi)
     singleOf(::HealthApi)
     singleOf(::PairingApi)
+    singleOf(::StatusApi)
 
     // Repositories
     singleOf(::AuthRepositoryImpl) bind AuthRepository::class

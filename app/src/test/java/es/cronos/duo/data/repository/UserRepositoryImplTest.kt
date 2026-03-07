@@ -8,6 +8,7 @@ import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
+import es.cronos.duo.data.remote.StatusApi
 import es.cronos.duo.domain.model.User
 import io.mockk.coEvery
 import io.mockk.every
@@ -24,12 +25,13 @@ class UserRepositoryImplTest {
     private val firestore: FirebaseFirestore = mockk()
     private val auth: FirebaseAuth = mockk()
     private val fcm: FirebaseMessaging = mockk()
+    private val statusApi: StatusApi = mockk()
     private lateinit var userRepository: UserRepositoryImpl
 
     @Before
     fun setup() {
         mockkStatic("kotlinx.coroutines.tasks.TasksKt")
-        userRepository = UserRepositoryImpl(firestore, auth, fcm)
+        userRepository = UserRepositoryImpl(firestore, auth, fcm, statusApi)
     }
 
     @Test

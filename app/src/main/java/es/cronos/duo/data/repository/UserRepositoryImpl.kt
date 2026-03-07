@@ -4,6 +4,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.messaging.FirebaseMessaging
+import es.cronos.duo.data.remote.StatusApi
 import es.cronos.duo.domain.model.SemaphoreStatus
 import es.cronos.duo.domain.model.User
 import es.cronos.duo.domain.repository.UserRepository
@@ -15,7 +16,8 @@ import kotlinx.coroutines.tasks.await
 class UserRepositoryImpl(
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
     private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
-    private val fcm: FirebaseMessaging = FirebaseMessaging.getInstance()
+    private val fcm: FirebaseMessaging = FirebaseMessaging.getInstance(),
+    private val statusApi: StatusApi
 ) : UserRepository {
 
     private val currentUserUid: String?
@@ -50,22 +52,9 @@ class UserRepositoryImpl(
     }
 
     override suspend fun updateUserStatus(status: SemaphoreStatus, expirationTimestamp: Long?, statusDuration: Long?) {
-        currentUserUid?.let {
-            val updates = mutableMapOf<String, Any>("status" to status.name)
-            if (expirationTimestamp != null) {
-                updates["statusExpiration"] = expirationTimestamp
-            } else {
-                updates["statusExpiration"] = com.google.firebase.firestore.FieldValue.delete()
-            }
-            
-            if (statusDuration != null) {
-                updates["statusDuration"] = statusDuration
-            } else {
-                updates["statusDuration"] = com.google.firebase.firestore.FieldValue.delete()
-            }
-
-            firestore.collection("users").document(it).set(updates, SetOptions.merge()).await()
-        }
+        // Backend PATCH /status solo soporta el estado simple por ahora.
+        // expirationTimestamp y statusDuration se mantienen en la firma para no romper el flujo actual.
+        statusApi.updateStatus(status.name)
     }
 
     override fun getPartnerStatus(partnerId: String): Flow<User?> = callbackFlow {
