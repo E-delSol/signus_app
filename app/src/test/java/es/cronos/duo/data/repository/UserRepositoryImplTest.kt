@@ -8,6 +8,7 @@ import es.cronos.duo.data.remote.PartnerApi
 import es.cronos.duo.data.remote.StatusApi
 import es.cronos.duo.data.remote.dto.MeResponseDto
 import es.cronos.duo.data.remote.dto.PartnerResponseDto
+import es.cronos.duo.data.remote.socket.SemaphoreSocket
 import es.cronos.duo.domain.model.SemaphoreStatus
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -24,12 +25,13 @@ class UserRepositoryImplTest {
     private val fcm: FirebaseMessaging = mockk()
     private val meApi: MeApi = mockk()
     private val partnerApi: PartnerApi = mockk()
+    private val semaphoreSocket: SemaphoreSocket = mockk()
     private val statusApi: StatusApi = mockk()
     private lateinit var userRepository: UserRepositoryImpl
 
     @Before
     fun setup() {
-        userRepository = UserRepositoryImpl(firestore, auth, fcm, meApi, partnerApi, statusApi)
+        userRepository = UserRepositoryImpl(firestore, auth, fcm, meApi, partnerApi, semaphoreSocket, statusApi)
     }
 
     @Test

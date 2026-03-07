@@ -4,15 +4,18 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.messaging.FirebaseMessaging
+import android.util.Log
 import es.cronos.duo.data.remote.MeApi
 import es.cronos.duo.data.remote.PartnerApi
 import es.cronos.duo.data.remote.StatusApi
+import es.cronos.duo.data.remote.socket.SemaphoreSocket
 import es.cronos.duo.domain.model.SemaphoreStatus
 import es.cronos.duo.domain.model.User
 import es.cronos.duo.domain.repository.UserRepository
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.tasks.await
@@ -23,6 +26,7 @@ class UserRepositoryImpl(
     private val fcm: FirebaseMessaging = FirebaseMessaging.getInstance(),
     private val meApi: MeApi,
     private val partnerApi: PartnerApi,
+    private val semaphoreSocket: SemaphoreSocket,
     private val statusApi: StatusApi
 ) : UserRepository {
 
@@ -34,11 +38,8 @@ class UserRepositoryImpl(
     }
 
     override fun observeUser(): Flow<User?> = flow {
+        // Initial load only. Polling /me is no longer the primary update mechanism.
         emit(fetchCurrentUser())
-        while (currentCoroutineContext().isActive) {
-            delay(3000L)
-            emit(fetchCurrentUser())
-        }
     }
 
     override suspend fun updateUserStatus(status: SemaphoreStatus, expirationTimestamp: Long?, statusDuration: Long?) {
@@ -48,12 +49,25 @@ class UserRepositoryImpl(
     }
 
     override fun getPartnerStatus(partnerId: String): Flow<User?> = flow {
-        // partnerId is kept for compatibility with the current domain contract.
-        // Backend resolves partner from JWT, so the value is not used in this migration stage.
         emit(fetchPartnerUser())
-        while (currentCoroutineContext().isActive) {
-            delay(3000L)
-            emit(fetchPartnerUser())
+        try {
+            semaphoreSocket.observePartnerStatusChangedEvents().collect { event ->
+                val partnerUser = User(
+                    id = event.partnerId ?: partnerId,
+                    partnerId = null,
+                    status = event.status?.let(::toSemaphoreStatus),
+                    statusExpiration = event.statusExpiration,
+                    statusDuration = event.statusDuration
+                )
+                Log.d(TAG, "Partner status updated via websocket")
+                emit(partnerUser)
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Partner websocket unavailable, using polling fallback", e)
+            while (currentCoroutineContext().isActive) {
+                delay(3000L)
+                emit(fetchPartnerUser())
+            }
         }
     }
 
@@ -103,5 +117,9 @@ class UserRepositoryImpl(
 
     private fun toSemaphoreStatus(status: String): SemaphoreStatus? {
         return runCatching { SemaphoreStatus.valueOf(status) }.getOrNull()
+    }
+
+    companion object {
+        private const val TAG = "UserRepositoryImpl"
     }
 }

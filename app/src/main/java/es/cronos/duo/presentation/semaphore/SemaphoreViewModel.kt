@@ -65,7 +65,7 @@ class SemaphoreViewModel(
                 } else {
                     if (partnerId != currentPartnerId) {
                         currentPartnerId = partnerId
-                        startPartnerStatusPolling(partnerId)
+                        startPartnerStatusSubscription(partnerId)
                     }
                 }
             }
@@ -90,7 +90,11 @@ class SemaphoreViewModel(
     private fun revertStatus(currentStatus: SemaphoreStatus) {
         val newStatus = currentStatus.next()
         viewModelScope.launch {
-            updateUserStatusUseCase(newStatus, null, null)
+            runCatching {
+                updateUserStatusUseCase(newStatus, null, null)
+            }.onSuccess {
+                updateOwnStatusLocally(newStatus, null, null)
+            }
         }
     }
 
@@ -102,11 +106,19 @@ class SemaphoreViewModel(
             val expirationTimestamp = System.currentTimeMillis() + duration
             pendingDurationMillis = null
             viewModelScope.launch {
-                updateUserStatusUseCase(newStatus, expirationTimestamp, duration)
+                runCatching {
+                    updateUserStatusUseCase(newStatus, expirationTimestamp, duration)
+                }.onSuccess {
+                    updateOwnStatusLocally(newStatus, expirationTimestamp, duration)
+                }
             }
         } else {
             viewModelScope.launch {
-                updateUserStatusUseCase(newStatus, null, null)
+                runCatching {
+                    updateUserStatusUseCase(newStatus, null, null)
+                }.onSuccess {
+                    updateOwnStatusLocally(newStatus, null, null)
+                }
             }
         }
     }
@@ -129,7 +141,28 @@ class SemaphoreViewModel(
         super.onCleared()
     }
 
-    private fun startPartnerStatusPolling(partnerId: String) {
+    private fun updateOwnStatusLocally(
+        status: SemaphoreStatus,
+        statusExpiration: Long?,
+        statusDuration: Long?
+    ) {
+        _state.update {
+            it.copy(
+                userStatus = status,
+                userStatusExpiration = statusExpiration,
+                userStatusDuration = statusDuration
+            )
+        }
+
+        if (statusExpiration != null) {
+            checkExpiration(status, statusExpiration)
+        } else {
+            expirationJob?.cancel()
+            expirationJob = null
+        }
+    }
+
+    private fun startPartnerStatusSubscription(partnerId: String) {
         partnerStatusJob?.cancel()
         partnerStatusJob = viewModelScope.launch {
             getPartnerStatusUseCase(partnerId).collect { partnerUser ->
