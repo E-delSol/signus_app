@@ -4,19 +4,25 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.messaging.FirebaseMessaging
+import es.cronos.duo.data.remote.MeApi
+import es.cronos.duo.data.remote.PartnerApi
 import es.cronos.duo.data.remote.StatusApi
 import es.cronos.duo.domain.model.SemaphoreStatus
 import es.cronos.duo.domain.model.User
 import es.cronos.duo.domain.repository.UserRepository
-import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.tasks.await
 
 class UserRepositoryImpl(
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
     private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
     private val fcm: FirebaseMessaging = FirebaseMessaging.getInstance(),
+    private val meApi: MeApi,
+    private val partnerApi: PartnerApi,
     private val statusApi: StatusApi
 ) : UserRepository {
 
@@ -24,31 +30,15 @@ class UserRepositoryImpl(
         get() = auth.currentUser?.uid
 
     override suspend fun getUser(): User? {
-        return currentUserUid?.let { uid ->
-            val document = firestore.collection("users").document(uid).get().await()
-            document.toObject(User::class.java)
-        }
+        return fetchCurrentUser()
     }
 
-    override fun observeUser(): Flow<User?> = callbackFlow {
-        val uid = currentUserUid
-        if (uid == null) {
-            trySend(null)
-            close()
-            return@callbackFlow
+    override fun observeUser(): Flow<User?> = flow {
+        emit(fetchCurrentUser())
+        while (currentCoroutineContext().isActive) {
+            delay(3000L)
+            emit(fetchCurrentUser())
         }
-
-        val registration = firestore.collection("users").document(uid)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    close(error)
-                    return@addSnapshotListener
-                }
-                val user = snapshot?.toObject(User::class.java)
-                trySend(user)
-            }
-
-        awaitClose { registration.remove() }
     }
 
     override suspend fun updateUserStatus(status: SemaphoreStatus, expirationTimestamp: Long?, statusDuration: Long?) {
@@ -57,23 +47,14 @@ class UserRepositoryImpl(
         statusApi.updateStatus(status.name)
     }
 
-    override fun getPartnerStatus(partnerId: String): Flow<User?> = callbackFlow {
-        val docRef = firestore.collection("users").document(partnerId)
-
-        val subscription = docRef.addSnapshotListener { snapshot, e ->
-            if (e != null) {
-                close(e)
-                return@addSnapshotListener
-            }
-            if (snapshot != null && snapshot.exists()) {
-                val user = snapshot.toObject(User::class.java)
-                trySend(user)
-            } else {
-                trySend(null) // Partner not found
-            }
+    override fun getPartnerStatus(partnerId: String): Flow<User?> = flow {
+        // partnerId is kept for compatibility with the current domain contract.
+        // Backend resolves partner from JWT, so the value is not used in this migration stage.
+        emit(fetchPartnerUser())
+        while (currentCoroutineContext().isActive) {
+            delay(3000L)
+            emit(fetchPartnerUser())
         }
-
-        awaitClose { subscription.remove() }
     }
 
     override suspend fun saveFcmToken(token: String) {
@@ -90,5 +71,37 @@ class UserRepositoryImpl(
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    private suspend fun fetchCurrentUser(): User? {
+        return meApi.getMe().let { response ->
+            User(
+                id = response.id,
+                email = response.email,
+                displayName = response.displayName,
+                partnerId = response.partnerId,
+                status = response.status?.let(::toSemaphoreStatus),
+                statusExpiration = response.statusExpiration,
+                statusDuration = response.statusDuration
+            )
+        }
+    }
+
+    private suspend fun fetchPartnerUser(): User? {
+        return partnerApi.getPartner().let { response ->
+            User(
+                id = response.id,
+                email = response.email,
+                displayName = response.displayName,
+                partnerId = response.partnerId,
+                status = response.status?.let(::toSemaphoreStatus),
+                statusExpiration = response.statusExpiration,
+                statusDuration = response.statusDuration
+            )
+        }
+    }
+
+    private fun toSemaphoreStatus(status: String): SemaphoreStatus? {
+        return runCatching { SemaphoreStatus.valueOf(status) }.getOrNull()
     }
 }

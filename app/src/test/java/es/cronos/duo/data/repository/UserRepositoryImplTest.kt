@@ -1,20 +1,17 @@
 package es.cronos.duo.data.repository
 
-import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
+import es.cronos.duo.data.remote.MeApi
+import es.cronos.duo.data.remote.PartnerApi
 import es.cronos.duo.data.remote.StatusApi
-import es.cronos.duo.domain.model.User
+import es.cronos.duo.data.remote.dto.MeResponseDto
+import es.cronos.duo.data.remote.dto.PartnerResponseDto
+import es.cronos.duo.domain.model.SemaphoreStatus
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
-import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.amshove.kluent.shouldBeEqualTo
 import org.junit.Before
@@ -25,79 +22,62 @@ class UserRepositoryImplTest {
     private val firestore: FirebaseFirestore = mockk()
     private val auth: FirebaseAuth = mockk()
     private val fcm: FirebaseMessaging = mockk()
+    private val meApi: MeApi = mockk()
+    private val partnerApi: PartnerApi = mockk()
     private val statusApi: StatusApi = mockk()
     private lateinit var userRepository: UserRepositoryImpl
 
     @Before
     fun setup() {
-        mockkStatic("kotlinx.coroutines.tasks.TasksKt")
-        userRepository = UserRepositoryImpl(firestore, auth, fcm, statusApi)
+        userRepository = UserRepositoryImpl(firestore, auth, fcm, meApi, partnerApi, statusApi)
     }
 
     @Test
-    fun `given user is logged in when getUser is called then return user from firestore`() = runTest {
-        // Given
-        val uid = "user123"
-        val mockFirebaseUser: FirebaseUser = mockk {
-            every { this@mockk.uid } returns uid
-        }
-        every { auth.currentUser } returns mockFirebaseUser
+    fun `given backend me response when getUser is called then maps to domain user`() = runTest {
+        coEvery { meApi.getMe() } returns MeResponseDto(
+            id = "user123",
+            email = "test@example.com",
+            displayName = "Test User",
+            partnerId = "partner123",
+            status = "AVAILABLE",
+            statusExpiration = 12345L,
+            statusDuration = 60000L
+        )
 
-        val mockDocumentSnapshot: DocumentSnapshot = mockk {
-            every { toObject(User::class.java) } returns User(id = uid, email = "test@example.com")
-        }
-        val mockTask: Task<DocumentSnapshot> = mockk()
-        val mockDocRef: DocumentReference = mockk()
-        val mockCollRef: CollectionReference = mockk()
-
-        every { firestore.collection("users") } returns mockCollRef
-        every { mockCollRef.document(uid) } returns mockDocRef
-        every { mockDocRef.get() } returns mockTask
-        coEvery { mockTask.await() } returns mockDocumentSnapshot
-
-        // When
         val result = userRepository.getUser()
 
-        // Then
-        result?.id shouldBeEqualTo uid
+        result?.id shouldBeEqualTo "user123"
         result?.email shouldBeEqualTo "test@example.com"
+        result?.displayName shouldBeEqualTo "Test User"
+        result?.partnerId shouldBeEqualTo "partner123"
+        result?.status shouldBeEqualTo SemaphoreStatus.AVAILABLE
+        result?.statusExpiration shouldBeEqualTo 12345L
+        result?.statusDuration shouldBeEqualTo 60000L
     }
 
     @Test
-    fun `given user is not logged in when getUser is called then return null`() = runTest {
-        // Given
-        every { auth.currentUser } returns null
+    fun `when backend me fails then getUser propagates the error`() = runTest {
+        coEvery { meApi.getMe() } throws Exception("Backend error")
 
-        // When
-        val result = userRepository.getUser()
-
-        // Then
-        result shouldBeEqualTo null
-    }
-
-    @Test
-    fun `when firestore fails then getUser propagates the error`() = runTest {
-        // Given
-        val uid = "user123"
-        val mockFirebaseUser: FirebaseUser = mockk {
-            every { this@mockk.uid } returns uid
-        }
-        every { auth.currentUser } returns mockFirebaseUser
-
-        val mockTask: Task<DocumentSnapshot> = mockk()
-        val mockDocRef: DocumentReference = mockk()
-        val mockCollRef: CollectionReference = mockk()
-
-        every { firestore.collection("users") } returns mockCollRef
-        every { mockCollRef.document(uid) } returns mockDocRef
-        every { mockDocRef.get() } returns mockTask
-        coEvery { mockTask.await() } throws Exception("Firestore error")
-
-        // When & Then
         try {
             userRepository.getUser()
         } catch (e: Exception) {
-            e.message shouldBeEqualTo "Firestore error"
+            e.message shouldBeEqualTo "Backend error"
         }
+    }
+
+    @Test
+    fun `given backend partner response when getPartnerStatus is collected then maps to domain user`() = runTest {
+        coEvery { partnerApi.getPartner() } returns PartnerResponseDto(
+            id = "partner123",
+            status = "BUSY",
+            statusExpiration = 98765L
+        )
+
+        val result = userRepository.getPartnerStatus("ignored-partner-id").first()
+
+        result?.id shouldBeEqualTo "partner123"
+        result?.status shouldBeEqualTo SemaphoreStatus.BUSY
+        result?.statusExpiration shouldBeEqualTo 98765L
     }
 }

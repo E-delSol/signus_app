@@ -33,13 +33,14 @@ class SemaphoreViewModel(
 
     private var pendingDurationMillis: Long? = null
     private var expirationJob: Job? = null
+    private var partnerStatusJob: Job? = null
+    private var currentPartnerId: String? = null
+    private var previousPartnerStatus: SemaphoreStatus? = null
 
     init {
         viewModelScope.launch {
             // Sync FCM token using the repository (abstracted from Firebase)
             userRepository.syncFcmToken()
-
-            var previousPartnerStatus: SemaphoreStatus? = null
 
             observeUserUseCase().collectLatest { user ->
                 _state.update { it.copy(
@@ -53,21 +54,18 @@ class SemaphoreViewModel(
 
                 val partnerId = user?.partnerId
                 if (partnerId.isNullOrBlank()) {
-                    if (_state.value.isPaired) { // Was paired, now is not
+                    if (currentPartnerId != null) {
                         viewModelScope.launch { _eventFlow.emit(UiEvent.ShowUnlinkedDialog) }
                     }
+                    currentPartnerId = null
+                    previousPartnerStatus = null
+                    partnerStatusJob?.cancel()
+                    partnerStatusJob = null
                     _state.update { it.copy(partnerStatus = SemaphoreStatus.BUSY, partnerStatusExpiration = null) }
                 } else {
-                    getPartnerStatusUseCase(partnerId).collect { partnerUser ->
-                        if (previousPartnerStatus != null && previousPartnerStatus != partnerUser?.status) {
-                            viewModelScope.launch { _eventFlow.emit(UiEvent.PlayNotificationSound) }
-                        }
-                        previousPartnerStatus = partnerUser?.status
-                        
-                        _state.update { it.copy(
-                            partnerStatus = partnerUser?.status,
-                            partnerStatusExpiration = partnerUser?.statusExpiration
-                        ) }
+                    if (partnerId != currentPartnerId) {
+                        currentPartnerId = partnerId
+                        startPartnerStatusPolling(partnerId)
                     }
                 }
             }
@@ -124,6 +122,31 @@ class SemaphoreViewModel(
 
     fun onShowTimerDialog() = viewModelScope.launch { _eventFlow.emit(UiEvent.ShowTimerDialog) }
     fun onDismissTimerDialog() = viewModelScope.launch { _eventFlow.emit(UiEvent.HideTimerDialog) }
+
+    override fun onCleared() {
+        expirationJob?.cancel()
+        partnerStatusJob?.cancel()
+        super.onCleared()
+    }
+
+    private fun startPartnerStatusPolling(partnerId: String) {
+        partnerStatusJob?.cancel()
+        partnerStatusJob = viewModelScope.launch {
+            getPartnerStatusUseCase(partnerId).collect { partnerUser ->
+                if (previousPartnerStatus != null && previousPartnerStatus != partnerUser?.status) {
+                    _eventFlow.emit(UiEvent.PlayNotificationSound)
+                }
+                previousPartnerStatus = partnerUser?.status
+
+                _state.update {
+                    it.copy(
+                        partnerStatus = partnerUser?.status,
+                        partnerStatusExpiration = partnerUser?.statusExpiration
+                    )
+                }
+            }
+        }
+    }
 
     sealed class UiEvent {
         object PlayNotificationSound : UiEvent()

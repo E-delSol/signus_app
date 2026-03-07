@@ -8,6 +8,8 @@ import es.cronos.duo.data.local.TokenStore
 import es.cronos.duo.data.network.NetworkHttpClientProvider
 import es.cronos.duo.data.remote.AuthApi
 import es.cronos.duo.data.remote.HealthApi
+import es.cronos.duo.data.remote.MeApi
+import es.cronos.duo.data.remote.PartnerApi
 import es.cronos.duo.data.remote.PairingApi
 import es.cronos.duo.data.remote.StatusApi
 import es.cronos.duo.data.repository.AuthRepositoryImpl
@@ -44,6 +46,8 @@ val appModule = module {
     single<HttpClient> { get<NetworkHttpClientProvider>().client }
     singleOf(::AuthApi)
     singleOf(::HealthApi)
+    singleOf(::MeApi)
+    singleOf(::PartnerApi)
     singleOf(::PairingApi)
     singleOf(::StatusApi)
 
