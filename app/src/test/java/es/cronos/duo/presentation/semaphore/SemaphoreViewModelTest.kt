@@ -12,7 +12,9 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -137,5 +139,23 @@ class SemaphoreViewModelTest {
         advanceUntilIdle()
 
         viewModel.state.value.isPaired shouldBeEqualTo false
+    }
+
+    @Test
+    fun `given realtime partner unlink when userFlow clears partnerId then show dialog and clear partner state`() = runTest {
+        val pairedUser = User(id = "1", partnerId = "partner123")
+        userFlow.tryEmit(pairedUser)
+        partnerFlow.tryEmit(User(id = "partner123", status = SemaphoreStatus.AVAILABLE))
+        initViewModel()
+        advanceUntilIdle()
+
+        val eventDeferred = async { viewModel.eventFlow.first() }
+
+        userFlow.tryEmit(User(id = "1", partnerId = null))
+        advanceUntilIdle()
+
+        viewModel.state.value.isPaired shouldBeEqualTo false
+        viewModel.state.value.partnerStatus shouldBeEqualTo null
+        eventDeferred.await() shouldBeEqualTo SemaphoreViewModel.UiEvent.ShowUnlinkedDialog
     }
 }

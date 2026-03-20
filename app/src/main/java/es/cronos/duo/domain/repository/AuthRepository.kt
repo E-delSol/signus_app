@@ -8,7 +8,7 @@ interface AuthRepository {
     suspend fun login(email: String, password: String): Resource<User>
     suspend fun register(email: String, password: String, displayName: String): Resource<User>
     fun isLoggedIn(): Boolean
-    fun logout()
+    suspend fun logout()
     suspend fun testProtectedEndpoint(): Resource<String>
     suspend fun signInWithGoogle(idToken: String): Resource<User>
     fun signOut()

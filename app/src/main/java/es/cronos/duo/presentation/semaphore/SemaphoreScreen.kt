@@ -133,11 +133,19 @@ fun SemaphoreScreen(
                     .aspectRatio(1f),
                 contentAlignment = Alignment.Center
             ) {
-                TrafficLight(
-                    partnerStatus = state.partnerStatus ?: SemaphoreStatus.BUSY,
-                    partnerStatusExpiration = state.partnerStatusExpiration,
-                    modifier = Modifier.fillMaxSize()
-                )
+                if (state.isPaired) {
+                    TrafficLight(
+                        partnerStatus = state.partnerStatus ?: SemaphoreStatus.BUSY,
+                        partnerStatusExpiration = state.partnerStatusExpiration,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Text(
+                        text = stringResource(R.string.connect_message),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.weight(0.5f))

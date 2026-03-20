@@ -1,45 +1,61 @@
 package es.cronos.duo.data.repository
 
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.SetOptions
-import com.google.firebase.messaging.FirebaseMessaging
 import android.util.Log
+import com.google.firebase.messaging.FirebaseMessaging
+import es.cronos.duo.BuildConfig
+import es.cronos.duo.data.local.TokenStore
+import es.cronos.duo.data.remote.DeviceApi
 import es.cronos.duo.data.remote.MeApi
 import es.cronos.duo.data.remote.PartnerApi
 import es.cronos.duo.data.remote.StatusApi
+import es.cronos.duo.data.remote.dto.UpsertDeviceTokenRequest
+import es.cronos.duo.data.remote.socket.PartnerUnlinkedSocketEvent
 import es.cronos.duo.data.remote.socket.SemaphoreSocket
 import es.cronos.duo.domain.model.SemaphoreStatus
 import es.cronos.duo.domain.model.User
 import es.cronos.duo.domain.repository.UserRepository
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.http.HttpStatusCode
+import java.util.concurrent.CancellationException
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.tasks.await
 
 class UserRepositoryImpl(
-    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
-    private val fcm: FirebaseMessaging = FirebaseMessaging.getInstance(),
+    private val tokenStore: TokenStore,
+    private val fcm: FirebaseMessaging,
+    private val deviceApi: DeviceApi,
     private val meApi: MeApi,
     private val partnerApi: PartnerApi,
     private val semaphoreSocket: SemaphoreSocket,
     private val statusApi: StatusApi
 ) : UserRepository {
-
-    private val currentUserUid: String?
-        get() = auth.currentUser?.uid
+    private val currentUser = MutableStateFlow<User?>(null)
 
     override suspend fun getUser(): User? {
-        return fetchCurrentUser()
+        return fetchCurrentUser().also { user ->
+            currentUser.value = user
+        }
     }
 
-    override fun observeUser(): Flow<User?> = flow {
-        // Initial load only. Polling /me is no longer the primary update mechanism.
-        emit(fetchCurrentUser())
+    override fun observeUser(): Flow<User?> = currentUser.onStart {
+        if (currentUser.value == null) {
+            getUser()
+        }
+    }
+
+    override suspend fun unlinkPartner() {
+        partnerApi.deletePartner()
+        currentUser.update { user ->
+            user?.copy(partnerId = null)
+        }
     }
 
     override suspend fun updateUserStatus(status: SemaphoreStatus, expirationTimestamp: Long?, statusDuration: Long?) {
@@ -51,18 +67,28 @@ class UserRepositoryImpl(
     override fun getPartnerStatus(partnerId: String): Flow<User?> = flow {
         emit(fetchPartnerUser())
         try {
-            semaphoreSocket.observePartnerStatusChangedEvents().collect { event ->
-                val partnerUser = User(
-                    id = event.partnerId ?: partnerId,
-                    partnerId = null,
-                    status = event.status?.let(::toSemaphoreStatus),
-                    statusExpiration = event.statusExpiration,
-                    statusDuration = event.statusDuration
-                )
-                Log.d(TAG, "Partner status updated via websocket")
-                emit(partnerUser)
+            semaphoreSocket.observePartnerEvents().collect { event ->
+                when (event) {
+                    is PartnerUnlinkedSocketEvent -> {
+                        Log.d(TAG, "Partner unlinked via websocket")
+                        currentUser.update { user -> user?.copy(partnerId = null) }
+                        emit(null)
+                    }
+                    is es.cronos.duo.data.remote.socket.SemaphoreStatusChangedSocketEvent -> {
+                        val partnerUser = User(
+                            id = event.partnerId ?: partnerId,
+                            partnerId = null,
+                            status = event.status?.let(::toSemaphoreStatus),
+                            statusExpiration = event.statusExpiration,
+                            statusDuration = event.statusDuration
+                        )
+                        Log.d(TAG, "Partner status updated via websocket")
+                        emit(partnerUser)
+                    }
+                }
             }
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             Log.w(TAG, "Partner websocket unavailable, using polling fallback", e)
             while (currentCoroutineContext().isActive) {
                 delay(3000L)
@@ -71,19 +97,43 @@ class UserRepositoryImpl(
         }
     }
 
-    override suspend fun saveFcmToken(token: String) {
-        currentUserUid?.let { uid ->
-            val data = mapOf("fcmToken" to token)
-            firestore.collection("users").document(uid).set(data, SetOptions.merge()).await()
+    override suspend fun registerOrUpdateDeviceToken(fcmToken: String) {
+        if (fcmToken.isBlank()) return
+        if (!isAuthenticated()) return
+
+        val request = UpsertDeviceTokenRequest(
+            deviceId = tokenStore.getOrCreateDeviceId(),
+            fcmToken = fcmToken,
+            appVersion = BuildConfig.VERSION_NAME
+        )
+
+        runCatching {
+            deviceApi.registerOrUpdateDeviceToken(request)
+        }.onFailure { error ->
+            Log.w(TAG, "Failed to register/update FCM token", error)
         }
     }
 
     override suspend fun syncFcmToken() {
-        try {
-            val token = fcm.token.await()
-            saveFcmToken(token)
-        } catch (e: Exception) {
-            e.printStackTrace()
+        if (!isAuthenticated()) return
+        runCatching {
+            fcm.token.await()
+        }.onSuccess { token ->
+            if (!token.isNullOrBlank()) {
+                registerOrUpdateDeviceToken(token)
+            }
+        }.onFailure { error ->
+            Log.w(TAG, "Failed to fetch FCM token", error)
+        }
+    }
+
+    override suspend fun deactivateDeviceToken(deviceId: String) {
+        if (!isAuthenticated()) return
+
+        runCatching {
+            deviceApi.deactivateDeviceToken(deviceId)
+        }.onFailure { error ->
+            Log.w(TAG, "Failed to deactivate FCM token", error)
         }
     }
 
@@ -102,16 +152,24 @@ class UserRepositoryImpl(
     }
 
     private suspend fun fetchPartnerUser(): User? {
-        return partnerApi.getPartner().let { response ->
-            User(
-                id = response.id,
-                email = response.email,
-                displayName = response.displayName,
-                partnerId = response.partnerId,
-                status = response.status?.let(::toSemaphoreStatus),
-                statusExpiration = response.statusExpiration,
-                statusDuration = response.statusDuration
-            )
+        return try {
+            partnerApi.getPartner().let { response ->
+                User(
+                    id = response.id,
+                    email = response.email,
+                    displayName = response.displayName,
+                    partnerId = response.partnerId,
+                    status = response.status?.let(::toSemaphoreStatus),
+                    statusExpiration = response.statusExpiration,
+                    statusDuration = response.statusDuration
+                )
+            }
+        } catch (e: ClientRequestException) {
+            if (e.response.status == HttpStatusCode.NotFound) {
+                null
+            } else {
+                throw e
+            }
         }
     }
 
@@ -121,5 +179,9 @@ class UserRepositoryImpl(
 
     companion object {
         private const val TAG = "UserRepositoryImpl"
+    }
+
+    private fun isAuthenticated(): Boolean {
+        return !tokenStore.getToken().isNullOrBlank()
     }
 }

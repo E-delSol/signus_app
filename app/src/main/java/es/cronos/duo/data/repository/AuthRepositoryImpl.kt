@@ -7,6 +7,7 @@ import es.cronos.duo.data.remote.AuthApi
 import es.cronos.duo.data.remote.dto.ErrorResponseDto
 import es.cronos.duo.domain.model.User
 import es.cronos.duo.domain.repository.AuthRepository
+import es.cronos.duo.domain.repository.UserRepository
 import es.cronos.duo.domain.util.Resource
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.ServerResponseException
@@ -20,7 +21,8 @@ import kotlin.coroutines.cancellation.CancellationException
 class AuthRepositoryImpl(
     private val authApi: AuthApi,
     private val tokenStore: TokenStore,
-    private val firebaseAuth: FirebaseAuth
+    private val firebaseAuth: FirebaseAuth,
+    private val userRepository: UserRepository
 ) : AuthRepository {
 
     override val currentUser: User?
@@ -41,6 +43,7 @@ class AuthRepositoryImpl(
         try {
             val response = authApi.login(email = email, password = password)
             tokenStore.saveToken(response.accessToken)
+            userRepository.syncFcmToken()
             return Resource.Success(
                 User(
                     id = "backend_user",
@@ -66,6 +69,7 @@ class AuthRepositoryImpl(
                 displayName = displayName
             )
             tokenStore.saveToken(response.accessToken)
+            userRepository.syncFcmToken()
             return Resource.Success(
                 User(
                     id = "backend_user",
@@ -88,7 +92,13 @@ class AuthRepositoryImpl(
         return !tokenStore.getToken().isNullOrBlank()
     }
 
-    override fun logout() {
+    override suspend fun logout() {
+        runCatching {
+            if (isLoggedIn()) {
+                val deviceId = tokenStore.getOrCreateDeviceId()
+                userRepository.deactivateDeviceToken(deviceId)
+            }
+        }
         tokenStore.clearToken()
         try {
             firebaseAuth.signOut()
@@ -129,7 +139,14 @@ class AuthRepositoryImpl(
     }
 
     override fun signOut() {
-        logout()
+        runCatching {
+            kotlinx.coroutines.runBlocking { logout() }
+        }.onFailure {
+            tokenStore.clearToken()
+            try {
+                firebaseAuth.signOut()
+            } catch (_: Exception) {}
+        }
     }
 
     private suspend fun parseErrorMessage(e: ClientRequestException): String? {

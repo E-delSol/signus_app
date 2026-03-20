@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import es.cronos.duo.domain.repository.AuthRepository
 import es.cronos.duo.domain.usecase.GetHealthUseCase
 import es.cronos.duo.domain.usecase.UnlinkPartnerUseCase
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 class SettingsViewModel(
@@ -12,6 +14,8 @@ class SettingsViewModel(
     private val unlinkPartnerUseCase: UnlinkPartnerUseCase,
     private val getHealthUseCase: GetHealthUseCase
 ) : ViewModel() {
+    private val _eventFlow = MutableSharedFlow<UiEvent>()
+    val eventFlow = _eventFlow.asSharedFlow()
 
     init {
         checkBackendHealth()
@@ -25,7 +29,11 @@ class SettingsViewModel(
 
     fun onUnlinkPartner() {
         viewModelScope.launch {
-            unlinkPartnerUseCase()
+            runCatching {
+                unlinkPartnerUseCase()
+            }.onSuccess {
+                _eventFlow.emit(UiEvent.UnlinkCompleted)
+            }
         }
     }
 
@@ -33,5 +41,9 @@ class SettingsViewModel(
         viewModelScope.launch {
             runCatching { getHealthUseCase() }.getOrNull()
         }
+    }
+
+    sealed class UiEvent {
+        object UnlinkCompleted : UiEvent()
     }
 }

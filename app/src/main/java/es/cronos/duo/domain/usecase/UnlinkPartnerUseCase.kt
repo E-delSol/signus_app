@@ -1,9 +1,9 @@
 package es.cronos.duo.domain.usecase
 
-import es.cronos.duo.domain.repository.QrCodeRepository
+import es.cronos.duo.domain.repository.UserRepository
 
-class UnlinkPartnerUseCase(private val repository: QrCodeRepository) {
+class UnlinkPartnerUseCase(private val userRepository: UserRepository) {
     suspend operator fun invoke() {
-        repository.deleteSession()
+        userRepository.unlinkPartner()
     }
 }

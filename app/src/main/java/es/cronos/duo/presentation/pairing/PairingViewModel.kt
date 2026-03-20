@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import es.cronos.duo.domain.model.LinkSessionStatus
 import es.cronos.duo.domain.usecase.GenerateQrCodeUseCase
+import es.cronos.duo.domain.usecase.GetUserUseCase
 import es.cronos.duo.domain.usecase.GetLinkSessionStatusUseCase
 import es.cronos.duo.domain.usecase.LinkPartnerUseCase
 import kotlinx.coroutines.Job
@@ -17,7 +18,8 @@ import kotlinx.coroutines.launch
 class PairingViewModel(
     private val generateQrCodeUseCase: GenerateQrCodeUseCase,
     private val linkPartnerUseCase: LinkPartnerUseCase,
-    private val getLinkSessionStatusUseCase: GetLinkSessionStatusUseCase
+    private val getLinkSessionStatusUseCase: GetLinkSessionStatusUseCase,
+    private val getUserUseCase: GetUserUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PairingState())
@@ -55,13 +57,13 @@ class PairingViewModel(
     fun onCodeScanned(code: String) {
         viewModelScope.launch {
             val linked = linkPartnerUseCase(code)
-            _state.update { state ->
-                if (linked) {
-                    state.copy(isPaired = true, errorMessage = null)
-                } else {
+            if (!linked) {
+                _state.update { state ->
                     state.copy(errorMessage = "No se pudo confirmar la sesión de vinculación")
                 }
+                return@launch
             }
+            syncPairedUserState()
         }
     }
 
@@ -81,14 +83,10 @@ class PairingViewModel(
                 val status = runCatching { getLinkSessionStatusUseCase(sessionId) }.getOrNull()
                 when (status) {
                     LinkSessionStatus.CONFIRMED -> {
-                        _state.update {
-                            it.copy(
-                                isPaired = true,
-                                showQrCode = false,
-                                isPollingStatus = false,
-                                errorMessage = null
-                            )
-                        }
+                        syncPairedUserState(
+                            showQrCode = false,
+                            isPollingStatus = false
+                        )
                         break
                     }
                     LinkSessionStatus.EXPIRED -> {
@@ -116,5 +114,26 @@ class PairingViewModel(
     private fun stopSessionStatusPolling() {
         statusPollingJob?.cancel()
         statusPollingJob = null
+    }
+
+    private suspend fun syncPairedUserState(
+        showQrCode: Boolean = _state.value.showQrCode,
+        isPollingStatus: Boolean = _state.value.isPollingStatus
+    ) {
+        val refreshedUser = runCatching { getUserUseCase() }.getOrNull()
+        val isPaired = !refreshedUser?.partnerId.isNullOrBlank()
+
+        _state.update { state ->
+            state.copy(
+                isPaired = isPaired,
+                showQrCode = showQrCode,
+                isPollingStatus = isPollingStatus,
+                errorMessage = if (isPaired) {
+                    null
+                } else {
+                    "La vinculación se confirmó, pero no se pudo sincronizar el usuario actualizado"
+                }
+            )
+        }
     }
 }

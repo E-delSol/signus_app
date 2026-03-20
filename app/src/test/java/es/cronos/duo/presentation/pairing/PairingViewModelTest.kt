@@ -2,7 +2,9 @@ package es.cronos.duo.presentation.pairing
 
 import es.cronos.duo.domain.model.LinkSession
 import es.cronos.duo.domain.model.LinkSessionStatus
+import es.cronos.duo.domain.model.User
 import es.cronos.duo.domain.usecase.GenerateQrCodeUseCase
+import es.cronos.duo.domain.usecase.GetUserUseCase
 import es.cronos.duo.domain.usecase.GetLinkSessionStatusUseCase
 import es.cronos.duo.domain.usecase.LinkPartnerUseCase
 import io.mockk.coEvery
@@ -26,6 +28,7 @@ class PairingViewModelTest {
     private val generateQrCodeUseCase: GenerateQrCodeUseCase = mockk()
     private val linkPartnerUseCase: LinkPartnerUseCase = mockk()
     private val getLinkSessionStatusUseCase: GetLinkSessionStatusUseCase = mockk()
+    private val getUserUseCase: GetUserUseCase = mockk()
 
     private lateinit var viewModel: PairingViewModel
 
@@ -37,7 +40,8 @@ class PairingViewModelTest {
         viewModel = PairingViewModel(
             generateQrCodeUseCase,
             linkPartnerUseCase,
-            getLinkSessionStatusUseCase
+            getLinkSessionStatusUseCase,
+            getUserUseCase
         )
     }
 
@@ -56,6 +60,7 @@ class PairingViewModelTest {
             expiresAt = "2026-03-06T12:00:00Z"
         )
         coEvery { getLinkSessionStatusUseCase(sessionId) } returns LinkSessionStatus.CONFIRMED
+        coEvery { getUserUseCase() } returns User(id = "user-1", partnerId = "partner-1")
 
         viewModel.onGenerateQrClick()
         advanceUntilIdle()
@@ -64,17 +69,20 @@ class PairingViewModelTest {
         viewModel.state.value.linkCode shouldBeEqualTo linkCode
         coVerify { generateQrCodeUseCase() }
         coVerify { getLinkSessionStatusUseCase(sessionId) }
+        coVerify { getUserUseCase() }
     }
 
     @Test
     fun `onCodeScanned confirms linking and sets paired state`() = runTest {
         val sessionId = "session-123"
         coEvery { linkPartnerUseCase(sessionId) } returns true
+        coEvery { getUserUseCase() } returns User(id = "user-1", partnerId = "partner-1")
 
         viewModel.onCodeScanned(sessionId)
         advanceUntilIdle()
 
         viewModel.state.value.isPaired shouldBeEqualTo true
         coVerify { linkPartnerUseCase(sessionId) }
+        coVerify { getUserUseCase() }
     }
 }

@@ -48,10 +48,10 @@ class LoginViewModelTest {
     }
 
     @Test
-    fun `given valid credentials when login is called then state should update to success with user`() = runTest {
+    fun `given login success when login is called then state is logged in with user`() = runTest {
         val email = "test@example.com"
         val password = "password"
-        val user = User(id = "1", email = email)
+        val user = User(id = "backend_user", email = email)
         every { loginWithEmailUseCase(email, password) } returns flowOf(
             Resource.Loading(),
             Resource.Success(user)
@@ -60,14 +60,17 @@ class LoginViewModelTest {
         viewModel.login(email, password)
         advanceUntilIdle()
 
-        viewModel.state.value shouldBeEqualTo LoginState(user = user)
+        viewModel.state.value shouldBeEqualTo LoginState(
+            isLoggedIn = true,
+            user = user
+        )
     }
 
     @Test
-    fun `given invalid credentials when login is called then state should update to error`() = runTest {
+    fun `given login error when login is called then state contains error`() = runTest {
         val email = "test@example.com"
         val password = "wrong_password"
-        val errorMessage = "Invalid credentials"
+        val errorMessage = "Credenciales inválidas"
         every { loginWithEmailUseCase(email, password) } returns flowOf(
             Resource.Loading(),
             Resource.Error(errorMessage)
@@ -80,39 +83,44 @@ class LoginViewModelTest {
     }
 
     @Test
-    fun `given register process when register is called and succeeds then state should update to success with user`() = runTest {
+    fun `given register success when register is called then state is logged in with user`() = runTest {
         val email = "new@example.com"
         val password = "password123"
-        val user = User(id = "2", email = email)
-        every { registerWithEmailUseCase(email, password) } returns flowOf(
+        val displayName = "New User"
+        val user = User(id = "backend_user", email = email, displayName = displayName)
+        every { registerWithEmailUseCase(email, password, displayName) } returns flowOf(
             Resource.Loading(),
             Resource.Success(user)
         )
 
-        viewModel.register(email, password)
+        viewModel.register(email, password, displayName)
         advanceUntilIdle()
 
-        viewModel.state.value shouldBeEqualTo LoginState(user = user)
+        viewModel.state.value shouldBeEqualTo LoginState(
+            isLoggedIn = true,
+            user = user
+        )
     }
 
     @Test
-    fun `given register process when register is called and fails then state should update to error`() = runTest {
+    fun `given register error when register is called then state contains error`() = runTest {
         val email = "new@example.com"
         val password = "password123"
-        val errorMessage = "Email already exists"
-        every { registerWithEmailUseCase(email, password) } returns flowOf(
+        val displayName = "New User"
+        val errorMessage = "Conflicto al registrarse"
+        every { registerWithEmailUseCase(email, password, displayName) } returns flowOf(
             Resource.Loading(),
             Resource.Error(errorMessage)
         )
 
-        viewModel.register(email, password)
+        viewModel.register(email, password, displayName)
         advanceUntilIdle()
 
         viewModel.state.value shouldBeEqualTo LoginState(error = errorMessage)
     }
 
     @Test
-    fun `given google id token when onGoogleSignIn is called and succeeds then state should update with user`() = runTest {
+    fun `given google sign in success when onGoogleSignIn is called then state is logged in with user`() = runTest {
         val idToken = "google_token"
         val user = User(id = "3", email = "google@example.com")
         coEvery { signInWithGoogleUseCase(idToken) } returns Resource.Success(user)
@@ -120,11 +128,14 @@ class LoginViewModelTest {
         viewModel.onGoogleSignIn(idToken)
         advanceUntilIdle()
 
-        viewModel.state.value shouldBeEqualTo LoginState(user = user)
+        viewModel.state.value shouldBeEqualTo LoginState(
+            isLoggedIn = true,
+            user = user
+        )
     }
 
     @Test
-    fun `given google id token when onGoogleSignIn is called and fails then state should update with error`() = runTest {
+    fun `given google sign in error when onGoogleSignIn is called then state contains error`() = runTest {
         val idToken = "google_token"
         val errorMessage = "Google sign in failed"
         coEvery { signInWithGoogleUseCase(idToken) } returns Resource.Error(errorMessage)

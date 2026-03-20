@@ -3,6 +3,7 @@ package es.cronos.duo.data.local
 import android.content.Context
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import java.util.UUID
 
 class TokenStore(
     context: Context
@@ -31,8 +32,18 @@ class TokenStore(
         preferences.edit().remove(KEY_ACCESS_TOKEN).apply()
     }
 
+    fun getOrCreateDeviceId(): String {
+        val existing = preferences.getString(KEY_DEVICE_ID, null)
+        if (!existing.isNullOrBlank()) return existing
+
+        val generated = UUID.randomUUID().toString()
+        preferences.edit().putString(KEY_DEVICE_ID, generated).apply()
+        return generated
+    }
+
     companion object {
         private const val PREFERENCES_FILE = "auth_secure_prefs"
         private const val KEY_ACCESS_TOKEN = "key_access_token"
+        private const val KEY_DEVICE_ID = "key_device_id"
     }
 }

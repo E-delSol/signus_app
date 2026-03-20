@@ -54,14 +54,7 @@ class SemaphoreViewModel(
 
                 val partnerId = user?.partnerId
                 if (partnerId.isNullOrBlank()) {
-                    if (currentPartnerId != null) {
-                        viewModelScope.launch { _eventFlow.emit(UiEvent.ShowUnlinkedDialog) }
-                    }
-                    currentPartnerId = null
-                    previousPartnerStatus = null
-                    partnerStatusJob?.cancel()
-                    partnerStatusJob = null
-                    _state.update { it.copy(partnerStatus = SemaphoreStatus.BUSY, partnerStatusExpiration = null) }
+                    clearPartnerState(showUnlinkedDialog = currentPartnerId != null)
                 } else {
                     if (partnerId != currentPartnerId) {
                         currentPartnerId = partnerId
@@ -166,6 +159,17 @@ class SemaphoreViewModel(
         partnerStatusJob?.cancel()
         partnerStatusJob = viewModelScope.launch {
             getPartnerStatusUseCase(partnerId).collect { partnerUser ->
+                if (partnerUser == null) {
+                    previousPartnerStatus = null
+                    _state.update {
+                        it.copy(
+                            partnerStatus = null,
+                            partnerStatusExpiration = null
+                        )
+                    }
+                    return@collect
+                }
+
                 if (previousPartnerStatus != null && previousPartnerStatus != partnerUser?.status) {
                     _eventFlow.emit(UiEvent.PlayNotificationSound)
                 }
@@ -178,6 +182,23 @@ class SemaphoreViewModel(
                     )
                 }
             }
+        }
+    }
+
+    private fun clearPartnerState(showUnlinkedDialog: Boolean) {
+        if (showUnlinkedDialog) {
+            viewModelScope.launch { _eventFlow.emit(UiEvent.ShowUnlinkedDialog) }
+        }
+        currentPartnerId = null
+        previousPartnerStatus = null
+        partnerStatusJob?.cancel()
+        partnerStatusJob = null
+        _state.update {
+            it.copy(
+                isPaired = false,
+                partnerStatus = null,
+                partnerStatusExpiration = null
+            )
         }
     }
 

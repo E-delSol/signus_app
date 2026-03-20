@@ -2,11 +2,11 @@ package es.cronos.duo.di
 
 import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
 import es.cronos.duo.data.local.TokenStore
 import es.cronos.duo.data.network.NetworkHttpClientProvider
 import es.cronos.duo.data.remote.AuthApi
+import es.cronos.duo.data.remote.DeviceApi
 import es.cronos.duo.data.remote.HealthApi
 import es.cronos.duo.data.remote.MeApi
 import es.cronos.duo.data.remote.PartnerApi
@@ -36,7 +36,6 @@ import org.koin.dsl.module
 val appModule = module {
     // Firebase
     single { FirebaseAuth.getInstance() }
-    single { FirebaseFirestore.getInstance() }
     single { FirebaseMessaging.getInstance() }
 
     // Local storage
@@ -51,6 +50,7 @@ val appModule = module {
     singleOf(::PartnerApi)
     singleOf(::PairingApi)
     singleOf(::StatusApi)
+    singleOf(::DeviceApi)
     singleOf(::SemaphoreSocket)
 
     // Repositories
