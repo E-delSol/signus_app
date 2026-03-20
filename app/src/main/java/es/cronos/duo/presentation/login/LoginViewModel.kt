@@ -2,6 +2,7 @@ package es.cronos.duo.presentation.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import es.cronos.duo.domain.model.User
 import es.cronos.duo.domain.usecase.LoginWithEmailUseCase
 import es.cronos.duo.domain.usecase.RegisterWithEmailUseCase
 import es.cronos.duo.domain.usecase.SignInWithGoogleUseCase
@@ -9,8 +10,6 @@ import es.cronos.duo.domain.util.Resource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class LoginViewModel(
@@ -24,17 +23,17 @@ class LoginViewModel(
 
     fun login(email: String, password: String) {
         viewModelScope.launch {
-            loginWithEmailUseCase(email, password).onEach { result ->
+            loginWithEmailUseCase(email, password).collect { result ->
                 handleAuthResult(result)
-            }.launchIn(this)
+            }
         }
     }
 
-    fun register(email: String, password: String) {
+    fun register(email: String, password: String, displayName: String) {
         viewModelScope.launch {
-            registerWithEmailUseCase(email, password).onEach { result ->
+            registerWithEmailUseCase(email, password, displayName).collect { result ->
                 handleAuthResult(result)
-            }.launchIn(this)
+            }
         }
     }
 
@@ -43,7 +42,10 @@ class LoginViewModel(
             _state.value = LoginState(isLoading = true)
             when (val result = signInWithGoogleUseCase(idToken)) {
                 is Resource.Success -> {
-                    _state.value = LoginState(user = result.data)
+                    _state.value = LoginState(
+                        isLoggedIn = true,
+                        user = result.data
+                    )
                 }
                 is Resource.Error -> {
                     _state.value = LoginState(error = result.message ?: "Error al iniciar sesión con Google")
@@ -55,10 +57,13 @@ class LoginViewModel(
         }
     }
 
-    private fun handleAuthResult(result: Resource<es.cronos.duo.domain.model.User>) {
+    private suspend fun handleAuthResult(result: Resource<User>) {
         when (result) {
             is Resource.Success -> {
-                _state.value = LoginState(user = result.data)
+                _state.value = LoginState(
+                    isLoggedIn = true,
+                    user = result.data
+                )
             }
             is Resource.Error -> {
                 _state.value = LoginState(error = result.message ?: "Error inesperado")

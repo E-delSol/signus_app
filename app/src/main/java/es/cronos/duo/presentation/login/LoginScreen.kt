@@ -35,7 +35,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,7 +57,6 @@ import es.cronos.duo.components.PrivacyIndicator
 import es.cronos.duo.components.TitleApp
 import es.cronos.duo.presentation.navigation.Login
 import es.cronos.duo.presentation.navigation.Splash
-import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -67,19 +65,13 @@ fun LoginScreen(
     viewModel: LoginViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    
+
     var showEmailForm by remember { mutableStateOf(false) }
     var errorDialogMessage by remember { mutableStateOf<String?>(null) }
     var showPrivacyPolicy by remember { mutableStateOf(false) }
 
-    val googleAuthUiClient = remember {
-        GoogleAuthUiClient(context)
-    }
-
-    LaunchedEffect(state.user) {
-        if (state.user != null) {
+    LaunchedEffect(state.isLoggedIn, state.user) {
+        if (state.isLoggedIn || state.user != null) {
             navController.navigate(Splash) {
                 popUpTo(Login) { inclusive = true }
             }
@@ -177,21 +169,13 @@ fun LoginScreen(
             } else if (showEmailForm) {
                 EmailLoginForm(
                     onLoginClick = { email, password -> viewModel.login(email, password) },
-                    onRegisterClick = { email, password -> viewModel.register(email, password) },
+                    onRegisterClick = { email, password, displayName ->
+                        viewModel.register(email, password, displayName)
+                    },
                     onBackClick = { showEmailForm = false }
                 )
             } else {
                 LoginSelectionButtons(
-                    onGoogleClick = { 
-                        scope.launch {
-                            val result = googleAuthUiClient.signIn()
-                            if (result.idToken != null) {
-                                viewModel.onGoogleSignIn(result.idToken)
-                            } else if (result.errorMessage != null) {
-                                errorDialogMessage = result.errorMessage
-                            }
-                        }
-                    },
                     onEmailClick = { showEmailForm = true }
                 )
             }
@@ -207,17 +191,9 @@ fun LoginScreen(
 
 @Composable
 fun LoginSelectionButtons(
-    onGoogleClick: () -> Unit,
     onEmailClick: () -> Unit
 ) {
     Column(modifier = Modifier.testTag("login_selection_buttons")) {
-        PartnerLinkButton(
-            title = stringResource(R.string.login_google_title),
-            description = stringResource(R.string.login_google_description),
-            icon = Icons.Default.Email,
-            onClick = onGoogleClick,
-            modifier = Modifier.testTag("google_login_button")
-        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -234,11 +210,12 @@ fun LoginSelectionButtons(
 @Composable
 fun EmailLoginForm(
     onLoginClick: (String, String) -> Unit,
-    onRegisterClick: (String, String) -> Unit,
+    onRegisterClick: (String, String, String) -> Unit,
     onBackClick: () -> Unit
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var displayName by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var isRegisterMode by remember { mutableStateOf(false) }
 
@@ -262,6 +239,19 @@ fun EmailLoginForm(
         )
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        if (isRegisterMode) {
+            OutlinedTextField(
+                value = displayName,
+                onValueChange = { displayName = it },
+                label = { Text(stringResource(R.string.field_display_name)) },
+                modifier = Modifier.fillMaxWidth().testTag("display_name_field"),
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
         OutlinedTextField(
             value = password,
@@ -292,7 +282,7 @@ fun EmailLoginForm(
             icon = if (isRegisterMode) Icons.Filled.AppRegistration else Icons.AutoMirrored.Filled.Login,
             onClick = { 
                 if (isRegisterMode) {
-                    onRegisterClick(email, password)
+                    onRegisterClick(email, password, displayName)
                 } else {
                     onLoginClick(email, password)
                 }

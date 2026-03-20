@@ -39,6 +39,7 @@ fun SplashScreen(
         } else {
             // Check if user has a partner
             try {
+                userRepository.syncFcmToken()
                 val user = userRepository.getUser()
                 
                 if (user?.partnerId != null && user.partnerId.isNotBlank()) {

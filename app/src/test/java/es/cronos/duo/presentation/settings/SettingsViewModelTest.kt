@@ -1,11 +1,11 @@
 package es.cronos.duo.presentation.settings
 
 import es.cronos.duo.domain.repository.AuthRepository
+import es.cronos.duo.domain.usecase.GetHealthUseCase
 import es.cronos.duo.domain.usecase.UnlinkPartnerUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -22,6 +22,7 @@ class SettingsViewModelTest {
 
     private val authRepository: AuthRepository = mockk(relaxed = true)
     private val unlinkPartnerUseCase: UnlinkPartnerUseCase = mockk()
+    private val getHealthUseCase: GetHealthUseCase = mockk()
 
     private lateinit var viewModel: SettingsViewModel
 
@@ -30,7 +31,8 @@ class SettingsViewModelTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
-        viewModel = SettingsViewModel(authRepository, unlinkPartnerUseCase)
+        coEvery { getHealthUseCase() } returns "ok"
+        viewModel = SettingsViewModel(authRepository, unlinkPartnerUseCase, getHealthUseCase)
     }
 
     @After
@@ -40,12 +42,10 @@ class SettingsViewModelTest {
 
     @Test
     fun `given user wants to logout when onLogout is called then authRepository signOut should be invoked`() = runTest {
-
-
         viewModel.onLogout()
         advanceUntilIdle()
 
-        verify { authRepository.signOut() }
+        coVerify { authRepository.logout() }
     }
 
     @Test

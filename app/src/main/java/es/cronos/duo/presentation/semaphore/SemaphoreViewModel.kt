@@ -33,13 +33,14 @@ class SemaphoreViewModel(
 
     private var pendingDurationMillis: Long? = null
     private var expirationJob: Job? = null
+    private var partnerStatusJob: Job? = null
+    private var currentPartnerId: String? = null
+    private var previousPartnerStatus: SemaphoreStatus? = null
 
     init {
         viewModelScope.launch {
             // Sync FCM token using the repository (abstracted from Firebase)
             userRepository.syncFcmToken()
-
-            var previousPartnerStatus: SemaphoreStatus? = null
 
             observeUserUseCase().collectLatest { user ->
                 _state.update { it.copy(
@@ -53,21 +54,11 @@ class SemaphoreViewModel(
 
                 val partnerId = user?.partnerId
                 if (partnerId.isNullOrBlank()) {
-                    if (_state.value.isPaired) { // Was paired, now is not
-                        viewModelScope.launch { _eventFlow.emit(UiEvent.ShowUnlinkedDialog) }
-                    }
-                    _state.update { it.copy(partnerStatus = SemaphoreStatus.BUSY, partnerStatusExpiration = null) }
+                    clearPartnerState(showUnlinkedDialog = currentPartnerId != null)
                 } else {
-                    getPartnerStatusUseCase(partnerId).collect { partnerUser ->
-                        if (previousPartnerStatus != null && previousPartnerStatus != partnerUser?.status) {
-                            viewModelScope.launch { _eventFlow.emit(UiEvent.PlayNotificationSound) }
-                        }
-                        previousPartnerStatus = partnerUser?.status
-                        
-                        _state.update { it.copy(
-                            partnerStatus = partnerUser?.status,
-                            partnerStatusExpiration = partnerUser?.statusExpiration
-                        ) }
+                    if (partnerId != currentPartnerId) {
+                        currentPartnerId = partnerId
+                        startPartnerStatusSubscription(partnerId)
                     }
                 }
             }
@@ -92,7 +83,11 @@ class SemaphoreViewModel(
     private fun revertStatus(currentStatus: SemaphoreStatus) {
         val newStatus = currentStatus.next()
         viewModelScope.launch {
-            updateUserStatusUseCase(newStatus, null, null)
+            runCatching {
+                updateUserStatusUseCase(newStatus, null, null)
+            }.onSuccess {
+                updateOwnStatusLocally(newStatus, null, null)
+            }
         }
     }
 
@@ -104,11 +99,19 @@ class SemaphoreViewModel(
             val expirationTimestamp = System.currentTimeMillis() + duration
             pendingDurationMillis = null
             viewModelScope.launch {
-                updateUserStatusUseCase(newStatus, expirationTimestamp, duration)
+                runCatching {
+                    updateUserStatusUseCase(newStatus, expirationTimestamp, duration)
+                }.onSuccess {
+                    updateOwnStatusLocally(newStatus, expirationTimestamp, duration)
+                }
             }
         } else {
             viewModelScope.launch {
-                updateUserStatusUseCase(newStatus, null, null)
+                runCatching {
+                    updateUserStatusUseCase(newStatus, null, null)
+                }.onSuccess {
+                    updateOwnStatusLocally(newStatus, null, null)
+                }
             }
         }
     }
@@ -124,6 +127,80 @@ class SemaphoreViewModel(
 
     fun onShowTimerDialog() = viewModelScope.launch { _eventFlow.emit(UiEvent.ShowTimerDialog) }
     fun onDismissTimerDialog() = viewModelScope.launch { _eventFlow.emit(UiEvent.HideTimerDialog) }
+
+    override fun onCleared() {
+        expirationJob?.cancel()
+        partnerStatusJob?.cancel()
+        super.onCleared()
+    }
+
+    private fun updateOwnStatusLocally(
+        status: SemaphoreStatus,
+        statusExpiration: Long?,
+        statusDuration: Long?
+    ) {
+        _state.update {
+            it.copy(
+                userStatus = status,
+                userStatusExpiration = statusExpiration,
+                userStatusDuration = statusDuration
+            )
+        }
+
+        if (statusExpiration != null) {
+            checkExpiration(status, statusExpiration)
+        } else {
+            expirationJob?.cancel()
+            expirationJob = null
+        }
+    }
+
+    private fun startPartnerStatusSubscription(partnerId: String) {
+        partnerStatusJob?.cancel()
+        partnerStatusJob = viewModelScope.launch {
+            getPartnerStatusUseCase(partnerId).collect { partnerUser ->
+                if (partnerUser == null) {
+                    previousPartnerStatus = null
+                    _state.update {
+                        it.copy(
+                            partnerStatus = null,
+                            partnerStatusExpiration = null
+                        )
+                    }
+                    return@collect
+                }
+
+                if (previousPartnerStatus != null && previousPartnerStatus != partnerUser?.status) {
+                    _eventFlow.emit(UiEvent.PlayNotificationSound)
+                }
+                previousPartnerStatus = partnerUser?.status
+
+                _state.update {
+                    it.copy(
+                        partnerStatus = partnerUser?.status,
+                        partnerStatusExpiration = partnerUser?.statusExpiration
+                    )
+                }
+            }
+        }
+    }
+
+    private fun clearPartnerState(showUnlinkedDialog: Boolean) {
+        if (showUnlinkedDialog) {
+            viewModelScope.launch { _eventFlow.emit(UiEvent.ShowUnlinkedDialog) }
+        }
+        currentPartnerId = null
+        previousPartnerStatus = null
+        partnerStatusJob?.cancel()
+        partnerStatusJob = null
+        _state.update {
+            it.copy(
+                isPaired = false,
+                partnerStatus = null,
+                partnerStatusExpiration = null
+            )
+        }
+    }
 
     sealed class UiEvent {
         object PlayNotificationSound : UiEvent()

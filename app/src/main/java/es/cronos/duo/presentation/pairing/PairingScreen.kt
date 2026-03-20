@@ -17,6 +17,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.AlertDialog
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -91,10 +93,23 @@ fun PairingScreen(
             }
         }
     } else {
+        state.errorMessage?.let { message ->
+            AlertDialog(
+                onDismissRequest = { viewModel.clearError() },
+                title = { Text("Error de vinculación") },
+                text = { Text(message) },
+                confirmButton = {
+                    TextButton(onClick = { viewModel.clearError() }) {
+                        Text("Aceptar")
+                    }
+                }
+            )
+        }
+
         // Normal screen content
-        if (state.showQrCode && state.uniqueCode != null) {
+        if (state.showQrCode && state.linkCode != null) {
             QrCodeDialog(
-                code = state.uniqueCode!!,
+                code = state.linkCode!!,
                 onDismiss = { viewModel.onDismissQr() }
             )
         }

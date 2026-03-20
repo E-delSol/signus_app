@@ -20,13 +20,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,6 +43,7 @@ import es.cronos.duo.components.TitleApp
 import es.cronos.duo.presentation.navigation.Pairing
 import es.cronos.duo.presentation.navigation.Semaphore
 import es.cronos.duo.presentation.navigation.Welcome
+import kotlinx.coroutines.flow.collect
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -51,6 +52,18 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = koinViewModel()
 ) {
     var showUnlinkDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(viewModel) {
+        viewModel.eventFlow.collect { event ->
+            when (event) {
+                SettingsViewModel.UiEvent.UnlinkCompleted -> {
+                    navController.navigate(Pairing) {
+                        popUpTo(Semaphore) { inclusive = true }
+                    }
+                }
+            }
+        }
+    }
 
     if (showUnlinkDialog) {
         AlertDialog(
@@ -62,9 +75,6 @@ fun SettingsScreen(
                     onClick = {
                         showUnlinkDialog = false
                         viewModel.onUnlinkPartner()
-                        navController.navigate(Pairing) {
-                            popUpTo(Semaphore) { inclusive = true }
-                        }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                     modifier = Modifier.testTag("confirm_unlink_button")
@@ -81,6 +91,24 @@ fun SettingsScreen(
         )
     }
 
+    SettingsScreenContent(
+        onBackClick = { navController.popBackStack() },
+        onUnlinkClick = { showUnlinkDialog = true },
+        onLogoutClick = {
+            viewModel.onLogout()
+            navController.navigate(Welcome) {
+                popUpTo(0) { inclusive = true }
+            }
+        }
+    )
+}
+
+@Composable
+fun SettingsScreenContent(
+    onBackClick: () -> Unit,
+    onUnlinkClick: () -> Unit,
+    onLogoutClick: () -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -115,9 +143,7 @@ fun SettingsScreen(
                 title = stringResource(R.string.settings_unlink_title),
                 description = stringResource(R.string.settings_unlink_description),
                 icon = Icons.Filled.LinkOff,
-                onClick = {
-                    showUnlinkDialog = true
-                },
+                onClick = onUnlinkClick,
                 modifier = Modifier.testTag("unlink_partner_button")
             )
 
@@ -127,12 +153,7 @@ fun SettingsScreen(
                 title = stringResource(R.string.settings_logout_title),
                 description = stringResource(R.string.settings_logout_description),
                 icon = Icons.AutoMirrored.Filled.Logout,
-                onClick = {
-                    viewModel.onLogout()
-                    navController.navigate(Welcome) {
-                        popUpTo(0) { inclusive = true }
-                    }
-                },
+                onClick = onLogoutClick,
                 modifier = Modifier.testTag("logout_button")
             )
 
@@ -144,7 +165,7 @@ fun SettingsScreen(
         }
 
         IconButton(
-            onClick = { navController.popBackStack() },
+            onClick = onBackClick,
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .padding(top = 16.dp)
@@ -162,5 +183,9 @@ fun SettingsScreen(
 @Preview(showBackground = true)
 @Composable
 fun SettingsScreenPreview() {
-    SettingsScreen(navController = NavController(LocalContext.current))
+    SettingsScreenContent(
+        onBackClick = {},
+        onUnlinkClick = {},
+        onLogoutClick = {}
+    )
 }

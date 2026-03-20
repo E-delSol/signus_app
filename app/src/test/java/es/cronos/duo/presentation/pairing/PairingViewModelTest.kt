@@ -1,16 +1,17 @@
 package es.cronos.duo.presentation.pairing
 
+import es.cronos.duo.domain.model.LinkSession
+import es.cronos.duo.domain.model.LinkSessionStatus
 import es.cronos.duo.domain.model.User
-import es.cronos.duo.domain.repository.UserRepository
 import es.cronos.duo.domain.usecase.GenerateQrCodeUseCase
+import es.cronos.duo.domain.usecase.GetUserUseCase
+import es.cronos.duo.domain.usecase.GetLinkSessionStatusUseCase
 import es.cronos.duo.domain.usecase.LinkPartnerUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -26,9 +27,8 @@ class PairingViewModelTest {
 
     private val generateQrCodeUseCase: GenerateQrCodeUseCase = mockk()
     private val linkPartnerUseCase: LinkPartnerUseCase = mockk()
-    private val userRepository: UserRepository = mockk()
-
-    private val userFlow = MutableStateFlow<User?>(null)
+    private val getLinkSessionStatusUseCase: GetLinkSessionStatusUseCase = mockk()
+    private val getUserUseCase: GetUserUseCase = mockk()
 
     private lateinit var viewModel: PairingViewModel
 
@@ -37,11 +37,11 @@ class PairingViewModelTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
-        every { userRepository.observeUser() } returns userFlow
         viewModel = PairingViewModel(
             generateQrCodeUseCase,
             linkPartnerUseCase,
-            userRepository
+            getLinkSessionStatusUseCase,
+            getUserUseCase
         )
     }
 
@@ -51,61 +51,38 @@ class PairingViewModelTest {
     }
 
     @Test
-    fun `given user with partnerId when observing user then state isPaired should be true`() = runTest {
-        val userWithPartner = User(id = "1", partnerId = "partner123")
-        
-        userFlow.value = userWithPartner
+    fun `onGenerateQrClick stores linkCode and polls with sessionId`() = runTest {
+        val sessionId = "session-123"
+        val linkCode = "ABC123"
+        coEvery { generateQrCodeUseCase() } returns LinkSession(
+            sessionId = sessionId,
+            linkCode = linkCode,
+            expiresAt = "2026-03-06T12:00:00Z"
+        )
+        coEvery { getLinkSessionStatusUseCase(sessionId) } returns LinkSessionStatus.CONFIRMED
+        coEvery { getUserUseCase() } returns User(id = "user-1", partnerId = "partner-1")
+
+        viewModel.onGenerateQrClick()
         advanceUntilIdle()
 
         viewModel.state.value.isPaired shouldBeEqualTo true
-    }
-
-    @Test
-    fun `given user without partnerId when observing user then state isPaired should be false`() = runTest {
-        val userWithoutPartner = User(id = "1", partnerId = null)
-        
-        userFlow.value = userWithoutPartner
-        advanceUntilIdle()
-
-        viewModel.state.value.isPaired shouldBeEqualTo false
-    }
-
-    @Test
-    fun `given click on generate QR when onGenerateQrClick is called then state should show QR with code`() = runTest {
-        val generatedCode = "unique_qr_code"
-        coEvery { generateQrCodeUseCase() } returns generatedCode
-
-        viewModel.onGenerateQrClick()
-        advanceUntilIdle()
-
-        viewModel.state.value shouldBeEqualTo PairingState(
-            uniqueCode = generatedCode,
-            showQrCode = true,
-            isPaired = false
-        )
+        viewModel.state.value.linkCode shouldBeEqualTo linkCode
         coVerify { generateQrCodeUseCase() }
+        coVerify { getLinkSessionStatusUseCase(sessionId) }
+        coVerify { getUserUseCase() }
     }
 
     @Test
-    fun `given QR is shown when onDismissQr is called then state showQrCode should be false`() = runTest {
-        // Simulate initial state with QR shown
-        coEvery { generateQrCodeUseCase() } returns "code"
-        viewModel.onGenerateQrClick()
+    fun `onCodeScanned confirms linking and sets paired state`() = runTest {
+        val sessionId = "session-123"
+        coEvery { linkPartnerUseCase(sessionId) } returns true
+        coEvery { getUserUseCase() } returns User(id = "user-1", partnerId = "partner-1")
+
+        viewModel.onCodeScanned(sessionId)
         advanceUntilIdle()
 
-        viewModel.onDismissQr()
-
-        viewModel.state.value.showQrCode shouldBeEqualTo false
-    }
-
-    @Test
-    fun `given a scanned code when onCodeScanned is called then linkPartnerUseCase should be invoked`() = runTest {
-        val scannedCode = "partner_code"
-        coEvery { linkPartnerUseCase(scannedCode) } returns true
-
-        viewModel.onCodeScanned(scannedCode)
-        advanceUntilIdle()
-
-        coVerify { linkPartnerUseCase(scannedCode) }
+        viewModel.state.value.isPaired shouldBeEqualTo true
+        coVerify { linkPartnerUseCase(sessionId) }
+        coVerify { getUserUseCase() }
     }
 }

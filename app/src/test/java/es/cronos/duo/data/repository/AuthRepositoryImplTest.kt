@@ -1,16 +1,19 @@
 package es.cronos.duo.data.repository
 
-import com.google.android.gms.tasks.Task
-import com.google.firebase.auth.AuthResult
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
+import es.cronos.duo.data.local.TokenStore
+import es.cronos.duo.data.remote.AuthApi
+import es.cronos.duo.data.remote.dto.AuthResponseDto
+import es.cronos.duo.domain.repository.UserRepository
 import es.cronos.duo.domain.util.Resource
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.tasks.await
+import io.mockk.verify
+import java.io.IOException
 import kotlinx.coroutines.test.runTest
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeInstanceOf
@@ -19,59 +22,96 @@ import org.junit.Test
 
 class AuthRepositoryImplTest {
 
+    private val authApi: AuthApi = mockk()
+    private val tokenStore: TokenStore = mockk(relaxed = true)
     private val firebaseAuth: FirebaseAuth = mockk(relaxed = true)
+    private val userRepository: UserRepository = mockk(relaxed = true)
+
     private lateinit var authRepository: AuthRepositoryImpl
 
     @Before
     fun setup() {
-        mockkStatic("kotlinx.coroutines.tasks.TasksKt")
-        authRepository = AuthRepositoryImpl(firebaseAuth)
+        mockkStatic(Log::class)
+        every { Log.w(any(), any(), any()) } returns 0
+        authRepository = AuthRepositoryImpl(
+            authApi = authApi,
+            tokenStore = tokenStore,
+            firebaseAuth = firebaseAuth,
+            userRepository = userRepository
+        )
     }
 
     @Test
-    fun `when loginWithEmail succeeds then emit Loading and Success`() = runTest {
-        // Given
+    fun `when backend login succeeds then save token sync fcm and return success`() = runTest {
         val email = "test@example.com"
         val password = "password"
-        val mockUser: FirebaseUser = mockk {
-            every { uid } returns "uid123"
-            every { getEmail() } returns email
-            every { displayName } returns "Test User"
-        }
-        val mockAuthResult: AuthResult = mockk {
-            every { user } returns mockUser
-        }
-        val mockTask: Task<AuthResult> = mockk()
-        
-        every { firebaseAuth.signInWithEmailAndPassword(email, password) } returns mockTask
-        coEvery { mockTask.await() } returns mockAuthResult
+        val accessToken = "access-token"
+        coEvery { authApi.login(email, password) } returns AuthResponseDto(accessToken = accessToken)
 
-        // When
-        val results = authRepository.loginWithEmail(email, password).toList()
+        val result = authRepository.login(email, password)
 
-        // Then
-        results[0] shouldBeInstanceOf Resource.Loading::class
-        results[1] shouldBeInstanceOf Resource.Success::class
-        (results[1] as Resource.Success).data?.id shouldBeEqualTo "uid123"
+        result shouldBeInstanceOf Resource.Success::class
+        result.data?.id shouldBeEqualTo "backend_user"
+        result.data?.email shouldBeEqualTo email
+        verify(exactly = 1) { tokenStore.saveToken(accessToken) }
+        coVerify(exactly = 1) { userRepository.syncFcmToken() }
     }
 
     @Test
-    fun `when loginWithEmail fails then emit Loading and Error`() = runTest {
-        // Given
+    fun `when backend register succeeds then save token sync fcm and return success`() = runTest {
+        val email = "new@example.com"
+        val password = "password"
+        val displayName = "New User"
+        val accessToken = "new-access-token"
+        coEvery { authApi.register(email, password, displayName) } returns AuthResponseDto(accessToken = accessToken)
+
+        val result = authRepository.register(email, password, displayName)
+
+        result shouldBeInstanceOf Resource.Success::class
+        result.data?.id shouldBeEqualTo "backend_user"
+        result.data?.email shouldBeEqualTo email
+        result.data?.displayName shouldBeEqualTo displayName
+        verify(exactly = 1) { tokenStore.saveToken(accessToken) }
+        coVerify(exactly = 1) { userRepository.syncFcmToken() }
+    }
+
+    @Test
+    fun `when backend login has network error then return network error`() = runTest {
         val email = "test@example.com"
         val password = "password"
-        val errorMessage = "Invalid credentials"
-        val mockTask: Task<AuthResult> = mockk()
-        
-        every { firebaseAuth.signInWithEmailAndPassword(email, password) } returns mockTask
-        coEvery { mockTask.await() } throws Exception(errorMessage)
+        coEvery { authApi.login(email, password) } throws IOException("offline")
 
-        // When
-        val results = authRepository.loginWithEmail(email, password).toList()
+        val result = authRepository.login(email, password)
 
-        // Then
-        results[0] shouldBeInstanceOf Resource.Loading::class
-        results[1] shouldBeInstanceOf Resource.Error::class
-        (results[1] as Resource.Error).message shouldBeEqualTo errorMessage
+        result shouldBeInstanceOf Resource.Error::class
+        result.message shouldBeEqualTo "Error de red"
+        verify(exactly = 0) { tokenStore.saveToken(any()) }
+        coVerify(exactly = 0) { userRepository.syncFcmToken() }
+    }
+
+    @Test
+    fun `when backend login throws unexpected exception then return friendly error`() = runTest {
+        val email = "test@example.com"
+        val password = "password"
+        coEvery { authApi.login(email, password) } throws IllegalStateException("Illegal input: Field 'access token'")
+
+        val result = authRepository.login(email, password)
+
+        result shouldBeInstanceOf Resource.Error::class
+        result.message shouldBeEqualTo "No se pudo iniciar sesión"
+        verify(exactly = 0) { tokenStore.saveToken(any()) }
+        coVerify(exactly = 0) { userRepository.syncFcmToken() }
+    }
+
+    @Test
+    fun `when logout with token then clear token deactivate device and sign out firebase`() = runTest {
+        every { tokenStore.getToken() } returns "existing-token"
+        every { tokenStore.getOrCreateDeviceId() } returns "device-123"
+
+        authRepository.logout()
+
+        coVerify(exactly = 1) { userRepository.deactivateDeviceToken("device-123") }
+        verify(exactly = 1) { tokenStore.clearToken() }
+        verify(exactly = 1) { firebaseAuth.signOut() }
     }
 }

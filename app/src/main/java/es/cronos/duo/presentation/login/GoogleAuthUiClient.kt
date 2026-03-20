@@ -1,5 +1,6 @@
 package es.cronos.duo.presentation.login
 
+import android.util.Log
 import android.content.Context
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
@@ -32,9 +33,11 @@ class GoogleAuthUiClient(
             )
             handleSignIn(result)
         } catch (e: GetCredentialException) {
-            SignInResult(idToken = null, errorMessage = e.localizedMessage)
+            Log.w(TAG, "Google credential request failed", e)
+            SignInResult(idToken = null, errorMessage = "No se pudo iniciar sesión con Google")
         } catch (e: Exception) {
-            SignInResult(idToken = null, errorMessage = e.localizedMessage)
+            Log.w(TAG, "Unexpected Google sign-in error", e)
+            SignInResult(idToken = null, errorMessage = "No se pudo iniciar sesión con Google")
         }
     }
 
@@ -44,7 +47,8 @@ class GoogleAuthUiClient(
         return if (credential is GoogleIdTokenCredential) {
             SignInResult(idToken = credential.idToken, errorMessage = null)
         } else {
-            SignInResult(idToken = null, errorMessage = "Unexpected credential type")
+            Log.w(TAG, "Unexpected credential type: ${credential::class.java.simpleName}")
+            SignInResult(idToken = null, errorMessage = "No se pudo iniciar sesión con Google")
         }
     }
 
@@ -52,8 +56,12 @@ class GoogleAuthUiClient(
         try {
             credentialManager.clearCredentialState(ClearCredentialStateRequest())
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.w(TAG, "Google credential state cleanup failed", e)
         }
+    }
+
+    companion object {
+        private const val TAG = "GoogleAuthUiClient"
     }
 
     data class SignInResult(
