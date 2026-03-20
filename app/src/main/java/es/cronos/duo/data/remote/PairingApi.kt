@@ -14,7 +14,9 @@ class PairingApi(
     private val httpClient: HttpClient
 ) {
     suspend fun createPairingSession(): CreatePairingSessionResponseDto {
-        return httpClient.post("/linking/sessions").body()
+        return httpClient.post("/linking/sessions") {
+            expectSuccess = true
+        }.body()
     }
 
     suspend fun confirmPairingSession(linkCode: String) {
@@ -25,6 +27,8 @@ class PairingApi(
     }
 
     suspend fun getLinkSessionStatus(sessionId: String): GetLinkSessionStatusResponseDto {
-        return httpClient.get("/linking/sessions/$sessionId").body()
+        return httpClient.get("/linking/sessions/$sessionId") {
+            expectSuccess = true
+        }.body()
     }
 }

@@ -127,4 +127,24 @@ class UserRepositoryImplTest {
         result[1] shouldBeEqualTo null
         userRepository.observeUser().first()?.partnerId shouldBeEqualTo null
     }
+
+    @Test
+    fun `when registerOrUpdateDeviceToken is called then request includes persistent deviceId platform and appVersion`() = runTest {
+        every { tokenStore.getToken() } returns "access-token"
+        every { tokenStore.getOrCreateDeviceId() } returns "device-123"
+        coEvery { deviceApi.registerOrUpdateDeviceToken(any()) } returns Unit
+
+        userRepository.registerOrUpdateDeviceToken("fcm-token-123")
+
+        coVerify(exactly = 1) {
+            deviceApi.registerOrUpdateDeviceToken(
+                match { request ->
+                    request.deviceId == "device-123" &&
+                        request.fcmToken == "fcm-token-123" &&
+                        request.platform == "android" &&
+                        request.appVersion.isNotBlank()
+                }
+            )
+        }
+    }
 }

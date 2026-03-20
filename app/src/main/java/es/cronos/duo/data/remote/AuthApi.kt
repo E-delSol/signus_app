@@ -5,6 +5,7 @@ import es.cronos.duo.data.remote.dto.LoginRequestDto
 import es.cronos.duo.data.remote.dto.RegisterRequestDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.expectSuccess
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -14,12 +15,14 @@ class AuthApi(
 ) {
     suspend fun login(email: String, password: String): AuthResponseDto {
         return httpClient.post("/auth/login") {
+            expectSuccess = true
             setBody(LoginRequestDto(email = email, password = password))
         }.body()
     }
 
     suspend fun register(email: String, password: String, displayName: String): AuthResponseDto {
         return httpClient.post("/auth/register") {
+            expectSuccess = true
             setBody(
                 RegisterRequestDto(
                     email = email,
@@ -31,6 +34,8 @@ class AuthApi(
     }
 
     suspend fun testProtected(): String {
-        return httpClient.get("/auth/test").body()
+        return httpClient.get("/auth/test") {
+            expectSuccess = true
+        }.body()
     }
 }

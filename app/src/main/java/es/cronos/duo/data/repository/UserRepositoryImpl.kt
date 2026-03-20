@@ -101,16 +101,23 @@ class UserRepositoryImpl(
         if (fcmToken.isBlank()) return
         if (!isAuthenticated()) return
 
+        val deviceId = tokenStore.getOrCreateDeviceId()
+        val appVersion = BuildConfig.VERSION_NAME
         val request = UpsertDeviceTokenRequest(
-            deviceId = tokenStore.getOrCreateDeviceId(),
+            deviceId = deviceId,
             fcmToken = fcmToken,
-            appVersion = BuildConfig.VERSION_NAME
+            platform = DEVICE_PLATFORM_ANDROID,
+            appVersion = appVersion
         )
 
         runCatching {
             deviceApi.registerOrUpdateDeviceToken(request)
         }.onFailure { error ->
-            Log.w(TAG, "Failed to register/update FCM token", error)
+            Log.w(
+                TAG,
+                "Failed to register/update FCM token. deviceIdPresent=${deviceId.isNotBlank()}, tokenLength=${fcmToken.length}, platform=${request.platform}, appVersion=$appVersion",
+                error
+            )
         }
     }
 
@@ -179,6 +186,7 @@ class UserRepositoryImpl(
 
     companion object {
         private const val TAG = "UserRepositoryImpl"
+        private const val DEVICE_PLATFORM_ANDROID = "android"
     }
 
     private fun isAuthenticated(): Boolean {

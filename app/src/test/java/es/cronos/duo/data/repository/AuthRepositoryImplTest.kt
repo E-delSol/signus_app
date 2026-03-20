@@ -1,5 +1,6 @@
 package es.cronos.duo.data.repository
 
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import es.cronos.duo.data.local.TokenStore
 import es.cronos.duo.data.remote.AuthApi
@@ -10,6 +11,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.verify
 import java.io.IOException
 import kotlinx.coroutines.test.runTest
@@ -29,6 +31,8 @@ class AuthRepositoryImplTest {
 
     @Before
     fun setup() {
+        mockkStatic(Log::class)
+        every { Log.w(any(), any(), any()) } returns 0
         authRepository = AuthRepositoryImpl(
             authApi = authApi,
             tokenStore = tokenStore,
@@ -81,6 +85,20 @@ class AuthRepositoryImplTest {
 
         result shouldBeInstanceOf Resource.Error::class
         result.message shouldBeEqualTo "Error de red"
+        verify(exactly = 0) { tokenStore.saveToken(any()) }
+        coVerify(exactly = 0) { userRepository.syncFcmToken() }
+    }
+
+    @Test
+    fun `when backend login throws unexpected exception then return friendly error`() = runTest {
+        val email = "test@example.com"
+        val password = "password"
+        coEvery { authApi.login(email, password) } throws IllegalStateException("Illegal input: Field 'access token'")
+
+        val result = authRepository.login(email, password)
+
+        result shouldBeInstanceOf Resource.Error::class
+        result.message shouldBeEqualTo "No se pudo iniciar sesión"
         verify(exactly = 0) { tokenStore.saveToken(any()) }
         coVerify(exactly = 0) { userRepository.syncFcmToken() }
     }

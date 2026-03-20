@@ -1,5 +1,6 @@
 package es.cronos.duo.data.repository
 
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import es.cronos.duo.data.local.TokenStore
@@ -57,7 +58,8 @@ class AuthRepositoryImpl(
         } catch (_: IOException) {
             return Resource.Error("Error de red")
         } catch (e: Exception) {
-            return Resource.Error(e.localizedMessage ?: "Error inesperado")
+            Log.w(TAG, "Unexpected login error", e)
+            return Resource.Error("No se pudo iniciar sesión")
         }
     }
 
@@ -84,7 +86,8 @@ class AuthRepositoryImpl(
         } catch (_: IOException) {
             return Resource.Error("Error de red")
         } catch (e: Exception) {
-            return Resource.Error(e.localizedMessage ?: "Error inesperado")
+            Log.w(TAG, "Unexpected register error", e)
+            return Resource.Error("No se pudo completar el registro")
         }
     }
 
@@ -117,7 +120,8 @@ class AuthRepositoryImpl(
         } catch (_: IOException) {
             Resource.Error("Error de red")
         } catch (e: Exception) {
-            Resource.Error(e.localizedMessage ?: "Error inesperado")
+            Log.w(TAG, "Unexpected protected endpoint error", e)
+            Resource.Error("No se pudo completar la operación")
         }
     }
 
@@ -134,7 +138,8 @@ class AuthRepositoryImpl(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            Resource.Error(e.localizedMessage ?: "Error con Google Sign-In")
+            Log.w(TAG, "Google Sign-In failed", e)
+            Resource.Error("No se pudo iniciar sesión con Google")
         }
     }
 
@@ -176,6 +181,7 @@ class AuthRepositoryImpl(
     }
 
     companion object {
+        private const val TAG = "AuthRepositoryImpl"
         private val json = Json { ignoreUnknownKeys = true }
     }
 }

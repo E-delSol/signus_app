@@ -6,6 +6,6 @@ import kotlinx.serialization.Serializable
 data class UpsertDeviceTokenRequest(
     val deviceId: String,
     val fcmToken: String,
-    val platform: String = "android",
+    val platform: String,
     val appVersion: String
 )

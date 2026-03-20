@@ -35,7 +35,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,7 +57,6 @@ import es.cronos.duo.components.PrivacyIndicator
 import es.cronos.duo.components.TitleApp
 import es.cronos.duo.presentation.navigation.Login
 import es.cronos.duo.presentation.navigation.Splash
-import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -67,16 +65,10 @@ fun LoginScreen(
     viewModel: LoginViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    
+
     var showEmailForm by remember { mutableStateOf(false) }
     var errorDialogMessage by remember { mutableStateOf<String?>(null) }
     var showPrivacyPolicy by remember { mutableStateOf(false) }
-
-    val googleAuthUiClient = remember {
-        GoogleAuthUiClient(context)
-    }
 
     LaunchedEffect(state.isLoggedIn, state.user) {
         if (state.isLoggedIn || state.user != null) {
@@ -184,16 +176,6 @@ fun LoginScreen(
                 )
             } else {
                 LoginSelectionButtons(
-                    onGoogleClick = { 
-                        scope.launch {
-                            val result = googleAuthUiClient.signIn()
-                            if (result.idToken != null) {
-                                viewModel.onGoogleSignIn(result.idToken)
-                            } else if (result.errorMessage != null) {
-                                errorDialogMessage = result.errorMessage
-                            }
-                        }
-                    },
                     onEmailClick = { showEmailForm = true }
                 )
             }
@@ -209,17 +191,9 @@ fun LoginScreen(
 
 @Composable
 fun LoginSelectionButtons(
-    onGoogleClick: () -> Unit,
     onEmailClick: () -> Unit
 ) {
     Column(modifier = Modifier.testTag("login_selection_buttons")) {
-        PartnerLinkButton(
-            title = stringResource(R.string.login_google_title),
-            description = stringResource(R.string.login_google_description),
-            icon = Icons.Default.Email,
-            onClick = onGoogleClick,
-            modifier = Modifier.testTag("google_login_button")
-        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
