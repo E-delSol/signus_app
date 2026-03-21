@@ -125,3 +125,8 @@ Users interested in running the system should deploy their own backend instance.
 - WebSocket connectivity requires a valid JWT.
 - FCM is used only for push notification fallback.
 - Backend contracts define the effective behavior of authentication, linking, status, and realtime events.
+
+## License
+
+This project is licensed under the MIT License.
+See the LICENSE file for details.
