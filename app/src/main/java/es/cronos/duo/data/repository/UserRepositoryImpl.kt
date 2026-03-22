@@ -10,6 +10,7 @@ import es.cronos.duo.data.remote.PartnerApi
 import es.cronos.duo.data.remote.StatusApi
 import es.cronos.duo.data.remote.dto.UpsertDeviceTokenRequest
 import es.cronos.duo.data.remote.socket.PartnerUnlinkedSocketEvent
+import es.cronos.duo.data.remote.socket.PartnerStatusChangedSocketEvent
 import es.cronos.duo.data.remote.socket.SemaphoreSocket
 import es.cronos.duo.domain.model.SemaphoreStatus
 import es.cronos.duo.domain.model.User
@@ -17,15 +18,17 @@ import es.cronos.duo.domain.repository.UserRepository
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.http.HttpStatusCode
 import java.util.concurrent.CancellationException
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 class UserRepositoryImpl(
@@ -45,9 +48,35 @@ class UserRepositoryImpl(
         }
     }
 
-    override fun observeUser(): Flow<User?> = currentUser.onStart {
+    override fun observeUser(): Flow<User?> = channelFlow {
         if (currentUser.value == null) {
-            getUser()
+            currentUser.value = fetchCurrentUser()
+        }
+
+        val currentUserJob = launch {
+            currentUser.collect { send(it) }
+        }
+        val selfStatusJob = launch {
+            try {
+                semaphoreSocket.observeSelfStatusChangedEvents().collect { event ->
+                    currentUser.update { user ->
+                        user?.copy(
+                            status = event.status?.let(::toSemaphoreStatus) ?: user.status,
+                            statusExpiration = event.statusExpiration,
+                            statusDuration = event.statusDuration
+                        )
+                    }
+                    Log.d(TAG, "Own status updated via websocket")
+                }
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Log.w(TAG, "Own status websocket unavailable", e)
+            }
+        }
+
+        awaitClose {
+            currentUserJob.cancel()
+            selfStatusJob.cancel()
         }
     }
 
@@ -62,6 +91,13 @@ class UserRepositoryImpl(
         // Backend PATCH /status solo soporta el estado simple por ahora.
         // expirationTimestamp y statusDuration se mantienen en la firma para no romper el flujo actual.
         statusApi.updateStatus(status.name)
+        currentUser.update { user ->
+            user?.copy(
+                status = status,
+                statusExpiration = expirationTimestamp,
+                statusDuration = statusDuration
+            )
+        }
     }
 
     override fun getPartnerStatus(partnerId: String): Flow<User?> = flow {
@@ -74,7 +110,7 @@ class UserRepositoryImpl(
                         currentUser.update { user -> user?.copy(partnerId = null) }
                         emit(null)
                     }
-                    is es.cronos.duo.data.remote.socket.SemaphoreStatusChangedSocketEvent -> {
+                    is PartnerStatusChangedSocketEvent -> {
                         val partnerUser = User(
                             id = event.partnerId ?: partnerId,
                             partnerId = null,

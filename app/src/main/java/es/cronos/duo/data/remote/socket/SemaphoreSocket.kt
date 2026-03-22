@@ -15,14 +15,22 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 
-sealed interface PartnerSocketEvent
+sealed interface SemaphoreSocketEvent
+sealed interface PartnerSocketEvent : SemaphoreSocketEvent
 
-data class SemaphoreStatusChangedSocketEvent(
+data class PartnerStatusChangedSocketEvent(
     val partnerId: String?,
     val status: String?,
     val statusExpiration: Long?,
     val statusDuration: Long?
 ) : PartnerSocketEvent
+
+data class SelfStatusChangedSocketEvent(
+    val userId: String?,
+    val status: String?,
+    val statusExpiration: Long?,
+    val statusDuration: Long?
+) : SemaphoreSocketEvent
 
 data class PartnerUnlinkedSocketEvent(
     val partnerId: String?
@@ -34,7 +42,7 @@ class SemaphoreSocket(
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
-    fun observePartnerEvents(): Flow<PartnerSocketEvent> = flow {
+    fun observeEvents(): Flow<SemaphoreSocketEvent> = flow {
         val token = tokenStore.getToken()
             ?: throw IllegalStateException("Missing access token for websocket connection")
 
@@ -46,7 +54,7 @@ class SemaphoreSocket(
         try {
             for (frame in session.incoming) {
                 if (frame is Frame.Text) {
-                    parsePartnerEvent(frame.readText())?.let { emit(it) }
+                    parseEvent(frame.readText())?.let { emit(it) }
                 }
             }
         } finally {
@@ -54,45 +62,42 @@ class SemaphoreSocket(
         }
     }
 
-    fun observePartnerStatusChangedEvents(): Flow<SemaphoreStatusChangedSocketEvent> {
-        return observePartnerEvents().mapNotNull { it as? SemaphoreStatusChangedSocketEvent }
+    fun observePartnerEvents(): Flow<PartnerSocketEvent> {
+        return observeEvents().mapNotNull { it as? PartnerSocketEvent }
     }
 
-    private fun parsePartnerEvent(payload: String): PartnerSocketEvent? {
+    fun observePartnerStatusChangedEvents(): Flow<PartnerStatusChangedSocketEvent> {
+        return observeEvents().mapNotNull { it as? PartnerStatusChangedSocketEvent }
+    }
+
+    fun observeSelfStatusChangedEvents(): Flow<SelfStatusChangedSocketEvent> {
+        return observeEvents().mapNotNull { it as? SelfStatusChangedSocketEvent }
+    }
+
+    private fun parseEvent(payload: String): SemaphoreSocketEvent? {
         val root = runCatching { json.parseToJsonElement(payload).jsonObject }.getOrNull() ?: return null
 
         val type = root["type"]?.asStringOrNull()
-        val isPartnerStatusChanged = type == "PARTNER_STATUS_CHANGED"
-        val isPartnerUnlinked = type == "PARTNER_UNLINKED"
-        val isSemaphoreStatusChanged = root.containsKey("userId") && root.containsKey("timestamp")
-
-        if (!isPartnerStatusChanged && !isPartnerUnlinked && !isSemaphoreStatusChanged) {
-            return null
-        }
-
-        if (isPartnerStatusChanged) {
-            return SemaphoreStatusChangedSocketEvent(
+        return when (type) {
+            "PARTNER_STATUS_CHANGED" -> PartnerStatusChangedSocketEvent(
                 partnerId = root["senderId"].asStringOrNull() ?: root["partnerId"].asStringOrNull(),
                 status = root["status"].asStringOrNull(),
-                statusExpiration = null,
-                statusDuration = null
+                statusExpiration = root["statusExpiration"].asLongOrNull(),
+                statusDuration = root["statusDuration"].asLongOrNull()
             )
-        }
-
-        if (isPartnerUnlinked) {
-            return PartnerUnlinkedSocketEvent(
+            "SELF_STATUS_CHANGED" -> SelfStatusChangedSocketEvent(
+                userId = root["userId"].asStringOrNull() ?: root["senderId"].asStringOrNull(),
+                status = root["status"].asStringOrNull(),
+                statusExpiration = root["statusExpiration"].asLongOrNull(),
+                statusDuration = root["statusDuration"].asLongOrNull()
+            )
+            "PARTNER_UNLINKED" -> PartnerUnlinkedSocketEvent(
                 partnerId = root["senderId"].asStringOrNull()
                     ?: root["partnerId"].asStringOrNull()
                     ?: root["userId"].asStringOrNull()
             )
+            else -> null
         }
-
-        return SemaphoreStatusChangedSocketEvent(
-            partnerId = root["userId"].asStringOrNull(),
-            status = root["status"].asStringOrNull(),
-            statusExpiration = root["statusExpiration"].asLongOrNull(),
-            statusDuration = null
-        )
     }
 
     private fun kotlinx.serialization.json.JsonElement?.asStringOrNull(): String? {
