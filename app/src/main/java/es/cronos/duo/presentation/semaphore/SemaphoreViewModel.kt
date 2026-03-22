@@ -164,6 +164,7 @@ class SemaphoreViewModel(
                     _state.update {
                         it.copy(
                             partnerStatus = null,
+                            partnerDisplayName = null,
                             partnerStatusExpiration = null
                         )
                     }
@@ -175,9 +176,12 @@ class SemaphoreViewModel(
                 }
                 previousPartnerStatus = partnerUser?.status
 
-                _state.update {
-                    it.copy(
+                _state.update { current ->
+                    current.copy(
                         partnerStatus = partnerUser?.status,
+                        partnerDisplayName = partnerUser.displayName
+                            ?.takeIf { name -> name.isNotBlank() }
+                            ?: current.partnerDisplayName,
                         partnerStatusExpiration = partnerUser?.statusExpiration
                     )
                 }
@@ -197,6 +201,7 @@ class SemaphoreViewModel(
             it.copy(
                 isPaired = false,
                 partnerStatus = null,
+                partnerDisplayName = null,
                 partnerStatusExpiration = null
             )
         }
