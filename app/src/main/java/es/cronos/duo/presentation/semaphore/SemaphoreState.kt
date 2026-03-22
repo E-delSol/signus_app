@@ -5,6 +5,7 @@ import es.cronos.duo.domain.model.SemaphoreStatus
 data class SemaphoreState(
     val userStatus: SemaphoreStatus = SemaphoreStatus.AVAILABLE,
     val partnerStatus: SemaphoreStatus? = null, // Ahora empieza como null para distinguir la carga inicial
+    val partnerDisplayName: String? = null,
     val isPaired: Boolean = true,
     val userStatusExpiration: Long? = null, // Expiración del estado del usuario
     val userStatusDuration: Long? = null, // Duración seleccionada original (ms)

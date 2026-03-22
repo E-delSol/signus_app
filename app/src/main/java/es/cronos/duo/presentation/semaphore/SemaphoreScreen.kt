@@ -148,6 +148,17 @@ fun SemaphoreScreen(
                 }
             }
 
+            if (state.isPaired) {
+                state.partnerDisplayName?.let { partnerDisplayName ->
+                    Text(
+                        text = partnerDisplayName,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                        modifier = Modifier.padding(top = 12.dp)
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.weight(0.5f))
 
             val isAvailable = state.userStatus == SemaphoreStatus.AVAILABLE
