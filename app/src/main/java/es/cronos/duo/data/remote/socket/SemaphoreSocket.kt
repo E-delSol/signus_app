@@ -1,6 +1,9 @@
 package es.cronos.duo.data.remote.socket
 
+import android.util.Log
 import es.cronos.duo.data.local.TokenStore
+import es.cronos.duo.data.network.ClientInstanceIdProvider
+import es.cronos.duo.data.network.NetworkEndpointConfig
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.webSocketSession
 import io.ktor.http.takeFrom
@@ -38,17 +41,25 @@ data class PartnerUnlinkedSocketEvent(
 
 class SemaphoreSocket(
     private val httpClient: HttpClient,
-    private val tokenStore: TokenStore
+    private val tokenStore: TokenStore,
+    private val endpointConfig: NetworkEndpointConfig,
+    private val clientInstanceIdProvider: ClientInstanceIdProvider
 ) {
     private val json = Json { ignoreUnknownKeys = true }
+    private val websocketUrl = endpointConfig.webSocketUrl
 
     fun observeEvents(): Flow<SemaphoreSocketEvent> = flow {
         val token = tokenStore.getToken()
             ?: throw IllegalStateException("Missing access token for websocket connection")
+        val clientInstanceId = clientInstanceIdProvider.getId()
+        val clientLabel = clientInstanceIdProvider.getLogLabel()
+
+        Log.d(TAG, "Opening websocket client=$clientLabel url=$websocketUrl")
 
         val session = httpClient.webSocketSession {
-            url.takeFrom("ws://10.0.2.2:8080/ws")
+            url.takeFrom(websocketUrl)
             url.parameters.append("token", token)
+            url.parameters.append(CLIENT_INSTANCE_QUERY, clientInstanceId)
         }
 
         try {
@@ -58,6 +69,7 @@ class SemaphoreSocket(
                 }
             }
         } finally {
+            Log.d(TAG, "Closing websocket client=$clientLabel")
             session.close()
         }
     }
@@ -106,5 +118,10 @@ class SemaphoreSocket(
 
     private fun kotlinx.serialization.json.JsonElement?.asLongOrNull(): Long? {
         return (this as? JsonPrimitive)?.contentOrNull?.toLongOrNull()
+    }
+
+    companion object {
+        private const val TAG = "SemaphoreSocket"
+        private const val CLIENT_INSTANCE_QUERY = "clientInstanceId"
     }
 }
