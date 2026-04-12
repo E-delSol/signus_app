@@ -1,62 +1,103 @@
-# Signus Android
+# 📱 Signus Android
 
-Android client for Signus, a traffic light style app that helps couples communicate their availability for intimacy in a simple, discreet, and low-pressure way, supporting communication rather than replacing it.
+Android client for a real-time system designed to help couples communicate availability in a simple, discreet, and low-pressure way.
 
-## Product Summary
+---
 
-Signus provides a shared semaphore between two linked users so each person can communicate availability through a lightweight status signal. It is designed to reduce friction and support communication in situations where direct verbal expression may be difficult or uncomfortable.
+## 🚀 Project Summary
 
-It is not intended to replace conversation, but to make it easier to approach.
+This application is part of the **Signus ecosystem**, a real-time system composed of:
 
-For the full product context and positioning, see [PRODUCT_OVERVIEW.md](./PRODUCT_OVERVIEW.md).
+* [signus_app](https://github.com/E-delSol/signus_app) — Android client (this repository)
+* [signus_back](https://github.com/E-delSol/signus_back) — Backend API (Ktor + WebSockets)
+* signus_infra — Infrastructure and deployment
 
-## Architecture
+The app provides a shared **“traffic light” style status** between two users, allowing lightweight communication without replacing conversation.
 
-The app follows an MVVM + Clean Architecture style within a single Android module.
+---
 
-Main flow:
+## 🧩 What this project demonstrates
 
-`Compose UI -> ViewModel -> Use Case -> Repository -> Remote API / Data Source`
+* Building a real-world Android app with **Jetpack Compose**
+* Applying **MVVM + Clean Architecture**
+* Integrating **HTTP + WebSockets + FCM**
+* Managing real-time state between users
+* Designing UI for **sensitive communication contexts**
+* Coordinating client behavior with backend-driven state
 
-Key characteristics:
+---
 
-- Jetpack Compose for UI
-- ViewModels expose screen state with `StateFlow`
-- `Flow` is used for observable user and realtime streams
-- Domain use cases orchestrate application actions
-- Repository interfaces isolate the domain layer from implementation details
-- Data layer integrates HTTP, WebSocket, secure local storage, and FCM
+## 🏗️ Architecture
 
-## Core Features
+The app follows an MVVM + Clean Architecture approach within a single Android module.
 
-- JWT authentication against the backend
-- Linking between two users via code or QR flow
-- Shared semaphore status: `AVAILABLE`, `BUSY`, `OFFLINE`
-- Realtime partner updates via WebSocket
-- FCM push notifications as fallback
-- Backend-driven session and user state
+```text
+Compose UI
+   ↓
+ViewModel
+   ↓
+Use Case
+   ↓
+Repository
+   ↓
+Remote API / WebSocket / Local Storage
+```
 
-## Realtime and Push Flow
+### Key characteristics
 
-- Foreground: partner status updates are primarily received through WebSocket events
-- Background or unavailable realtime channel: FCM is used as fallback notification delivery
-- The backend is the source of truth for user state, linking state, and event semantics
+* Jetpack Compose for UI
+* ViewModels expose state using `StateFlow`
+* `Flow` used for observable streams and realtime updates
+* Use cases orchestrate domain logic
+* Repository layer isolates data sources from domain logic
+* Data layer integrates HTTP, WebSocket, secure storage, and FCM
 
-## Networking
+---
 
-- HTTP via Ktor client
-- JWT sent as `Authorization: Bearer <token>`
-- WebSocket connection authenticated with the current access token
-- High-level backend integrations include:
-  - authentication
-  - current user
-  - linking sessions
-  - partner state
-  - semaphore status updates
-  - device FCM token registration
-  - websocket events
+## ⚡ Core Features
 
-## Project Structure
+* JWT-based authentication
+* Linking between two users via code or QR flow
+* Shared status:
+
+  * `AVAILABLE`
+  * `BUSY`
+  * `OFFLINE`
+* Real-time partner updates via WebSocket
+* FCM push notifications as fallback
+* Backend-driven session and user state
+
+---
+
+## 🔌 Realtime & Push Flow
+
+The system is designed around **real-time communication with graceful degradation**.
+
+* **Foreground** → WebSocket is the primary channel
+* **Background / fallback** → FCM is used for notifications
+* Backend remains the **source of truth**
+
+---
+
+## 🌐 Networking
+
+* HTTP via Ktor client
+* JWT authentication via `Authorization: Bearer <token>`
+* WebSocket authenticated with access token
+
+Main integrations:
+
+* authentication
+* current user
+* linking sessions
+* partner state
+* status updates
+* FCM token registration
+* realtime events
+
+---
+
+## 📂 Project Structure
 
 ```text
 app/
@@ -66,67 +107,78 @@ app/
     presentation/
 ```
 
-- `data/`: repository implementations, remote APIs, websocket, FCM, local secure storage
-- `domain/`: use cases, repository contracts, domain models
-- `presentation/`: Compose screens, ViewModels, UI state, navigation
+* `data/` → repositories, APIs, WebSocket, FCM, secure storage
+* `domain/` → use cases, contracts, models
+* `presentation/` → UI, ViewModels, navigation
 
-## Setup / Run
+---
 
-Requirements:
+## ▶️ Setup / Run
 
-- Android Studio
-- Android SDK configured
-- Running Signus backend
-- Firebase project configured for FCM
-- `google-services.json` added to the app module
+### Requirements
 
-Run steps:
+* Android Studio
+* Android SDK configured
+* Running Signus backend
+* Firebase project configured (FCM)
+* `google-services.json` added
 
-1. Start the Signus backend.
-2. Open the Android project in Android Studio.
-3. Configure Firebase Cloud Messaging for the Android app.
-4. Run the app on an emulator or device.
+### Steps
 
-## Backend Configuration
+1. Start the Signus backend
+2. Open the project in Android Studio
+3. Configure Firebase Cloud Messaging
+4. Run on emulator or device
 
-The Android app communicates with a Signus backend instance.
+---
+
+## 🔗 Backend Configuration
+
+The app requires a running backend instance.
 
 ### Local Development
 
-The project is fully reproducible in a local environment.
-
-- HTTP base URL is defined in:
-  `app/src/main/java/es/cronos/duo/data/network/NetworkHttpClientProvider.kt`
-- Default emulator URL:
+* Base URL:
   `http://10.0.2.2:8080`
-- WebSocket endpoint:
+* WebSocket endpoint:
   `ws://10.0.2.2:8080/ws`
 
-To run the system locally:
+Steps:
 
-1. Start the backend on your machine (port 8080).
-2. Run the Android app on an emulator.
-3. Ensure the emulator can reach the host machine (`10.0.2.2`).
+1. Run backend on port 8080
+2. Launch emulator
+3. Ensure connectivity via `10.0.2.2`
+
+---
 
 ### Deployment
 
-The backend can be deployed in any environment that supports the required stack (Ktor, PostgreSQL, etc.).
+The backend can be deployed in any compatible environment.
 
-A private deployment is used for the current product, but no public endpoint is provided.
+* No public endpoint is provided
+* Users must deploy their own backend instance
 
-The backend source code is available in a separate public repository.
+---
 
-Users interested in running the system should deploy their own backend instance.
+## 🧠 Notes
 
-## Notes
+* Designed for **sensitive communication scenarios**
+* Prioritizes clarity and reliability over complexity
+* Backend defines final behavior (auth, linking, state, realtime)
+* WebSocket requires valid JWT
+* FCM is fallback only
 
-- The app is designed for sensitive communication contexts, so both backend and client behavior should prioritize reliability, consistency, and clarity over complexity.
-- The backend must be available for the app to function correctly.
-- WebSocket connectivity requires a valid JWT.
-- FCM is used only for push notification fallback.
-- Backend contracts define the effective behavior of authentication, linking, status, and realtime events.
+---
 
-## License
+## 📄 License
 
-This project is licensed under the MIT License.
-See the LICENSE file for details.
+MIT License
+See [LICENSE](LICENSE)
+
+---
+
+## 👤 Author
+
+E-delSol
+
+---
