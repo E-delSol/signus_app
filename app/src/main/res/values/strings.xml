@@ -92,4 +92,6 @@
 
     <!-- Web Client ID -->
     <string name="default_web_client_id">932600907616-965o0aeipebasilp1gi626822qm12uhd.apps.googleusercontent.com</string>
+    <string name="begin">Comenzar</string>
+    <string name="begin_description">Inicia el proceso para vincularte con tu pareja</string>
 </resources>
