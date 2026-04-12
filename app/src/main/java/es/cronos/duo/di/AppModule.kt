@@ -5,6 +5,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessaging
 import es.cronos.duo.data.local.TokenStore
 import es.cronos.duo.data.network.NetworkHttpClientProvider
+import es.cronos.duo.data.network.NetworkEndpointConfig
+import es.cronos.duo.data.network.ClientInstanceIdProvider
 import es.cronos.duo.data.remote.AuthApi
 import es.cronos.duo.data.remote.DeviceApi
 import es.cronos.duo.data.remote.HealthApi
@@ -42,6 +44,8 @@ val appModule = module {
     single { TokenStore(get<Context>()) }
 
     // Networking
+    singleOf(::NetworkEndpointConfig)
+    singleOf(::ClientInstanceIdProvider)
     singleOf(::NetworkHttpClientProvider)
     single<HttpClient> { get<NetworkHttpClientProvider>().client }
     singleOf(::AuthApi)

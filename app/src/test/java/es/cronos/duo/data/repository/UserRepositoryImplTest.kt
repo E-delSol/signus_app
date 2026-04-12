@@ -3,6 +3,7 @@ package es.cronos.duo.data.repository
 import android.util.Log
 import com.google.firebase.messaging.FirebaseMessaging
 import es.cronos.duo.data.local.TokenStore
+import es.cronos.duo.data.network.ClientInstanceIdProvider
 import es.cronos.duo.data.remote.DeviceApi
 import es.cronos.duo.data.remote.MeApi
 import es.cronos.duo.data.remote.PartnerApi
@@ -32,6 +33,7 @@ class UserRepositoryImplTest {
 
     private val tokenStore: TokenStore = mockk(relaxed = true)
     private val fcm: FirebaseMessaging = mockk()
+    private val clientInstanceIdProvider: ClientInstanceIdProvider = mockk()
     private val deviceApi: DeviceApi = mockk(relaxed = true)
     private val meApi: MeApi = mockk()
     private val partnerApi: PartnerApi = mockk()
@@ -44,8 +46,18 @@ class UserRepositoryImplTest {
         mockkStatic(Log::class)
         every { Log.d(any(), any()) } returns 0
         every { Log.w(any(), any(), any()) } returns 0
+        every { clientInstanceIdProvider.getLogLabel() } returns "test1234"
         every { semaphoreSocket.observeSelfStatusChangedEvents() } returns emptyFlow()
-        userRepository = UserRepositoryImpl(tokenStore, fcm, deviceApi, meApi, partnerApi, semaphoreSocket, statusApi)
+        userRepository = UserRepositoryImpl(
+            tokenStore = tokenStore,
+            fcm = fcm,
+            clientInstanceIdProvider = clientInstanceIdProvider,
+            deviceApi = deviceApi,
+            meApi = meApi,
+            partnerApi = partnerApi,
+            semaphoreSocket = semaphoreSocket,
+            statusApi = statusApi
+        )
     }
 
     @Test
