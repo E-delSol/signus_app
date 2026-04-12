@@ -4,11 +4,13 @@ import android.util.Log
 import com.google.firebase.messaging.FirebaseMessaging
 import es.cronos.duo.BuildConfig
 import es.cronos.duo.data.local.TokenStore
+import es.cronos.duo.data.network.ClientInstanceIdProvider
 import es.cronos.duo.data.remote.DeviceApi
 import es.cronos.duo.data.remote.MeApi
 import es.cronos.duo.data.remote.PartnerApi
 import es.cronos.duo.data.remote.StatusApi
 import es.cronos.duo.data.remote.dto.UpsertDeviceTokenRequest
+import es.cronos.duo.data.remote.socket.PartnerStatusChangedSocketEvent
 import es.cronos.duo.data.remote.socket.PartnerUnlinkedSocketEvent
 import es.cronos.duo.data.remote.socket.SemaphoreSocket
 import es.cronos.duo.domain.model.SemaphoreStatus
@@ -16,21 +18,23 @@ import es.cronos.duo.domain.model.User
 import es.cronos.duo.domain.repository.UserRepository
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.http.HttpStatusCode
-import java.util.concurrent.CancellationException
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.util.concurrent.CancellationException
 
 class UserRepositoryImpl(
     private val tokenStore: TokenStore,
     private val fcm: FirebaseMessaging,
+    private val clientInstanceIdProvider: ClientInstanceIdProvider,
     private val deviceApi: DeviceApi,
     private val meApi: MeApi,
     private val partnerApi: PartnerApi,
@@ -45,9 +49,35 @@ class UserRepositoryImpl(
         }
     }
 
-    override fun observeUser(): Flow<User?> = currentUser.onStart {
+    override fun observeUser(): Flow<User?> = channelFlow {
         if (currentUser.value == null) {
-            getUser()
+            currentUser.value = fetchCurrentUser()
+        }
+
+        val currentUserJob = launch {
+            currentUser.collect { send(it) }
+        }
+        val selfStatusJob = launch {
+            try {
+                semaphoreSocket.observeSelfStatusChangedEvents().collect { event ->
+                    currentUser.update { user ->
+                        user?.copy(
+                            status = event.status?.let(::toSemaphoreStatus) ?: user.status,
+                            statusExpiration = event.statusExpiration,
+                            statusDuration = event.statusDuration
+                        )
+                    }
+                    Log.d(TAG, "Own status updated via websocket client=${clientInstanceIdProvider.getLogLabel()}")
+                }
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Log.w(TAG, "Own status websocket unavailable client=${clientInstanceIdProvider.getLogLabel()}", e)
+            }
+        }
+
+        awaitClose {
+            currentUserJob.cancel()
+            selfStatusJob.cancel()
         }
     }
 
@@ -62,6 +92,13 @@ class UserRepositoryImpl(
         // Backend PATCH /status solo soporta el estado simple por ahora.
         // expirationTimestamp y statusDuration se mantienen en la firma para no romper el flujo actual.
         statusApi.updateStatus(status.name)
+        currentUser.update { user ->
+            user?.copy(
+                status = status,
+                statusExpiration = expirationTimestamp,
+                statusDuration = statusDuration
+            )
+        }
     }
 
     override fun getPartnerStatus(partnerId: String): Flow<User?> = flow {
@@ -70,11 +107,11 @@ class UserRepositoryImpl(
             semaphoreSocket.observePartnerEvents().collect { event ->
                 when (event) {
                     is PartnerUnlinkedSocketEvent -> {
-                        Log.d(TAG, "Partner unlinked via websocket")
+                        Log.d(TAG, "Partner unlinked via websocket client=${clientInstanceIdProvider.getLogLabel()}")
                         currentUser.update { user -> user?.copy(partnerId = null) }
                         emit(null)
                     }
-                    is es.cronos.duo.data.remote.socket.SemaphoreStatusChangedSocketEvent -> {
+                    is PartnerStatusChangedSocketEvent -> {
                         val partnerUser = User(
                             id = event.partnerId ?: partnerId,
                             partnerId = null,
@@ -82,14 +119,14 @@ class UserRepositoryImpl(
                             statusExpiration = event.statusExpiration,
                             statusDuration = event.statusDuration
                         )
-                        Log.d(TAG, "Partner status updated via websocket")
+                        Log.d(TAG, "Partner status updated via websocket client=${clientInstanceIdProvider.getLogLabel()}")
                         emit(partnerUser)
                     }
                 }
             }
         } catch (e: Exception) {
             if (e is CancellationException) throw e
-            Log.w(TAG, "Partner websocket unavailable, using polling fallback", e)
+            Log.w(TAG, "Partner websocket unavailable, using polling fallback client=${clientInstanceIdProvider.getLogLabel()}", e)
             while (currentCoroutineContext().isActive) {
                 delay(3000L)
                 emit(fetchPartnerUser())
@@ -115,7 +152,7 @@ class UserRepositoryImpl(
         }.onFailure { error ->
             Log.w(
                 TAG,
-                "Failed to register/update FCM token. deviceIdPresent=${deviceId.isNotBlank()}, tokenLength=${fcmToken.length}, platform=${request.platform}, appVersion=$appVersion",
+                "Failed to register/update FCM token. client=${clientInstanceIdProvider.getLogLabel()}, deviceIdPresent=${deviceId.isNotBlank()}, tokenLength=${fcmToken.length}, platform=${request.platform}, appVersion=$appVersion",
                 error
             )
         }
@@ -130,7 +167,7 @@ class UserRepositoryImpl(
                 registerOrUpdateDeviceToken(token)
             }
         }.onFailure { error ->
-            Log.w(TAG, "Failed to fetch FCM token", error)
+            Log.w(TAG, "Failed to fetch FCM token client=${clientInstanceIdProvider.getLogLabel()}", error)
         }
     }
 
@@ -140,7 +177,7 @@ class UserRepositoryImpl(
         runCatching {
             deviceApi.deactivateDeviceToken(deviceId)
         }.onFailure { error ->
-            Log.w(TAG, "Failed to deactivate FCM token", error)
+            Log.w(TAG, "Failed to deactivate FCM token client=${clientInstanceIdProvider.getLogLabel()}", error)
         }
     }
 

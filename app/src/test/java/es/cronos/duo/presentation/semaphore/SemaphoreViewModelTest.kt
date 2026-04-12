@@ -97,11 +97,34 @@ class SemaphoreViewModelTest {
         initViewModel()
         advanceUntilIdle()
 
-        val partnerUser = User(id = "partner123", status = SemaphoreStatus.AVAILABLE)
+        val partnerUser = User(
+            id = "partner123",
+            displayName = "Taylor",
+            status = SemaphoreStatus.AVAILABLE
+        )
         partnerFlow.tryEmit(partnerUser)
         advanceUntilIdle()
 
         viewModel.state.value.partnerStatus shouldBeEqualTo SemaphoreStatus.AVAILABLE
+        viewModel.state.value.partnerDisplayName shouldBeEqualTo "Taylor"
+    }
+
+    @Test
+    fun `given user status changes from observed user flow when state updates then partner status remains unchanged`() = runTest {
+        val user = User(id = "1", status = SemaphoreStatus.AVAILABLE, partnerId = "partner123")
+        userFlow.tryEmit(user)
+        initViewModel()
+        advanceUntilIdle()
+
+        partnerFlow.tryEmit(User(id = "partner123", status = SemaphoreStatus.BUSY))
+        advanceUntilIdle()
+
+        userFlow.tryEmit(user.copy(status = SemaphoreStatus.BUSY, statusExpiration = 12345L))
+        advanceUntilIdle()
+
+        viewModel.state.value.userStatus shouldBeEqualTo SemaphoreStatus.BUSY
+        viewModel.state.value.userStatusExpiration shouldBeEqualTo 12345L
+        viewModel.state.value.partnerStatus shouldBeEqualTo SemaphoreStatus.BUSY
     }
 
     @Test
@@ -139,6 +162,7 @@ class SemaphoreViewModelTest {
         advanceUntilIdle()
 
         viewModel.state.value.isPaired shouldBeEqualTo false
+        viewModel.state.value.partnerDisplayName shouldBeEqualTo null
     }
 
     @Test
@@ -156,6 +180,7 @@ class SemaphoreViewModelTest {
 
         viewModel.state.value.isPaired shouldBeEqualTo false
         viewModel.state.value.partnerStatus shouldBeEqualTo null
+        viewModel.state.value.partnerDisplayName shouldBeEqualTo null
         eventDeferred.await() shouldBeEqualTo SemaphoreViewModel.UiEvent.ShowUnlinkedDialog
     }
 }

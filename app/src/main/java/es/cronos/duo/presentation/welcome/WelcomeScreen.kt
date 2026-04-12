@@ -66,8 +66,8 @@ fun WelcomeScreen(navController: NavController) {
             Spacer(modifier = Modifier.weight(1f))
 
             PartnerLinkButton(
-                title = stringResource(R.string.go_to_pairing_title),
-                description = stringResource(R.string.go_to_pairing_description),
+                title = stringResource(R.string.begin),
+                description = stringResource(R.string.begin_description),
                 icon = Icons.Filled.AddLink,
                 onClick = { navController.navigate(Login) },
                 modifier = Modifier.testTag("start_button")

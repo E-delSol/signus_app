@@ -3,6 +3,7 @@ package es.cronos.duo.data.repository
 import android.util.Log
 import com.google.firebase.messaging.FirebaseMessaging
 import es.cronos.duo.data.local.TokenStore
+import es.cronos.duo.data.network.ClientInstanceIdProvider
 import es.cronos.duo.data.remote.DeviceApi
 import es.cronos.duo.data.remote.MeApi
 import es.cronos.duo.data.remote.PartnerApi
@@ -11,14 +12,17 @@ import es.cronos.duo.data.remote.dto.MeResponseDto
 import es.cronos.duo.data.remote.dto.PartnerResponseDto
 import es.cronos.duo.data.remote.socket.PartnerUnlinkedSocketEvent
 import es.cronos.duo.data.remote.socket.SemaphoreSocket
+import es.cronos.duo.data.remote.socket.SelfStatusChangedSocketEvent
 import es.cronos.duo.domain.model.SemaphoreStatus
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.emptyFlow
 import io.mockk.mockkStatic
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.amshove.kluent.shouldBeEqualTo
@@ -29,6 +33,7 @@ class UserRepositoryImplTest {
 
     private val tokenStore: TokenStore = mockk(relaxed = true)
     private val fcm: FirebaseMessaging = mockk()
+    private val clientInstanceIdProvider: ClientInstanceIdProvider = mockk()
     private val deviceApi: DeviceApi = mockk(relaxed = true)
     private val meApi: MeApi = mockk()
     private val partnerApi: PartnerApi = mockk()
@@ -41,7 +46,18 @@ class UserRepositoryImplTest {
         mockkStatic(Log::class)
         every { Log.d(any(), any()) } returns 0
         every { Log.w(any(), any(), any()) } returns 0
-        userRepository = UserRepositoryImpl(tokenStore, fcm, deviceApi, meApi, partnerApi, semaphoreSocket, statusApi)
+        every { clientInstanceIdProvider.getLogLabel() } returns "test1234"
+        every { semaphoreSocket.observeSelfStatusChangedEvents() } returns emptyFlow()
+        userRepository = UserRepositoryImpl(
+            tokenStore = tokenStore,
+            fcm = fcm,
+            clientInstanceIdProvider = clientInstanceIdProvider,
+            deviceApi = deviceApi,
+            meApi = meApi,
+            partnerApi = partnerApi,
+            semaphoreSocket = semaphoreSocket,
+            statusApi = statusApi
+        )
     }
 
     @Test
@@ -126,6 +142,32 @@ class UserRepositoryImplTest {
         result[0]?.id shouldBeEqualTo "partner123"
         result[1] shouldBeEqualTo null
         userRepository.observeUser().first()?.partnerId shouldBeEqualTo null
+    }
+
+    @Test
+    fun `given websocket self status changed event when observeUser is collected then cached user status updates`() = runTest {
+        coEvery { meApi.getMe() } returns MeResponseDto(
+            id = "user123",
+            partnerId = "partner123",
+            status = "AVAILABLE"
+        )
+        every {
+            semaphoreSocket.observeSelfStatusChangedEvents()
+        } returns flowOf(
+            SelfStatusChangedSocketEvent(
+                userId = "user123",
+                status = "BUSY",
+                statusExpiration = 22222L,
+                statusDuration = 60000L
+            )
+        )
+
+        val result = userRepository.observeUser().take(2).toList()
+
+        result[0]?.status shouldBeEqualTo SemaphoreStatus.AVAILABLE
+        result[1]?.status shouldBeEqualTo SemaphoreStatus.BUSY
+        result[1]?.statusExpiration shouldBeEqualTo 22222L
+        result[1]?.statusDuration shouldBeEqualTo 60000L
     }
 
     @Test
