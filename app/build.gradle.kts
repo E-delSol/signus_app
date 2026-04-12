@@ -27,6 +27,7 @@ android {
             versionNameSuffix = "-debug"
             isMinifyEnabled = false
             manifestPlaceholders["appName"] = "Signus Debug"
+            buildConfigField("String", "BASE_URL", "\"http://79.72.50.123\"")
         }
         release {
             manifestPlaceholders += mapOf("appName" to "Signus")
@@ -37,6 +38,7 @@ android {
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("debug")
+            buildConfigField("String", "BASE_URL", "\"http://79.72.50.123\"")
         }
     }
     

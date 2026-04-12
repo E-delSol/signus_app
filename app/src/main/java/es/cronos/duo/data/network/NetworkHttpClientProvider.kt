@@ -1,5 +1,6 @@
 package es.cronos.duo.data.network
 
+import es.cronos.duo.BuildConfig
 import es.cronos.duo.data.local.TokenStore
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
@@ -28,7 +29,7 @@ class NetworkHttpClientProvider(
         install(WebSockets)
 
         defaultRequest {
-            url("http://10.0.2.2:8080")
+            url(BuildConfig.BASE_URL)
             contentType(ContentType.Application.Json)
             val token = tokenStore.getToken()
             if (!token.isNullOrBlank() && headers[HttpHeaders.Authorization] == null) {
