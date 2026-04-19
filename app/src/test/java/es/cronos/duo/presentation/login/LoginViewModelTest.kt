@@ -4,7 +4,6 @@ import es.cronos.duo.domain.model.User
 import es.cronos.duo.domain.usecase.LoginWithEmailUseCase
 import es.cronos.duo.domain.usecase.RegisterWithEmailUseCase
 import es.cronos.duo.domain.util.Resource
-import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +24,6 @@ class LoginViewModelTest {
 
     private val loginWithEmailUseCase: LoginWithEmailUseCase = mockk()
     private val registerWithEmailUseCase: RegisterWithEmailUseCase = mockk()
-    private val signInWithGoogleUseCase: SignInWithGoogleUseCase = mockk()
 
     private lateinit var viewModel: LoginViewModel
 
@@ -36,8 +34,7 @@ class LoginViewModelTest {
         Dispatchers.setMain(testDispatcher)
         viewModel = LoginViewModel(
             loginWithEmailUseCase,
-            registerWithEmailUseCase,
-            signInWithGoogleUseCase
+            registerWithEmailUseCase
         )
     }
 
@@ -113,33 +110,6 @@ class LoginViewModelTest {
         )
 
         viewModel.register(email, password, displayName)
-        advanceUntilIdle()
-
-        viewModel.state.value shouldBeEqualTo LoginState(error = errorMessage)
-    }
-
-    @Test
-    fun `given google sign in success when onGoogleSignIn is called then state is logged in with user`() = runTest {
-        val idToken = "google_token"
-        val user = User(id = "3", email = "google@example.com")
-        coEvery { signInWithGoogleUseCase(idToken) } returns Resource.Success(user)
-
-        viewModel.onGoogleSignIn(idToken)
-        advanceUntilIdle()
-
-        viewModel.state.value shouldBeEqualTo LoginState(
-            isLoggedIn = true,
-            user = user
-        )
-    }
-
-    @Test
-    fun `given google sign in error when onGoogleSignIn is called then state contains error`() = runTest {
-        val idToken = "google_token"
-        val errorMessage = "Google sign in failed"
-        coEvery { signInWithGoogleUseCase(idToken) } returns Resource.Error(errorMessage)
-
-        viewModel.onGoogleSignIn(idToken)
         advanceUntilIdle()
 
         viewModel.state.value shouldBeEqualTo LoginState(error = errorMessage)

@@ -1,8 +1,8 @@
 package es.cronos.duo.data.repository
 
 import android.util.Log
-import com.google.firebase.auth.FirebaseAuth
 import es.cronos.duo.data.local.TokenStore
+import es.cronos.duo.data.network.NetworkHttpClientProvider
 import es.cronos.duo.data.remote.AuthApi
 import es.cronos.duo.data.remote.dto.AuthResponseDto
 import es.cronos.duo.domain.repository.UserRepository
@@ -24,8 +24,8 @@ class AuthRepositoryImplTest {
 
     private val authApi: AuthApi = mockk()
     private val tokenStore: TokenStore = mockk(relaxed = true)
-    private val firebaseAuth: FirebaseAuth = mockk(relaxed = true)
     private val userRepository: UserRepository = mockk(relaxed = true)
+    private val networkHttpClientProvider: NetworkHttpClientProvider = mockk(relaxed = true)
 
     private lateinit var authRepository: AuthRepositoryImpl
 
@@ -36,8 +36,8 @@ class AuthRepositoryImplTest {
         authRepository = AuthRepositoryImpl(
             authApi = authApi,
             tokenStore = tokenStore,
-            firebaseAuth = firebaseAuth,
-            userRepository = userRepository
+            userRepository = userRepository,
+            networkHttpClientProvider = networkHttpClientProvider
         )
     }
 
@@ -46,7 +46,11 @@ class AuthRepositoryImplTest {
         val email = "test@example.com"
         val password = "password"
         val accessToken = "access-token"
-        coEvery { authApi.login(email, password) } returns AuthResponseDto(accessToken = accessToken)
+        val refreshToken = "refresh-token"
+        coEvery { authApi.login(email, password) } returns AuthResponseDto(
+            accessToken = accessToken,
+            refreshToken = refreshToken
+        )
 
         val result = authRepository.login(email, password)
 
@@ -54,6 +58,8 @@ class AuthRepositoryImplTest {
         result.data?.id shouldBeEqualTo "backend_user"
         result.data?.email shouldBeEqualTo email
         verify(exactly = 1) { tokenStore.saveToken(accessToken) }
+        verify(exactly = 1) { tokenStore.saveRefreshToken(refreshToken) }
+        verify(exactly = 1) { networkHttpClientProvider.clearBearerTokenCache() }
         coVerify(exactly = 1) { userRepository.syncFcmToken() }
     }
 
@@ -63,7 +69,11 @@ class AuthRepositoryImplTest {
         val password = "password"
         val displayName = "New User"
         val accessToken = "new-access-token"
-        coEvery { authApi.register(email, password, displayName) } returns AuthResponseDto(accessToken = accessToken)
+        val refreshToken = "new-refresh-token"
+        coEvery { authApi.register(email, password, displayName) } returns AuthResponseDto(
+            accessToken = accessToken,
+            refreshToken = refreshToken
+        )
 
         val result = authRepository.register(email, password, displayName)
 
@@ -72,6 +82,8 @@ class AuthRepositoryImplTest {
         result.data?.email shouldBeEqualTo email
         result.data?.displayName shouldBeEqualTo displayName
         verify(exactly = 1) { tokenStore.saveToken(accessToken) }
+        verify(exactly = 1) { tokenStore.saveRefreshToken(refreshToken) }
+        verify(exactly = 1) { networkHttpClientProvider.clearBearerTokenCache() }
         coVerify(exactly = 1) { userRepository.syncFcmToken() }
     }
 
@@ -112,6 +124,7 @@ class AuthRepositoryImplTest {
 
         coVerify(exactly = 1) { userRepository.deactivateDeviceToken("device-123") }
         verify(exactly = 1) { tokenStore.clearToken() }
-        verify(exactly = 1) { firebaseAuth.signOut() }
+        verify(exactly = 1) { tokenStore.clearRefreshToken() }
+        verify(exactly = 1) { networkHttpClientProvider.clearBearerTokenCache() }
     }
 }
