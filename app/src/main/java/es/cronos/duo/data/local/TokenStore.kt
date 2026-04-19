@@ -32,6 +32,18 @@ class TokenStore(
         preferences.edit().remove(KEY_ACCESS_TOKEN).apply()
     }
 
+    fun saveRefreshToken(token: String) {
+        preferences.edit().putString(KEY_REFRESH_TOKEN, token).apply()
+    }
+
+    fun getRefreshToken(): String? {
+        return preferences.getString(KEY_REFRESH_TOKEN, null)
+    }
+
+    fun clearRefreshToken() {
+        preferences.edit().remove(KEY_REFRESH_TOKEN).apply()
+    }
+
     fun getOrCreateDeviceId(): String {
         val existing = preferences.getString(KEY_DEVICE_ID, null)
         if (!existing.isNullOrBlank()) return existing
@@ -44,6 +56,7 @@ class TokenStore(
     companion object {
         private const val PREFERENCES_FILE = "auth_secure_prefs"
         private const val KEY_ACCESS_TOKEN = "key_access_token"
+        private const val KEY_REFRESH_TOKEN = "key_refresh_token"
         private const val KEY_DEVICE_ID = "key_device_id"
     }
 }

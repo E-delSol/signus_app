@@ -27,7 +27,7 @@ android {
             versionNameSuffix = "-debug"
             isMinifyEnabled = false
             manifestPlaceholders["appName"] = "Signus Debug"
-            buildConfigField("String", "BASE_URL", "\"http://79.72.50.123\"")
+            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080\"")
         }
         release {
             manifestPlaceholders += mapOf("appName" to "Signus")
@@ -68,6 +68,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.auth)
     implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.client.websockets)

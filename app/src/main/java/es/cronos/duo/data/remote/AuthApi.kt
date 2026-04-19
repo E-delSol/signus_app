@@ -33,6 +33,13 @@ class AuthApi(
         }.body()
     }
 
+    suspend fun refreshSession(refreshToken: String): AuthResponseDto {
+        return httpClient.post("/auth/refresh") {
+            expectSuccess = true
+            setBody(mapOf("refreshToken" to refreshToken))
+        }.body()
+    }
+
     suspend fun testProtected(): String {
         return httpClient.get("/auth/test") {
             expectSuccess = true

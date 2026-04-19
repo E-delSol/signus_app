@@ -66,7 +66,6 @@ val appModule = module {
     // Use Cases
     factoryOf(::LoginWithEmailUseCase)
     factoryOf(::RegisterWithEmailUseCase)
-    factoryOf(::SignInWithGoogleUseCase)
     factoryOf(::GenerateQrCodeUseCase)
     factoryOf(::GetLinkSessionStatusUseCase)
     factoryOf(::LinkPartnerUseCase)

@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import es.cronos.duo.domain.model.User
 import es.cronos.duo.domain.usecase.LoginWithEmailUseCase
 import es.cronos.duo.domain.usecase.RegisterWithEmailUseCase
-import es.cronos.duo.domain.usecase.SignInWithGoogleUseCase
 import es.cronos.duo.domain.util.Resource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,8 +13,7 @@ import kotlinx.coroutines.launch
 
 class LoginViewModel(
     private val loginWithEmailUseCase: LoginWithEmailUseCase,
-    private val registerWithEmailUseCase: RegisterWithEmailUseCase,
-    private val signInWithGoogleUseCase: SignInWithGoogleUseCase
+    private val registerWithEmailUseCase: RegisterWithEmailUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(LoginState())
@@ -37,27 +35,7 @@ class LoginViewModel(
         }
     }
 
-    fun onGoogleSignIn(idToken: String) {
-        viewModelScope.launch {
-            _state.value = LoginState(isLoading = true)
-            when (val result = signInWithGoogleUseCase(idToken)) {
-                is Resource.Success -> {
-                    _state.value = LoginState(
-                        isLoggedIn = true,
-                        user = result.data
-                    )
-                }
-                is Resource.Error -> {
-                    _state.value = LoginState(error = result.message ?: "Error al iniciar sesión con Google")
-                }
-                is Resource.Loading -> {
-                    _state.value = LoginState(isLoading = true)
-                }
-            }
-        }
-    }
-
-    private suspend fun handleAuthResult(result: Resource<User>) {
+    private fun handleAuthResult(result: Resource<User>) {
         when (result) {
             is Resource.Success -> {
                 _state.value = LoginState(

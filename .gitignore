@@ -27,3 +27,5 @@ firebase.json
 
 **/serviceAccount*.json
 **/*secret*.json
+
+.codex

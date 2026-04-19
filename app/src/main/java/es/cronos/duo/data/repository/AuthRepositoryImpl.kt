@@ -1,9 +1,8 @@
 package es.cronos.duo.data.repository
 
 import android.util.Log
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
 import es.cronos.duo.data.local.TokenStore
+import es.cronos.duo.data.network.NetworkHttpClientProvider
 import es.cronos.duo.data.remote.AuthApi
 import es.cronos.duo.data.remote.dto.ErrorResponseDto
 import es.cronos.duo.domain.model.User
@@ -14,36 +13,27 @@ import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.ServerResponseException
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
-import kotlinx.coroutines.tasks.await
 import kotlinx.serialization.json.Json
 import java.io.IOException
-import kotlin.coroutines.cancellation.CancellationException
 
 class AuthRepositoryImpl(
     private val authApi: AuthApi,
     private val tokenStore: TokenStore,
-    private val firebaseAuth: FirebaseAuth,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val networkHttpClientProvider: NetworkHttpClientProvider
 ) : AuthRepository {
 
     override val currentUser: User?
-        get() {
-            if (isLoggedIn()) {
-                return User(id = "backend_user")
-            }
-            return try {
-                firebaseAuth.currentUser?.let {
-                    User(it.uid, it.email, it.displayName)
-                }
-            } catch (_: Exception) {
-                null
-            }
+        get() = if (isLoggedIn()) {
+            User(id = "backend_user")
+        } else {
+            null
         }
 
     override suspend fun login(email: String, password: String): Resource<User> {
         try {
             val response = authApi.login(email = email, password = password)
-            tokenStore.saveToken(response.accessToken)
+            storeSessionTokens(response.accessToken, response.refreshToken)
             userRepository.syncFcmToken()
             return Resource.Success(
                 User(
@@ -70,7 +60,7 @@ class AuthRepositoryImpl(
                 password = password,
                 displayName = displayName
             )
-            tokenStore.saveToken(response.accessToken)
+            storeSessionTokens(response.accessToken, response.refreshToken)
             userRepository.syncFcmToken()
             return Resource.Success(
                 User(
@@ -102,10 +92,28 @@ class AuthRepositoryImpl(
                 userRepository.deactivateDeviceToken(deviceId)
             }
         }
-        tokenStore.clearToken()
-        try {
-            firebaseAuth.signOut()
-        } catch (_: Exception) {}
+        clearSessionTokens()
+    }
+
+    override suspend fun refreshSession(): Boolean {
+        val refreshToken = tokenStore.getRefreshToken() ?: return false
+        return try {
+            val response = authApi.refreshSession(refreshToken)
+
+            Log.d("AuthRefresh", "Old access token: ${tokenStore.getToken()}")
+            Log.d("AuthRefresh", "New access token: ${response.accessToken}")
+            Log.d("AuthRefresh", "Old refresh token: ${tokenStore.getRefreshToken()}")
+            Log.d("AuthRefresh", "New refresh token: ${response.refreshToken}")
+
+            storeSessionTokens(response.accessToken, response.refreshToken)
+            true
+        } catch (_: ClientRequestException) {
+            false
+        } catch (_: ServerResponseException) {
+            false
+        } catch (_: IOException) {
+            false
+        }
     }
 
     override suspend fun testProtectedEndpoint(): Resource<String> {
@@ -122,35 +130,6 @@ class AuthRepositoryImpl(
         } catch (e: Exception) {
             Log.w(TAG, "Unexpected protected endpoint error", e)
             Resource.Error("No se pudo completar la operación")
-        }
-    }
-
-    override suspend fun signInWithGoogle(idToken: String): Resource<User> {
-        return try {
-            val credential = GoogleAuthProvider.getCredential(idToken, null)
-            val authResult = firebaseAuth.signInWithCredential(credential).await()
-            val user = authResult.user
-            if (user != null) {
-                Resource.Success(User(user.uid, user.email, user.displayName))
-            } else {
-                Resource.Error("Error desconocido con Google Sign-In")
-            }
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            Log.w(TAG, "Google Sign-In failed", e)
-            Resource.Error("No se pudo iniciar sesión con Google")
-        }
-    }
-
-    override fun signOut() {
-        runCatching {
-            kotlinx.coroutines.runBlocking { logout() }
-        }.onFailure {
-            tokenStore.clearToken()
-            try {
-                firebaseAuth.signOut()
-            } catch (_: Exception) {}
         }
     }
 
@@ -178,6 +157,18 @@ class AuthRepositoryImpl(
             HttpStatusCode.Unauthorized -> backendMessage ?: "No autorizado"
             else -> "Error inesperado al registrarse (${status.value})"
         }
+    }
+
+    private fun storeSessionTokens(accessToken: String, refreshToken: String) {
+        tokenStore.saveToken(accessToken)
+        tokenStore.saveRefreshToken(refreshToken)
+        networkHttpClientProvider.clearBearerTokenCache()
+    }
+
+    private fun clearSessionTokens() {
+        tokenStore.clearToken()
+        tokenStore.clearRefreshToken()
+        networkHttpClientProvider.clearBearerTokenCache()
     }
 
     companion object {
