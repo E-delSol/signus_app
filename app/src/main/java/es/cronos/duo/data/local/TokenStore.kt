@@ -5,6 +5,43 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import java.util.UUID
 
+/**
+ * ⚠️ IMPORTANT: Deprecated API usage (intentional)
+ *
+ * This class uses EncryptedSharedPreferences and MasterKey, which are deprecated
+ * in androidx.security:security-crypto 1.1.0.
+ *
+ * Official documentation:
+ * - EncryptedSharedPreferences is deprecated and suggests using SharedPreferences instead.
+ * - However, there is currently NO drop-in replacement that provides encrypted
+ *   key-value storage with the same guarantees.
+ *
+ * Why we keep this implementation:
+ * - Stores sensitive data: accessToken, refreshToken, deviceId
+ * - This storage is part of the authentication core flow (login, refresh, logout)
+ * - Replacing it requires a controlled migration to avoid:
+ *     - session loss
+ *     - broken refresh token flow
+ *     - deviceId inconsistency
+ *
+ * ⚠️ DO NOT replace or refactor this lightly.
+ *
+ * Any migration must:
+ * - Be staged (dual read / gradual write)
+ * - Preserve existing persisted data
+ * - Be validated against auth flows and app updates
+ *
+ * Security note:
+ * - This storage is excluded from Auto Backup and device transfer,
+ *   as required by Android documentation, to avoid restoring encrypted
+ *   data without the corresponding keystore key.
+ *
+ * See:
+ * - ARCHITECTURE.md (auth & persistence)
+ * - rules.md (no architectural violations)
+ *
+ * Refactor strategy must be defined BEFORE any implementation change.
+ */
 class TokenStore(
     context: Context
 ) {
