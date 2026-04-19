@@ -3,7 +3,6 @@ package es.cronos.duo.presentation.login
 import es.cronos.duo.domain.model.User
 import es.cronos.duo.domain.usecase.LoginWithEmailUseCase
 import es.cronos.duo.domain.usecase.RegisterWithEmailUseCase
-import es.cronos.duo.domain.usecase.SignInWithGoogleUseCase
 import es.cronos.duo.domain.util.Resource
 import io.mockk.coEvery
 import io.mockk.every
