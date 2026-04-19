@@ -7,6 +7,11 @@ import es.cronos.duo.data.remote.AuthApi
 import es.cronos.duo.data.remote.dto.AuthResponseDto
 import es.cronos.duo.domain.repository.UserRepository
 import es.cronos.duo.domain.util.Resource
+import io.ktor.client.call.HttpClientCall
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.http.HttpStatusCode
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -32,6 +37,8 @@ class AuthRepositoryImplTest {
     @Before
     fun setup() {
         mockkStatic(Log::class)
+        mockkStatic("io.ktor.client.statement.HttpResponseKt")
+        every { Log.d(any(), any()) } returns 0
         every { Log.w(any(), any(), any()) } returns 0
         authRepository = AuthRepositoryImpl(
             authApi = authApi,
@@ -126,5 +133,135 @@ class AuthRepositoryImplTest {
         verify(exactly = 1) { tokenStore.clearToken() }
         verify(exactly = 1) { tokenStore.clearRefreshToken() }
         verify(exactly = 1) { networkHttpClientProvider.clearBearerTokenCache() }
+    }
+
+    @Test
+    fun `when refresh session succeeds then replace access and refresh tokens and clear bearer cache`() = runTest {
+        every { tokenStore.getRefreshToken() } returns "stored-refresh-token"
+        every { tokenStore.getToken() } returns "stored-access-token"
+        coEvery { authApi.refreshSession("stored-refresh-token") } returns AuthResponseDto(
+            accessToken = "new-access-token",
+            refreshToken = "new-refresh-token"
+        )
+
+        val result = authRepository.refreshSession()
+
+        result shouldBeEqualTo true
+        verify(exactly = 1) { tokenStore.saveToken("new-access-token") }
+        verify(exactly = 1) { tokenStore.saveRefreshToken("new-refresh-token") }
+        verify(exactly = 1) { networkHttpClientProvider.clearBearerTokenCache() }
+    }
+
+    @Test
+    fun `when refresh session has client request exception then return false and keep stored tokens unchanged`() = runTest {
+        every { tokenStore.getRefreshToken() } returns "stored-refresh-token"
+        coEvery { authApi.refreshSession("stored-refresh-token") } throws clientRequestException(
+            status = HttpStatusCode.Unauthorized
+        )
+
+        val result = authRepository.refreshSession()
+
+        result shouldBeEqualTo false
+        verify(exactly = 0) { tokenStore.saveToken(any()) }
+        verify(exactly = 0) { tokenStore.saveRefreshToken(any()) }
+        verify(exactly = 0) { networkHttpClientProvider.clearBearerTokenCache() }
+    }
+
+    @Test
+    fun `when refresh session has io exception then return false and keep stored tokens unchanged`() = runTest {
+        every { tokenStore.getRefreshToken() } returns "stored-refresh-token"
+        coEvery { authApi.refreshSession("stored-refresh-token") } throws IOException("offline")
+
+        val result = authRepository.refreshSession()
+
+        result shouldBeEqualTo false
+        verify(exactly = 0) { tokenStore.saveToken(any()) }
+        verify(exactly = 0) { tokenStore.saveRefreshToken(any()) }
+        verify(exactly = 0) { networkHttpClientProvider.clearBearerTokenCache() }
+    }
+
+    @Test
+    fun `when login returns unauthorized with backend error then propagate backend message`() = runTest {
+        val email = "test@example.com"
+        val password = "password"
+        coEvery { authApi.login(email, password) } throws clientRequestException(
+            status = HttpStatusCode.Unauthorized,
+            body = """{"error":"Credenciales del backend"}"""
+        )
+
+        val result = authRepository.login(email, password)
+
+        result shouldBeInstanceOf Resource.Error::class
+        result.message shouldBeEqualTo "Credenciales del backend"
+    }
+
+    @Test
+    fun `when login returns unauthorized without backend error then use default invalid credentials message`() = runTest {
+        val email = "test@example.com"
+        val password = "password"
+        coEvery { authApi.login(email, password) } throws clientRequestException(
+            status = HttpStatusCode.Unauthorized
+        )
+
+        val result = authRepository.login(email, password)
+
+        result shouldBeInstanceOf Resource.Error::class
+        result.message shouldBeEqualTo "Credenciales inválidas"
+    }
+
+    @Test
+    fun `when login returns bad request without backend error then use default invalid data message`() = runTest {
+        val email = "test@example.com"
+        val password = "password"
+        coEvery { authApi.login(email, password) } throws clientRequestException(
+            status = HttpStatusCode.BadRequest
+        )
+
+        val result = authRepository.login(email, password)
+
+        result shouldBeInstanceOf Resource.Error::class
+        result.message shouldBeEqualTo "Datos inválidos"
+    }
+
+    @Test
+    fun `when register returns conflict with backend error then propagate backend message`() = runTest {
+        val email = "new@example.com"
+        val password = "password"
+        val displayName = "New User"
+        coEvery { authApi.register(email, password, displayName) } throws clientRequestException(
+            status = HttpStatusCode.Conflict,
+            body = """{"error":"Email ya registrado"}"""
+        )
+
+        val result = authRepository.register(email, password, displayName)
+
+        result shouldBeInstanceOf Resource.Error::class
+        result.message shouldBeEqualTo "Email ya registrado"
+    }
+
+    @Test
+    fun `when register returns conflict without backend error then use default conflict message`() = runTest {
+        val email = "new@example.com"
+        val password = "password"
+        val displayName = "New User"
+        coEvery { authApi.register(email, password, displayName) } throws clientRequestException(
+            status = HttpStatusCode.Conflict
+        )
+
+        val result = authRepository.register(email, password, displayName)
+
+        result shouldBeInstanceOf Resource.Error::class
+        result.message shouldBeEqualTo "Conflicto al registrarse"
+    }
+
+    private fun clientRequestException(
+        status: HttpStatusCode,
+        body: String = ""
+    ): ClientRequestException {
+        val response = mockk<HttpResponse>(relaxed = true)
+        every { response.status } returns status
+        every { response.call } returns mockk<HttpClientCall>(relaxed = true)
+        coEvery { response.bodyAsText() } returns body
+        return ClientRequestException(response, body)
     }
 }

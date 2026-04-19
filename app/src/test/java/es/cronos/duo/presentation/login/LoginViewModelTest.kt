@@ -9,7 +9,11 @@ import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -113,5 +117,111 @@ class LoginViewModelTest {
         advanceUntilIdle()
 
         viewModel.state.value shouldBeEqualTo LoginState(error = errorMessage)
+    }
+
+    @Test
+    fun `given login flow emits loading then success when login is called then state flow emits initial loading and success in order`() = runTest {
+        val email = "test@example.com"
+        val password = "password"
+        val user = User(id = "backend_user", email = email)
+        val emittedStates = mutableListOf<LoginState>()
+        every { loginWithEmailUseCase(email, password) } returns flowOf(
+            Resource.Loading(),
+            Resource.Success(user)
+        )
+
+        val collectJob = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.state.take(3).toList(emittedStates)
+        }
+
+        viewModel.login(email, password)
+        advanceUntilIdle()
+
+        emittedStates shouldBeEqualTo listOf(
+            LoginState(),
+            LoginState(isLoading = true),
+            LoginState(isLoggedIn = true, user = user)
+        )
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `given login flow emits loading then error when login is called then state flow emits initial loading and error in order`() = runTest {
+        val email = "test@example.com"
+        val password = "password"
+        val errorMessage = "Credenciales inválidas"
+        val emittedStates = mutableListOf<LoginState>()
+        every { loginWithEmailUseCase(email, password) } returns flowOf(
+            Resource.Loading(),
+            Resource.Error(errorMessage)
+        )
+
+        val collectJob = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.state.take(3).toList(emittedStates)
+        }
+
+        viewModel.login(email, password)
+        advanceUntilIdle()
+
+        emittedStates shouldBeEqualTo listOf(
+            LoginState(),
+            LoginState(isLoading = true),
+            LoginState(error = errorMessage)
+        )
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `given register flow emits loading then success when register is called then state flow emits initial loading and success in order`() = runTest {
+        val email = "new@example.com"
+        val password = "password123"
+        val displayName = "New User"
+        val user = User(id = "backend_user", email = email, displayName = displayName)
+        val emittedStates = mutableListOf<LoginState>()
+        every { registerWithEmailUseCase(email, password, displayName) } returns flowOf(
+            Resource.Loading(),
+            Resource.Success(user)
+        )
+
+        val collectJob = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.state.take(3).toList(emittedStates)
+        }
+
+        viewModel.register(email, password, displayName)
+        advanceUntilIdle()
+
+        emittedStates shouldBeEqualTo listOf(
+            LoginState(),
+            LoginState(isLoading = true),
+            LoginState(isLoggedIn = true, user = user)
+        )
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `given register flow emits loading then error when register is called then state flow emits initial loading and error in order`() = runTest {
+        val email = "new@example.com"
+        val password = "password123"
+        val displayName = "New User"
+        val errorMessage = "Conflicto al registrarse"
+        val emittedStates = mutableListOf<LoginState>()
+        every { registerWithEmailUseCase(email, password, displayName) } returns flowOf(
+            Resource.Loading(),
+            Resource.Error(errorMessage)
+        )
+
+        val collectJob = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.state.take(3).toList(emittedStates)
+        }
+
+        viewModel.register(email, password, displayName)
+        advanceUntilIdle()
+
+        emittedStates shouldBeEqualTo listOf(
+            LoginState(),
+            LoginState(isLoading = true),
+            LoginState(error = errorMessage)
+        )
+        collectJob.cancel()
     }
 }
