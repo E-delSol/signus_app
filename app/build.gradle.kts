@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.kotlin.serialization)
 }
 
@@ -23,7 +24,7 @@ android {
     buildTypes {
         debug {
             // Se mantiene el applicationId sin sufijo para que coincida con el google-services.json actual
-            applicationIdSuffix = ""
+            applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
             isMinifyEnabled = false
             manifestPlaceholders["appName"] = "Signus Debug"
@@ -99,6 +100,7 @@ dependencies {
     // Firebase Dependencies
     implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
+    implementation(libs.firebase.crashlytics.ktx)
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-messaging-ktx")
 

@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -50,6 +51,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import es.cronos.duo.BuildConfig
 import es.cronos.duo.R
 import es.cronos.duo.components.CentralImage
 import es.cronos.duo.components.PartnerLinkButton
@@ -181,6 +183,17 @@ fun LoginScreen(
             }
 
             Spacer(modifier = Modifier.height(32.dp))
+
+            if (BuildConfig.DEBUG) {
+                Button(
+                    onClick = { throw RuntimeException("Test Crash") },
+                    modifier = Modifier.testTag("test_crash_button")
+                ) {
+                    Text("Test Crash")
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+            }
 
             PrivacyIndicator(onPrivacyClick = { showPrivacyPolicy = true })
 
