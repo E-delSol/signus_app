@@ -29,3 +29,5 @@ firebase.json
 **/*secret*.json
 
 .codex
+.atl
+.mobiai
