@@ -254,6 +254,99 @@ class AuthRepositoryImplTest {
         result.message shouldBeEqualTo "Conflicto al registrarse"
     }
 
+    @Test
+    fun `startupCheck when logged in and refresh succeeds returns Success`() = runTest {
+        every { tokenStore.getToken() } returns "valid-token"
+        every { tokenStore.getRefreshToken() } returns "valid-refresh"
+        coEvery { authApi.refreshSession("valid-refresh") } returns AuthResponseDto(
+            accessToken = "new-token",
+            refreshToken = "new-refresh"
+        )
+
+        val result = authRepository.startupCheck()
+
+        result shouldBeInstanceOf Resource.Success::class
+        coVerify(exactly = 1) { authApi.refreshSession("valid-refresh") }
+        coVerify(exactly = 0) { authApi.bootstrap() }
+    }
+
+    @Test
+    fun `startupCheck when logged in but refresh fails throws exception falls through to bootstrap`() = runTest {
+        every { tokenStore.getToken() } returns "valid-token"
+        every { tokenStore.getRefreshToken() } returns "valid-refresh"
+        coEvery { authApi.refreshSession("valid-refresh") } throws clientRequestException(
+            status = HttpStatusCode.Unauthorized
+        )
+        coEvery { authApi.bootstrap() } returns "ok"
+
+        val result = authRepository.startupCheck()
+
+        result shouldBeInstanceOf Resource.Success::class
+        coVerify(exactly = 1) { authApi.refreshSession("valid-refresh") }
+        coVerify(exactly = 1) { authApi.bootstrap() }
+    }
+
+    @Test
+    fun `startupCheck when not logged in calls bootstrap and returns Success`() = runTest {
+        every { tokenStore.getToken() } returns null
+        coEvery { authApi.bootstrap() } returns "ok"
+
+        val result = authRepository.startupCheck()
+
+        result shouldBeInstanceOf Resource.Success::class
+        coVerify(exactly = 1) { authApi.bootstrap() }
+        coVerify(exactly = 0) { authApi.refreshSession(any()) }
+    }
+
+    @Test
+    fun `startupCheck when not logged in and bootstrap throws client exception returns Error`() = runTest {
+        every { tokenStore.getToken() } returns null
+        coEvery { authApi.bootstrap() } throws clientRequestException(
+            status = HttpStatusCode.UpgradeRequired
+        )
+
+        val result = authRepository.startupCheck()
+
+        result shouldBeInstanceOf Resource.Error::class
+        result.message shouldBeEqualTo "Startup check failed"
+        coVerify(exactly = 1) { authApi.bootstrap() }
+    }
+
+    @Test
+    fun `startupCheck when bootstrap throws IOException returns network error`() = runTest {
+        every { tokenStore.getToken() } returns null
+        coEvery { authApi.bootstrap() } throws IOException("offline")
+
+        val result = authRepository.startupCheck()
+
+        result shouldBeInstanceOf Resource.Error::class
+        result.message shouldBeEqualTo "Error de red"
+    }
+
+    @Test
+    fun `startupCheck when bootstrap throws unexpected exception returns friendly error`() = runTest {
+        every { tokenStore.getToken() } returns null
+        coEvery { authApi.bootstrap() } throws IllegalStateException("unexpected")
+
+        val result = authRepository.startupCheck()
+
+        result shouldBeInstanceOf Resource.Error::class
+        result.message shouldBeEqualTo "Error inesperado en startup"
+    }
+
+    @Test
+    fun `startupCheck when logged in but no refresh token falls through to bootstrap`() = runTest {
+        every { tokenStore.getToken() } returns "valid-token"
+        every { tokenStore.getRefreshToken() } returns null
+        coEvery { authApi.bootstrap() } returns "ok"
+
+        val result = authRepository.startupCheck()
+
+        result shouldBeInstanceOf Resource.Success::class
+        coVerify(exactly = 0) { authApi.refreshSession(any()) }
+        coVerify(exactly = 1) { authApi.bootstrap() }
+    }
+
     private fun clientRequestException(
         status: HttpStatusCode,
         body: String = ""

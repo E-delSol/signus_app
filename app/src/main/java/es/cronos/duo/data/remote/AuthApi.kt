@@ -45,4 +45,10 @@ class AuthApi(
             expectSuccess = true
         }.body()
     }
+
+    suspend fun bootstrap(): String {
+        return httpClient.get("/auth/bootstrap") {
+            expectSuccess = true
+        }.body()
+    }
 }

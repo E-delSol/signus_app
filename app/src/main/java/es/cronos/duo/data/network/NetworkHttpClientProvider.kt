@@ -16,15 +16,22 @@ import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.encodedPath
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import okhttp3.Interceptor
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.Protocol
+import okhttp3.ResponseBody.Companion.toResponseBody
 
 class NetworkHttpClientProvider(
     private val tokenStore: TokenStore,
     private val endpointConfig: NetworkEndpointConfig,
-    private val clientInstanceIdProvider: ClientInstanceIdProvider
+    private val clientInstanceIdProvider: ClientInstanceIdProvider,
+    private val appVersionProvider: AppVersionProvider,
+    private val versionEnforcementInterceptor: VersionEnforcementInterceptor
 ) {
     val client: HttpClient = HttpClient(OkHttp) {
         install(ContentNegotiation) {
@@ -65,9 +72,23 @@ class NetworkHttpClientProvider(
         defaultRequest {
             url(endpointConfig.httpBaseUrl)
             contentType(ContentType.Application.Json)
+            headers.append(VersionEnforcementContract.VERSION_HEADER, appVersionProvider.versionName.substringBefore("-"))
             if (headers[CLIENT_INSTANCE_HEADER] == null) {
                 headers.append(CLIENT_INSTANCE_HEADER, clientInstanceIdProvider.getId())
             }
+        }
+
+        engine {
+            addInterceptor(Interceptor { chain ->
+                val request = chain.request()
+                val response = chain.proceed(request)
+                val code = response.code
+                if (code == HttpStatusCode.UpgradeRequired.value || code == HttpStatusCode.BadRequest.value) {
+                    val body = response.peekBody(Long.MAX_VALUE).string()
+                    versionEnforcementInterceptor.intercept(HttpStatusCode.fromValue(code), body)
+                }
+                response
+            })
         }
     }
 

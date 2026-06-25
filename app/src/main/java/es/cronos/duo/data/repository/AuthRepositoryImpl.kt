@@ -133,6 +133,23 @@ class AuthRepositoryImpl(
         }
     }
 
+    override suspend fun startupCheck(): Resource<Unit> {
+        return try {
+            if (isLoggedIn()) {
+                if (refreshSession()) return Resource.Success(Unit)
+            }
+            authApi.bootstrap()
+            Resource.Success(Unit)
+        } catch (_: ClientRequestException) {
+            Resource.Error("Startup check failed")
+        } catch (_: IOException) {
+            Resource.Error("Error de red")
+        } catch (e: Exception) {
+            Log.w(TAG, "Unexpected startup check error", e)
+            Resource.Error("Error inesperado en startup")
+        }
+    }
+
     private suspend fun parseErrorMessage(e: ClientRequestException): String? {
         val body = e.response.bodyAsText().trim()
         if (body.isEmpty()) return null

@@ -8,8 +8,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
-import es.cronos.duo.domain.repository.AuthRepository
+import es.cronos.duo.data.network.VersionEnforcementState
+import es.cronos.duo.data.network.VersionStatus
 import es.cronos.duo.domain.repository.UserRepository
+import es.cronos.duo.domain.usecase.AppStartupUseCase
+import es.cronos.duo.presentation.navigation.ForceUpdate
 import es.cronos.duo.presentation.navigation.Pairing
 import es.cronos.duo.presentation.navigation.Semaphore
 import es.cronos.duo.presentation.navigation.Splash
@@ -19,8 +22,9 @@ import org.koin.compose.koinInject
 @Composable
 fun SplashScreen(
     navController: NavController,
-    authRepository: AuthRepository = koinInject(),
-    userRepository: UserRepository = koinInject()
+    appStartupUseCase: AppStartupUseCase = koinInject(),
+    userRepository: UserRepository = koinInject(),
+    versionEnforcementState: VersionEnforcementState = koinInject()
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -30,30 +34,46 @@ fun SplashScreen(
     }
 
     LaunchedEffect(Unit) {
-        val currentUser = authRepository.currentUser
+        val startupResult = runCatching { appStartupUseCase() }
 
-        if (currentUser == null) {
-            navController.navigate(Welcome) {
+        if (versionEnforcementState.status.value is VersionStatus.UnsupportedVersion) {
+            navController.navigate(ForceUpdate) {
                 popUpTo(Splash) { inclusive = true }
             }
-        } else {
-            // Check if user has a partner
-            try {
-                userRepository.syncFcmToken()
-                val user = userRepository.getUser()
-                
-                if (user?.partnerId != null && user.partnerId.isNotBlank()) {
-                    navController.navigate(Semaphore) {
-                        popUpTo(Splash) { inclusive = true }
+            return@LaunchedEffect
+        }
+
+        val result = startupResult.getOrNull() ?: return@LaunchedEffect
+
+        when (result) {
+            is AppStartupUseCase.Result.Authenticated -> {
+                try {
+                    userRepository.syncFcmToken()
+                    val user = userRepository.getUser()
+
+                    if (user?.partnerId != null && user.partnerId.isNotBlank()) {
+                        navController.navigate(Semaphore) {
+                            popUpTo(Splash) { inclusive = true }
+                        }
+                    } else {
+                        navController.navigate(Pairing) {
+                            popUpTo(Splash) { inclusive = true }
+                        }
                     }
-                } else {
+                } catch (_: Exception) {
+                    if (versionEnforcementState.status.value is VersionStatus.UnsupportedVersion) {
+                        navController.navigate(ForceUpdate) {
+                            popUpTo(Splash) { inclusive = true }
+                        }
+                        return@LaunchedEffect
+                    }
                     navController.navigate(Pairing) {
                         popUpTo(Splash) { inclusive = true }
                     }
                 }
-            } catch (e: Exception) {
-                // In case of error, assume login is valid but maybe network error
-                navController.navigate(Pairing) {
+            }
+            is AppStartupUseCase.Result.Guest -> {
+                navController.navigate(Welcome) {
                     popUpTo(Splash) { inclusive = true }
                 }
             }

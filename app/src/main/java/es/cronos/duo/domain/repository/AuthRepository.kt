@@ -11,4 +11,5 @@ interface AuthRepository {
     suspend fun logout()
     suspend fun refreshSession(): Boolean
     suspend fun testProtectedEndpoint(): Resource<String>
+    suspend fun startupCheck(): Resource<Unit>
 }

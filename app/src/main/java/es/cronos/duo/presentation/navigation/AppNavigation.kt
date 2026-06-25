@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import es.cronos.duo.presentation.forceupdate.ForceUpdateScreen
 import es.cronos.duo.presentation.login.LoginScreen
 import es.cronos.duo.presentation.pairing.PairingScreen
 import es.cronos.duo.presentation.semaphore.SemaphoreScreen
@@ -21,5 +22,6 @@ fun AppNavigation(startDestination: Any) {
         composable<Pairing> { PairingScreen(navController) }
         composable<Semaphore> { SemaphoreScreen(navController) }
         composable<Settings> { SettingsScreen(navController) }
+        composable<ForceUpdate> { ForceUpdateScreen() }
     }
 }
