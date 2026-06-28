@@ -9,6 +9,7 @@ import io.ktor.client.plugins.expectSuccess
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import kotlinx.coroutines.withTimeout
 
 class AuthApi(
     private val httpClient: HttpClient
@@ -47,8 +48,10 @@ class AuthApi(
     }
 
     suspend fun bootstrap(): String {
-        return httpClient.get("/auth/bootstrap") {
-            expectSuccess = true
-        }.body()
+        return withTimeout(5_000)  {
+            httpClient.get("/auth/bootstrap") {
+                expectSuccess = true
+            }.body()
+        }
     }
 }

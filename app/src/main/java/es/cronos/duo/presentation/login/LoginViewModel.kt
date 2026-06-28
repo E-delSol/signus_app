@@ -9,6 +9,7 @@ import es.cronos.duo.domain.util.Resource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class LoginViewModel(
@@ -38,10 +39,13 @@ class LoginViewModel(
     private fun handleAuthResult(result: Resource<User>) {
         when (result) {
             is Resource.Success -> {
-                _state.value = LoginState(
-                    isLoggedIn = true,
-                    user = result.data
-                )
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        isLoggedIn = true,
+                        user = result.data
+                    )
+                }
             }
             is Resource.Error -> {
                 _state.value = LoginState(error = result.message ?: "Error inesperado")

@@ -1,5 +1,6 @@
 package es.cronos.duo.presentation.splash
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
@@ -34,7 +35,14 @@ fun SplashScreen(
     }
 
     LaunchedEffect(Unit) {
-        val startupResult = runCatching { appStartupUseCase() }
+        println("SPLASH 1")
+
+        val startupResult = runCatching {
+            val result = appStartupUseCase()
+            result
+        }.onFailure {
+            Log.e("SPLASH", "STARTUP CRASHED", it)
+        }
 
         if (versionEnforcementState.status.value is VersionStatus.UnsupportedVersion) {
             navController.navigate(ForceUpdate) {
