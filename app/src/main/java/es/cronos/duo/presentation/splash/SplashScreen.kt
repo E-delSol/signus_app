@@ -16,6 +16,7 @@ import es.cronos.duo.domain.usecase.AppStartupUseCase
 import es.cronos.duo.presentation.navigation.ForceUpdate
 import es.cronos.duo.presentation.navigation.Pairing
 import es.cronos.duo.presentation.navigation.Semaphore
+import es.cronos.duo.presentation.navigation.Settings
 import es.cronos.duo.presentation.navigation.Splash
 import es.cronos.duo.presentation.navigation.Welcome
 import org.koin.compose.koinInject
@@ -23,6 +24,7 @@ import org.koin.compose.koinInject
 @Composable
 fun SplashScreen(
     navController: NavController,
+    pendingDeepLink: String? = null,
     appStartupUseCase: AppStartupUseCase = koinInject(),
     userRepository: UserRepository = koinInject(),
     versionEnforcementState: VersionEnforcementState = koinInject()
@@ -59,14 +61,18 @@ fun SplashScreen(
                     userRepository.syncFcmToken()
                     val user = userRepository.getUser()
 
-                    if (user?.partnerId != null && user.partnerId.isNotBlank()) {
-                        navController.navigate(Semaphore) {
-                            popUpTo(Splash) { inclusive = true }
+                    val target = when (pendingDeepLink) {
+                        "semaphore" -> Semaphore
+                        "settings" -> Settings
+                        "pairing" -> Pairing
+                        else -> if (user?.partnerId != null && user.partnerId.isNotBlank()) {
+                            Semaphore
+                        } else {
+                            Pairing
                         }
-                    } else {
-                        navController.navigate(Pairing) {
-                            popUpTo(Splash) { inclusive = true }
-                        }
+                    }
+                    navController.navigate(target) {
+                        popUpTo(Splash) { inclusive = true }
                     }
                 } catch (_: Exception) {
                     if (versionEnforcementState.status.value is VersionStatus.UnsupportedVersion) {

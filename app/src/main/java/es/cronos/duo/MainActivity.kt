@@ -16,8 +16,13 @@ import es.cronos.duo.ui.theme.DuoTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // Start with splash screen to handle async user status check
+
+        // Extract deep link target before Navigation auto-resolves it.
+        // Clear intent.data so unauthenticated users don't bypass auth.
+        val pendingDeepLink = intent.data?.lastPathSegment.also {
+            intent.data = null
+        }
+
         val startDestination = Splash
 
         enableEdgeToEdge()
@@ -25,7 +30,10 @@ class MainActivity : ComponentActivity() {
             DuoTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Box(modifier = Modifier.padding(innerPadding)) {
-                        AppNavigation(startDestination = startDestination)
+                        AppNavigation(
+                            startDestination = startDestination,
+                            pendingDeepLink = pendingDeepLink
+                        )
                     }
                 }
             }
