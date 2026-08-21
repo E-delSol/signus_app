@@ -29,6 +29,13 @@ android {
             manifestPlaceholders["appName"] = "Signus Debug"
             buildConfigField("String", "BASE_URL", "\"http://79.72.50.123\"")
         }
+        create("demo") {
+            initWith(buildTypes.getByName("debug"))
+            isMinifyEnabled = false
+            manifestPlaceholders["appName"] = "Signus Demo"
+            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080\"")
+            buildConfigField("Boolean", "DEMO_MODE", "true")
+        }
         release {
             manifestPlaceholders += mapOf("appName" to "Signus")
             isMinifyEnabled = true

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Signature-level permission: only same-signature apps can send broadcasts -->
+    <permission
+        android:name="es.cronos.duo.permission.DEMO_TOKEN"
+        android:protectionLevel="signature" />
+
+    <application>
+        <!--
+            Demo-only broadcast receiver for JWT injection.
+            Only compiled into the "demo" build variant.
+            Protected by signature permission so untrusted apps cannot inject tokens.
+        -->
+        <receiver
+            android:name=".DemoTokenReceiver"
+            android:exported="true"
+            android:permission="es.cronos.duo.permission.DEMO_TOKEN">
+            <intent-filter>
+                <action android:name="es.cronos.duo.ACTION_INJECT_DEMO_TOKEN" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>
