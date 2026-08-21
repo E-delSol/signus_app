@@ -1,21 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Signature-level permission: only same-signature apps can send broadcasts -->
-    <permission
-        android:name="es.cronos.duo.permission.DEMO_TOKEN"
-        android:protectionLevel="signature" />
-
     <application>
         <!--
             Demo-only broadcast receiver for JWT injection.
             Only compiled into the "demo" build variant.
-            Protected by signature permission so untrusted apps cannot inject tokens.
+            Not protected by signature permission — adb shell needs to send broadcasts
+            during demo automation, and the demo source-set isolation already prevents
+            this receiver from existing in debug/release builds.
         -->
         <receiver
             android:name=".DemoTokenReceiver"
-            android:exported="true"
-            android:permission="es.cronos.duo.permission.DEMO_TOKEN">
+            android:exported="true">
             <intent-filter>
                 <action android:name="es.cronos.duo.ACTION_INJECT_DEMO_TOKEN" />
             </intent-filter>
