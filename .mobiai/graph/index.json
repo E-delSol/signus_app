@@ -1,0 +1,3953 @@
+{
+  "version": 1,
+  "generatedAt": "2026-05-28T10:10:20.994010301Z",
+  "root": "/home/edelsol/AndroidStudioProjects/Duo",
+  "files": [
+    {
+      "path": "app/src/androidTest/java/es/cronos/duo/data/local/SessionManagerTest.kt",
+      "language": "kotlin",
+      "lines": 59,
+      "imports": [
+        "android.content.Context",
+        "android.content.SharedPreferences",
+        "androidx.test.core.app.ApplicationProvider",
+        "androidx.test.ext.junit.runners.AndroidJUnit4",
+        "org.hamcrest.CoreMatchers.nullValue",
+        "org.hamcrest.MatcherAssert.assertThat",
+        "org.junit.After",
+        "org.junit.Before",
+        "org.junit.Test",
+        "org.junit.runner.RunWith"
+      ],
+      "symbols": [
+        {
+          "name": "SessionManagerTest",
+          "kind": "class",
+          "line": 16
+        },
+        {
+          "name": "setup",
+          "kind": "fun",
+          "line": 22,
+          "container": "SessionManagerTest"
+        },
+        {
+          "name": "teardown",
+          "kind": "fun",
+          "line": 29,
+          "container": "SessionManagerTest"
+        },
+        {
+          "name": "givenUserToken_whenSaveToken_thenTokenIsPersisted",
+          "kind": "fun",
+          "line": 35,
+          "container": "SessionManagerTest"
+        },
+        {
+          "name": "givenSavedData_whenClear_thenDataIsRemoved",
+          "kind": "fun",
+          "line": 48,
+          "container": "SessionManagerTest"
+        }
+      ]
+    },
+    {
+      "path": "app/src/androidTest/java/es/cronos/duo/data/local/TokenStoreInstrumentedTest.kt",
+      "language": "kotlin",
+      "lines": 71,
+      "imports": [
+        "android.content.Context",
+        "androidx.test.core.app.ApplicationProvider",
+        "androidx.test.ext.junit.runners.AndroidJUnit4",
+        "org.junit.After",
+        "org.junit.Assert.assertEquals",
+        "org.junit.Assert.assertNotNull",
+        "org.junit.Before",
+        "org.junit.Test",
+        "org.junit.runner.RunWith"
+      ],
+      "symbols": [
+        {
+          "name": "TokenStoreInstrumentedTest",
+          "kind": "class",
+          "line": 14
+        },
+        {
+          "name": "setUp",
+          "kind": "fun",
+          "line": 19,
+          "container": "TokenStoreInstrumentedTest"
+        },
+        {
+          "name": "tearDown",
+          "kind": "fun",
+          "line": 25,
+          "container": "TokenStoreInstrumentedTest"
+        },
+        {
+          "name": "clearStore",
+          "kind": "fun",
+          "line": 64,
+          "container": "TokenStoreInstrumentedTest",
+          "modifiers": [
+            "private"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/androidTest/java/es/cronos/duo/data/repository/AuthRepositoryImplPersistenceTest.kt",
+      "language": "kotlin",
+      "lines": 100,
+      "imports": [
+        "android.content.Context",
+        "androidx.test.core.app.ApplicationProvider",
+        "androidx.test.ext.junit.runners.AndroidJUnit4",
+        "es.cronos.duo.data.local.TokenStore",
+        "es.cronos.duo.data.network.NetworkHttpClientProvider",
+        "es.cronos.duo.data.remote.AuthApi",
+        "es.cronos.duo.data.remote.dto.AuthResponseDto",
+        "es.cronos.duo.domain.repository.UserRepository",
+        "io.mockk.coEvery",
+        "io.mockk.mockk",
+        "kotlinx.coroutines.runBlocking",
+        "org.junit.After",
+        "org.junit.Assert.assertEquals",
+        "org.junit.Assert.assertNull",
+        "org.junit.Before",
+        "org.junit.Test",
+        "org.junit.runner.RunWith"
+      ],
+      "symbols": [
+        {
+          "name": "AuthRepositoryImplPersistenceTest",
+          "kind": "class",
+          "line": 22
+        },
+        {
+          "name": "setUp",
+          "kind": "fun",
+          "line": 34,
+          "container": "AuthRepositoryImplPersistenceTest"
+        },
+        {
+          "name": "tearDown",
+          "kind": "fun",
+          "line": 47,
+          "container": "AuthRepositoryImplPersistenceTest"
+        },
+        {
+          "name": "clearStore",
+          "kind": "fun",
+          "line": 93,
+          "container": "AuthRepositoryImplPersistenceTest",
+          "modifiers": [
+            "private"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/androidTest/java/es/cronos/duo/presentation/navigation/NavigationTest.kt",
+      "language": "kotlin",
+      "lines": 172,
+      "imports": [
+        "androidx.compose.ui.test.assertIsDisplayed",
+        "androidx.compose.ui.test.junit4.createComposeRule",
+        "androidx.compose.ui.test.onNodeWithTag",
+        "androidx.compose.ui.test.performClick",
+        "es.cronos.duo.domain.model.User",
+        "es.cronos.duo.domain.repository.AuthRepository",
+        "es.cronos.duo.domain.repository.UserRepository",
+        "es.cronos.duo.ui.theme.DuoTheme",
+        "io.mockk.coEvery",
+        "io.mockk.every",
+        "io.mockk.mockk",
+        "org.junit.Before",
+        "org.junit.Rule",
+        "org.junit.Test",
+        "org.koin.core.context.loadKoinModules",
+        "org.koin.dsl.module"
+      ],
+      "symbols": [
+        {
+          "name": "NavigationTest",
+          "kind": "class",
+          "line": 20
+        },
+        {
+          "name": "setup",
+          "kind": "fun",
+          "line": 29,
+          "container": "NavigationTest"
+        },
+        {
+          "name": "givenNoUser_whenAppStarts_thenNavigateToWelcome",
+          "kind": "fun",
+          "line": 37,
+          "container": "NavigationTest"
+        },
+        {
+          "name": "givenLoggedInUserWithoutPartner_whenAppStarts_thenNavigateToPairing",
+          "kind": "fun",
+          "line": 53,
+          "container": "NavigationTest"
+        },
+        {
+          "name": "givenPairedUser_whenAppStarts_thenNavigateToSemaphore",
+          "kind": "fun",
+          "line": 71,
+          "container": "NavigationTest"
+        },
+        {
+          "name": "givenWelcomeScreen_whenClickStart_thenNavigateToLogin",
+          "kind": "fun",
+          "line": 89,
+          "container": "NavigationTest"
+        },
+        {
+          "name": "givenLoginScreen_whenClickEmail_thenShowEmailForm",
+          "kind": "fun",
+          "line": 106,
+          "container": "NavigationTest"
+        },
+        {
+          "name": "givenSemaphoreScreen_whenClickSettings_thenNavigateToSettings",
+          "kind": "fun",
+          "line": 122,
+          "container": "NavigationTest"
+        },
+        {
+          "name": "givenSettingsScreen_whenClickLogout_thenNavigateToWelcome",
+          "kind": "fun",
+          "line": 140,
+          "container": "NavigationTest"
+        },
+        {
+          "name": "givenSettingsScreen_whenUnlinkPartner_thenNavigateToPairing",
+          "kind": "fun",
+          "line": 156,
+          "container": "NavigationTest"
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/DuoApp.kt",
+      "language": "kotlin",
+      "lines": 19,
+      "imports": [
+        "android.app.Application",
+        "es.cronos.duo.di.appModule",
+        "org.koin.android.ext.koin.androidContext",
+        "org.koin.android.ext.koin.androidLogger",
+        "org.koin.core.context.startKoin"
+      ],
+      "symbols": [
+        {
+          "name": "DuoApp",
+          "kind": "class",
+          "line": 9
+        },
+        {
+          "name": "onCreate",
+          "kind": "fun",
+          "line": 10,
+          "container": "DuoApp",
+          "modifiers": [
+            "override"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/MainActivity.kt",
+      "language": "kotlin",
+      "lines": 34,
+      "imports": [
+        "android.os.Bundle",
+        "androidx.activity.ComponentActivity",
+        "androidx.activity.compose.setContent",
+        "androidx.activity.enableEdgeToEdge",
+        "androidx.compose.foundation.layout.Box",
+        "androidx.compose.foundation.layout.fillMaxSize",
+        "androidx.compose.foundation.layout.padding",
+        "androidx.compose.material3.Scaffold",
+        "androidx.compose.ui.Modifier",
+        "es.cronos.duo.presentation.navigation.AppNavigation",
+        "es.cronos.duo.presentation.navigation.Splash",
+        "es.cronos.duo.ui.theme.DuoTheme"
+      ],
+      "symbols": [
+        {
+          "name": "MainActivity",
+          "kind": "class",
+          "line": 16
+        },
+        {
+          "name": "onCreate",
+          "kind": "fun",
+          "line": 17,
+          "container": "MainActivity",
+          "modifiers": [
+            "override"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/components/CentralImage.kt",
+      "language": "kotlin",
+      "lines": 41,
+      "imports": [
+        "androidx.compose.foundation.Image",
+        "androidx.compose.foundation.layout.Box",
+        "androidx.compose.foundation.layout.fillMaxSize",
+        "androidx.compose.foundation.layout.size",
+        "androidx.compose.foundation.shape.CircleShape",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.ui.Alignment",
+        "androidx.compose.ui.Modifier",
+        "androidx.compose.ui.draw.shadow",
+        "androidx.compose.ui.graphics.Color",
+        "androidx.compose.ui.res.painterResource",
+        "androidx.compose.ui.unit.dp",
+        "es.cronos.duo.R"
+      ],
+      "symbols": [
+        {
+          "name": "CentralImage",
+          "kind": "fun",
+          "line": 18
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/components/ManualLinkDialog.kt",
+      "language": "kotlin",
+      "lines": 91,
+      "imports": [
+        "androidx.compose.foundation.layout.Arrangement",
+        "androidx.compose.foundation.layout.Column",
+        "androidx.compose.foundation.layout.Spacer",
+        "androidx.compose.foundation.layout.fillMaxWidth",
+        "androidx.compose.foundation.layout.height",
+        "androidx.compose.foundation.shape.RoundedCornerShape",
+        "androidx.compose.material3.AlertDialog",
+        "androidx.compose.material3.Button",
+        "androidx.compose.material3.MaterialTheme",
+        "androidx.compose.material3.OutlinedTextField",
+        "androidx.compose.material3.Text",
+        "androidx.compose.material3.TextButton",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.getValue",
+        "androidx.compose.runtime.mutableStateOf",
+        "androidx.compose.runtime.remember",
+        "androidx.compose.runtime.setValue",
+        "androidx.compose.ui.Modifier",
+        "androidx.compose.ui.res.stringResource",
+        "androidx.compose.ui.text.style.TextAlign",
+        "androidx.compose.ui.tooling.preview.Preview",
+        "androidx.compose.ui.unit.dp",
+        "es.cronos.duo.R"
+      ],
+      "symbols": [
+        {
+          "name": "ManualLinkDialog",
+          "kind": "fun",
+          "line": 28
+        },
+        {
+          "name": "ManualLinkDialogPreview",
+          "kind": "fun",
+          "line": 89
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/components/PartnerLinkButton.kt",
+      "language": "kotlin",
+      "lines": 132,
+      "imports": [
+        "androidx.compose.foundation.background",
+        "androidx.compose.foundation.layout.Arrangement",
+        "androidx.compose.foundation.layout.Box",
+        "androidx.compose.foundation.layout.Column",
+        "androidx.compose.foundation.layout.Row",
+        "androidx.compose.foundation.layout.RowScope",
+        "androidx.compose.foundation.layout.Spacer",
+        "androidx.compose.foundation.layout.fillMaxWidth",
+        "androidx.compose.foundation.layout.padding",
+        "androidx.compose.foundation.layout.size",
+        "androidx.compose.foundation.layout.width",
+        "androidx.compose.foundation.shape.CircleShape",
+        "androidx.compose.foundation.shape.RoundedCornerShape",
+        "androidx.compose.material.icons.Icons",
+        "androidx.compose.material.icons.filled.QrCode2",
+        "androidx.compose.material3.Button",
+        "androidx.compose.material3.ButtonDefaults",
+        "androidx.compose.material3.Icon",
+        "androidx.compose.material3.MaterialTheme",
+        "androidx.compose.material3.Text",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.ui.Alignment",
+        "androidx.compose.ui.Modifier",
+        "androidx.compose.ui.draw.clip",
+        "androidx.compose.ui.graphics.Color",
+        "androidx.compose.ui.graphics.vector.ImageVector",
+        "androidx.compose.ui.res.stringResource",
+        "androidx.compose.ui.text.font.FontWeight",
+        "androidx.compose.ui.unit.dp",
+        "androidx.compose.ui.unit.sp",
+        "es.cronos.duo.R"
+      ],
+      "symbols": [
+        {
+          "name": "PartnerLinkButton",
+          "kind": "fun",
+          "line": 46
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/components/PrivacyDialog.kt",
+      "language": "kotlin",
+      "lines": 55,
+      "imports": [
+        "androidx.compose.foundation.layout.Column",
+        "androidx.compose.foundation.layout.padding",
+        "androidx.compose.foundation.rememberScrollState",
+        "androidx.compose.foundation.shape.RoundedCornerShape",
+        "androidx.compose.foundation.verticalScroll",
+        "androidx.compose.material3.AlertDialog",
+        "androidx.compose.material3.MaterialTheme",
+        "androidx.compose.material3.Text",
+        "androidx.compose.material3.TextButton",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.ui.Modifier",
+        "androidx.compose.ui.res.stringResource",
+        "androidx.compose.ui.text.font.FontWeight",
+        "androidx.compose.ui.unit.dp",
+        "androidx.compose.ui.unit.sp",
+        "es.cronos.duo.R"
+      ],
+      "symbols": [
+        {
+          "name": "PrivacyDialog",
+          "kind": "fun",
+          "line": 21
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/components/PrivacyIndicator.kt",
+      "language": "kotlin",
+      "lines": 80,
+      "imports": [
+        "androidx.compose.foundation.clickable",
+        "androidx.compose.foundation.layout.Arrangement",
+        "androidx.compose.foundation.layout.Column",
+        "androidx.compose.foundation.layout.Row",
+        "androidx.compose.foundation.layout.Spacer",
+        "androidx.compose.foundation.layout.height",
+        "androidx.compose.foundation.layout.padding",
+        "androidx.compose.foundation.layout.size",
+        "androidx.compose.foundation.layout.width",
+        "androidx.compose.material.icons.Icons",
+        "androidx.compose.material.icons.filled.Lock",
+        "androidx.compose.material3.Icon",
+        "androidx.compose.material3.MaterialTheme",
+        "androidx.compose.material3.Text",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.getValue",
+        "androidx.compose.runtime.mutableStateOf",
+        "androidx.compose.runtime.remember",
+        "androidx.compose.runtime.setValue",
+        "androidx.compose.ui.Alignment",
+        "androidx.compose.ui.Modifier",
+        "androidx.compose.ui.res.stringResource",
+        "androidx.compose.ui.text.font.FontWeight",
+        "androidx.compose.ui.unit.dp",
+        "androidx.compose.ui.unit.sp",
+        "es.cronos.duo.R"
+      ],
+      "symbols": [
+        {
+          "name": "PrivacyIndicator",
+          "kind": "fun",
+          "line": 31
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/components/QrCodeDialog.kt",
+      "language": "kotlin",
+      "lines": 112,
+      "imports": [
+        "androidx.compose.foundation.Image",
+        "androidx.compose.foundation.background",
+        "androidx.compose.foundation.layout.Arrangement",
+        "androidx.compose.foundation.layout.Column",
+        "androidx.compose.foundation.layout.Spacer",
+        "androidx.compose.foundation.layout.height",
+        "androidx.compose.foundation.layout.padding",
+        "androidx.compose.foundation.layout.size",
+        "androidx.compose.foundation.shape.RoundedCornerShape",
+        "androidx.compose.material3.Button",
+        "androidx.compose.material3.MaterialTheme",
+        "androidx.compose.material3.Surface",
+        "androidx.compose.material3.Text",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.LaunchedEffect",
+        "androidx.compose.runtime.getValue",
+        "androidx.compose.runtime.mutableStateOf",
+        "androidx.compose.runtime.remember",
+        "androidx.compose.runtime.setValue",
+        "androidx.compose.ui.Alignment",
+        "androidx.compose.ui.Modifier",
+        "androidx.compose.ui.graphics.Color",
+        "androidx.compose.ui.text.style.TextAlign",
+        "androidx.compose.ui.unit.dp",
+        "androidx.compose.ui.window.Dialog",
+        "es.cronos.duo.presentation.util.QrCodeGenerator",
+        "kotlinx.coroutines.delay"
+      ],
+      "symbols": [
+        {
+          "name": "QrCodeDialog",
+          "kind": "fun",
+          "line": 32
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/components/QrCodeScanner.kt",
+      "language": "kotlin",
+      "lines": 227,
+      "imports": [
+        "android.Manifest",
+        "android.content.pm.PackageManager",
+        "androidx.activity.compose.rememberLauncherForActivityResult",
+        "androidx.activity.result.contract.ActivityResultContracts",
+        "androidx.camera.core.CameraSelector",
+        "androidx.camera.core.ImageProxy",
+        "androidx.camera.view.CameraController",
+        "androidx.camera.view.LifecycleCameraController",
+        "androidx.camera.view.PreviewView",
+        "androidx.compose.foundation.layout.Box",
+        "androidx.compose.foundation.layout.Column",
+        "androidx.compose.foundation.layout.Spacer",
+        "androidx.compose.foundation.layout.fillMaxSize",
+        "androidx.compose.foundation.layout.height",
+        "androidx.compose.material3.AlertDialog",
+        "androidx.compose.material3.Button",
+        "androidx.compose.material3.Text",
+        "androidx.compose.runtime.*",
+        "androidx.compose.ui.Alignment",
+        "androidx.compose.ui.Modifier",
+        "androidx.compose.ui.platform.LocalContext",
+        "androidx.compose.ui.res.stringResource",
+        "androidx.compose.ui.unit.dp",
+        "androidx.compose.ui.viewinterop.AndroidView",
+        "androidx.core.content.ContextCompat",
+        "androidx.lifecycle.compose.LocalLifecycleOwner",
+        "com.google.zxing.BarcodeFormat",
+        "com.google.zxing.BinaryBitmap",
+        "com.google.zxing.DecodeHintType",
+        "com.google.zxing.MultiFormatReader",
+        "com.google.zxing.PlanarYUVLuminanceSource",
+        "com.google.zxing.common.HybridBinarizer",
+        "es.cronos.duo.R"
+      ],
+      "symbols": [
+        {
+          "name": "QrCodeScanner",
+          "kind": "fun",
+          "line": 38
+        },
+        {
+          "name": "CameraPreview",
+          "kind": "fun",
+          "line": 104
+        },
+        {
+          "name": "processImageProxy",
+          "kind": "fun",
+          "line": 149,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "rotate90",
+          "kind": "fun",
+          "line": 207,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "rotate270",
+          "kind": "fun",
+          "line": 218,
+          "modifiers": [
+            "private"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/components/TimerPicker.kt",
+      "language": "kotlin",
+      "lines": 174,
+      "imports": [
+        "androidx.compose.foundation.ExperimentalFoundationApi",
+        "androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior",
+        "androidx.compose.foundation.layout.Arrangement",
+        "androidx.compose.foundation.layout.Box",
+        "androidx.compose.foundation.layout.Column",
+        "androidx.compose.foundation.layout.PaddingValues",
+        "androidx.compose.foundation.layout.Row",
+        "androidx.compose.foundation.layout.fillMaxWidth",
+        "androidx.compose.foundation.layout.height",
+        "androidx.compose.foundation.layout.padding",
+        "androidx.compose.foundation.layout.width",
+        "androidx.compose.foundation.lazy.LazyColumn",
+        "androidx.compose.foundation.lazy.rememberLazyListState",
+        "androidx.compose.material3.AlertDialog",
+        "androidx.compose.material3.MaterialTheme",
+        "androidx.compose.material3.Text",
+        "androidx.compose.material3.TextButton",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.LaunchedEffect",
+        "androidx.compose.runtime.derivedStateOf",
+        "androidx.compose.runtime.getValue",
+        "androidx.compose.runtime.mutableIntStateOf",
+        "androidx.compose.runtime.remember",
+        "androidx.compose.runtime.setValue",
+        "androidx.compose.ui.Alignment",
+        "androidx.compose.ui.Modifier",
+        "androidx.compose.ui.text.font.FontWeight",
+        "androidx.compose.ui.text.style.TextAlign",
+        "androidx.compose.ui.unit.dp",
+        "androidx.compose.ui.unit.sp"
+      ],
+      "symbols": [
+        {
+          "name": "TimerPickerDialog",
+          "kind": "fun",
+          "line": 35
+        },
+        {
+          "name": "TimeWheel",
+          "kind": "fun",
+          "line": 108
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/components/TitleApp.kt",
+      "language": "kotlin",
+      "lines": 24,
+      "imports": [
+        "androidx.compose.material3.Text",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.ui.graphics.Color",
+        "androidx.compose.ui.res.stringResource",
+        "androidx.compose.ui.text.font.FontWeight",
+        "androidx.compose.ui.text.style.TextAlign",
+        "androidx.compose.ui.unit.sp",
+        "es.cronos.duo.R",
+        "es.cronos.duo.ui.theme.Manrope"
+      ],
+      "symbols": [
+        {
+          "name": "TitleApp",
+          "kind": "fun",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/components/TrafficLight.kt",
+      "language": "kotlin",
+      "lines": 167,
+      "imports": [
+        "androidx.compose.animation.animateColorAsState",
+        "androidx.compose.animation.core.tween",
+        "androidx.compose.foundation.border",
+        "androidx.compose.foundation.background",
+        "androidx.compose.foundation.clickable",
+        "androidx.compose.foundation.layout.Arrangement",
+        "androidx.compose.foundation.layout.Box",
+        "androidx.compose.foundation.layout.Column",
+        "androidx.compose.foundation.layout.fillMaxSize",
+        "androidx.compose.foundation.layout.fillMaxWidth",
+        "androidx.compose.foundation.layout.padding",
+        "androidx.compose.foundation.shape.CircleShape",
+        "androidx.compose.material3.MaterialTheme",
+        "androidx.compose.material3.Text",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.LaunchedEffect",
+        "androidx.compose.runtime.getValue",
+        "androidx.compose.runtime.mutableLongStateOf",
+        "androidx.compose.runtime.remember",
+        "androidx.compose.runtime.setValue",
+        "androidx.compose.ui.Alignment",
+        "androidx.compose.ui.Modifier",
+        "androidx.compose.ui.draw.clip",
+        "androidx.compose.ui.graphics.Color",
+        "androidx.compose.ui.res.stringResource",
+        "androidx.compose.ui.text.font.FontWeight",
+        "androidx.compose.ui.text.style.TextAlign",
+        "androidx.compose.ui.unit.dp",
+        "es.cronos.duo.R",
+        "es.cronos.duo.domain.model.SemaphoreStatus",
+        "java.util.concurrent.TimeUnit",
+        "java.util.Locale"
+      ],
+      "symbols": [
+        {
+          "name": "TrafficLight",
+          "kind": "fun",
+          "line": 37
+        },
+        {
+          "name": "StatusDisk",
+          "kind": "fun",
+          "line": 65,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "CountdownTimerInternal",
+          "kind": "fun",
+          "line": 137,
+          "modifiers": [
+            "private"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/local/TokenStore.kt",
+      "language": "kotlin",
+      "lines": 99,
+      "imports": [
+        "android.content.Context",
+        "androidx.security.crypto.EncryptedSharedPreferences",
+        "androidx.security.crypto.MasterKey",
+        "java.util.UUID"
+      ],
+      "symbols": [
+        {
+          "name": "TokenStore",
+          "kind": "class",
+          "line": 45
+        },
+        {
+          "name": "saveToken",
+          "kind": "fun",
+          "line": 60
+        },
+        {
+          "name": "getToken",
+          "kind": "fun",
+          "line": 64
+        },
+        {
+          "name": "clearToken",
+          "kind": "fun",
+          "line": 68
+        },
+        {
+          "name": "saveRefreshToken",
+          "kind": "fun",
+          "line": 72
+        },
+        {
+          "name": "getRefreshToken",
+          "kind": "fun",
+          "line": 76
+        },
+        {
+          "name": "clearRefreshToken",
+          "kind": "fun",
+          "line": 80
+        },
+        {
+          "name": "getOrCreateDeviceId",
+          "kind": "fun",
+          "line": 84
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/network/ClientInstanceIdProvider.kt",
+      "language": "kotlin",
+      "lines": 15,
+      "imports": [
+        "es.cronos.duo.data.local.TokenStore"
+      ],
+      "symbols": [
+        {
+          "name": "ClientInstanceIdProvider",
+          "kind": "class",
+          "line": 5
+        },
+        {
+          "name": "getId",
+          "kind": "fun",
+          "line": 8
+        },
+        {
+          "name": "getLogLabel",
+          "kind": "fun",
+          "line": 10
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/network/NetworkEndpointConfig.kt",
+      "language": "kotlin",
+      "lines": 11,
+      "imports": [
+        "es.cronos.duo.BuildConfig"
+      ],
+      "symbols": [
+        {
+          "name": "NetworkEndpointConfig",
+          "kind": "class",
+          "line": 5
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/network/NetworkHttpClientProvider.kt",
+      "language": "kotlin",
+      "lines": 103,
+      "imports": [
+        "es.cronos.duo.data.local.TokenStore",
+        "es.cronos.duo.data.remote.dto.RefreshTokenResponseDto",
+        "io.ktor.client.HttpClient",
+        "io.ktor.client.call.body",
+        "io.ktor.client.engine.okhttp.OkHttp",
+        "io.ktor.client.plugins.auth.Auth",
+        "io.ktor.client.plugins.auth.providers.BearerAuthProvider",
+        "io.ktor.client.plugins.auth.providers.BearerTokens",
+        "io.ktor.client.plugins.auth.providers.bearer",
+        "io.ktor.client.plugins.contentnegotiation.ContentNegotiation",
+        "io.ktor.client.plugins.defaultRequest",
+        "io.ktor.client.plugins.plugin",
+        "io.ktor.client.plugins.websocket.WebSockets",
+        "io.ktor.client.request.post",
+        "io.ktor.client.request.setBody",
+        "io.ktor.http.ContentType",
+        "io.ktor.http.contentType",
+        "io.ktor.http.encodedPath",
+        "io.ktor.serialization.kotlinx.json.json",
+        "kotlinx.serialization.json.Json"
+      ],
+      "symbols": [
+        {
+          "name": "NetworkHttpClientProvider",
+          "kind": "class",
+          "line": 24
+        },
+        {
+          "name": "clearBearerTokenCache",
+          "kind": "fun",
+          "line": 74
+        },
+        {
+          "name": "buildStoredTokens",
+          "kind": "fun",
+          "line": 80,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "persistTokens",
+          "kind": "fun",
+          "line": 94,
+          "modifiers": [
+            "private"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/remote/AuthApi.kt",
+      "language": "kotlin",
+      "lines": 48,
+      "imports": [
+        "es.cronos.duo.data.remote.dto.AuthResponseDto",
+        "es.cronos.duo.data.remote.dto.LoginRequestDto",
+        "es.cronos.duo.data.remote.dto.RegisterRequestDto",
+        "io.ktor.client.HttpClient",
+        "io.ktor.client.call.body",
+        "io.ktor.client.plugins.expectSuccess",
+        "io.ktor.client.request.get",
+        "io.ktor.client.request.post",
+        "io.ktor.client.request.setBody"
+      ],
+      "symbols": [
+        {
+          "name": "AuthApi",
+          "kind": "class",
+          "line": 13
+        },
+        {
+          "name": "login",
+          "kind": "fun",
+          "line": 16,
+          "modifiers": [
+            "suspend"
+          ]
+        },
+        {
+          "name": "register",
+          "kind": "fun",
+          "line": 23,
+          "modifiers": [
+            "suspend"
+          ]
+        },
+        {
+          "name": "refreshSession",
+          "kind": "fun",
+          "line": 36,
+          "modifiers": [
+            "suspend"
+          ]
+        },
+        {
+          "name": "testProtected",
+          "kind": "fun",
+          "line": 43,
+          "modifiers": [
+            "suspend"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/remote/DeviceApi.kt",
+      "language": "kotlin",
+      "lines": 25,
+      "imports": [
+        "es.cronos.duo.data.remote.dto.UpsertDeviceTokenRequest",
+        "io.ktor.client.HttpClient",
+        "io.ktor.client.plugins.expectSuccess",
+        "io.ktor.client.request.delete",
+        "io.ktor.client.request.put",
+        "io.ktor.client.request.setBody"
+      ],
+      "symbols": [
+        {
+          "name": "DeviceApi",
+          "kind": "class",
+          "line": 10
+        },
+        {
+          "name": "registerOrUpdateDeviceToken",
+          "kind": "fun",
+          "line": 13,
+          "modifiers": [
+            "suspend"
+          ]
+        },
+        {
+          "name": "deactivateDeviceToken",
+          "kind": "fun",
+          "line": 20,
+          "modifiers": [
+            "suspend"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/remote/HealthApi.kt",
+      "language": "kotlin",
+      "lines": 13,
+      "imports": [
+        "io.ktor.client.HttpClient",
+        "io.ktor.client.call.body",
+        "io.ktor.client.request.get"
+      ],
+      "symbols": [
+        {
+          "name": "HealthApi",
+          "kind": "class",
+          "line": 7
+        },
+        {
+          "name": "getHealth",
+          "kind": "fun",
+          "line": 10,
+          "modifiers": [
+            "suspend"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/remote/MeApi.kt",
+      "language": "kotlin",
+      "lines": 17,
+      "imports": [
+        "es.cronos.duo.data.remote.dto.MeResponseDto",
+        "io.ktor.client.HttpClient",
+        "io.ktor.client.call.body",
+        "io.ktor.client.plugins.expectSuccess",
+        "io.ktor.client.request.get"
+      ],
+      "symbols": [
+        {
+          "name": "MeApi",
+          "kind": "class",
+          "line": 9
+        },
+        {
+          "name": "getMe",
+          "kind": "fun",
+          "line": 12,
+          "modifiers": [
+            "suspend"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/remote/PairingApi.kt",
+      "language": "kotlin",
+      "lines": 34,
+      "imports": [
+        "es.cronos.duo.data.remote.dto.ConfirmPairingSessionRequestDto",
+        "es.cronos.duo.data.remote.dto.CreatePairingSessionResponseDto",
+        "es.cronos.duo.data.remote.dto.GetLinkSessionStatusResponseDto",
+        "io.ktor.client.HttpClient",
+        "io.ktor.client.call.body",
+        "io.ktor.client.plugins.expectSuccess",
+        "io.ktor.client.request.get",
+        "io.ktor.client.request.post",
+        "io.ktor.client.request.setBody"
+      ],
+      "symbols": [
+        {
+          "name": "PairingApi",
+          "kind": "class",
+          "line": 13
+        },
+        {
+          "name": "createPairingSession",
+          "kind": "fun",
+          "line": 16,
+          "modifiers": [
+            "suspend"
+          ]
+        },
+        {
+          "name": "confirmPairingSession",
+          "kind": "fun",
+          "line": 22,
+          "modifiers": [
+            "suspend"
+          ]
+        },
+        {
+          "name": "getLinkSessionStatus",
+          "kind": "fun",
+          "line": 29,
+          "modifiers": [
+            "suspend"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/remote/PartnerApi.kt",
+      "language": "kotlin",
+      "lines": 24,
+      "imports": [
+        "es.cronos.duo.data.remote.dto.PartnerResponseDto",
+        "io.ktor.client.HttpClient",
+        "io.ktor.client.call.body",
+        "io.ktor.client.plugins.expectSuccess",
+        "io.ktor.client.request.delete",
+        "io.ktor.client.request.get"
+      ],
+      "symbols": [
+        {
+          "name": "PartnerApi",
+          "kind": "class",
+          "line": 10
+        },
+        {
+          "name": "getPartner",
+          "kind": "fun",
+          "line": 13,
+          "modifiers": [
+            "suspend"
+          ]
+        },
+        {
+          "name": "deletePartner",
+          "kind": "fun",
+          "line": 19,
+          "modifiers": [
+            "suspend"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/remote/StatusApi.kt",
+      "language": "kotlin",
+      "lines": 18,
+      "imports": [
+        "es.cronos.duo.data.remote.dto.UpdateStatusRequestDto",
+        "io.ktor.client.HttpClient",
+        "io.ktor.client.plugins.expectSuccess",
+        "io.ktor.client.request.patch",
+        "io.ktor.client.request.setBody"
+      ],
+      "symbols": [
+        {
+          "name": "StatusApi",
+          "kind": "class",
+          "line": 9
+        },
+        {
+          "name": "updateStatus",
+          "kind": "fun",
+          "line": 12,
+          "modifiers": [
+            "suspend"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/remote/dto/AuthResponseDto.kt",
+      "language": "kotlin",
+      "lines": 9,
+      "imports": [
+        "kotlinx.serialization.Serializable"
+      ],
+      "symbols": [
+        {
+          "name": "AuthResponseDto",
+          "kind": "class",
+          "line": 6,
+          "modifiers": [
+            "data"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/remote/dto/ConfirmPairingSessionRequestDto.kt",
+      "language": "kotlin",
+      "lines": 8,
+      "imports": [
+        "kotlinx.serialization.Serializable"
+      ],
+      "symbols": [
+        {
+          "name": "ConfirmPairingSessionRequestDto",
+          "kind": "class",
+          "line": 6,
+          "modifiers": [
+            "data"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/remote/dto/CreatePairingSessionResponseDto.kt",
+      "language": "kotlin",
+      "lines": 10,
+      "imports": [
+        "kotlinx.serialization.Serializable"
+      ],
+      "symbols": [
+        {
+          "name": "CreatePairingSessionResponseDto",
+          "kind": "class",
+          "line": 6,
+          "modifiers": [
+            "data"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/remote/dto/ErrorResponseDto.kt",
+      "language": "kotlin",
+      "lines": 8,
+      "imports": [
+        "kotlinx.serialization.Serializable"
+      ],
+      "symbols": [
+        {
+          "name": "ErrorResponseDto",
+          "kind": "class",
+          "line": 6,
+          "modifiers": [
+            "data"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/remote/dto/GetLinkSessionStatusResponseDto.kt",
+      "language": "kotlin",
+      "lines": 9,
+      "imports": [
+        "kotlinx.serialization.Serializable"
+      ],
+      "symbols": [
+        {
+          "name": "GetLinkSessionStatusResponseDto",
+          "kind": "class",
+          "line": 6,
+          "modifiers": [
+            "data"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/remote/dto/LoginRequestDto.kt",
+      "language": "kotlin",
+      "lines": 9,
+      "imports": [
+        "kotlinx.serialization.Serializable"
+      ],
+      "symbols": [
+        {
+          "name": "LoginRequestDto",
+          "kind": "class",
+          "line": 6,
+          "modifiers": [
+            "data"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/remote/dto/MeResponseDto.kt",
+      "language": "kotlin",
+      "lines": 14,
+      "imports": [
+        "kotlinx.serialization.Serializable"
+      ],
+      "symbols": [
+        {
+          "name": "MeResponseDto",
+          "kind": "class",
+          "line": 6,
+          "modifiers": [
+            "data"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/remote/dto/PartnerResponseDto.kt",
+      "language": "kotlin",
+      "lines": 14,
+      "imports": [
+        "kotlinx.serialization.Serializable"
+      ],
+      "symbols": [
+        {
+          "name": "PartnerResponseDto",
+          "kind": "class",
+          "line": 6,
+          "modifiers": [
+            "data"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/remote/dto/RefreshTokenResponseDto.kt",
+      "language": "kotlin",
+      "lines": 8,
+      "imports": [
+        "kotlinx.serialization.Serializable"
+      ],
+      "symbols": [
+        {
+          "name": "RefreshTokenResponseDto",
+          "kind": "class",
+          "line": 6,
+          "modifiers": [
+            "data"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/remote/dto/RegisterRequestDto.kt",
+      "language": "kotlin",
+      "lines": 10,
+      "imports": [
+        "kotlinx.serialization.Serializable"
+      ],
+      "symbols": [
+        {
+          "name": "RegisterRequestDto",
+          "kind": "class",
+          "line": 6,
+          "modifiers": [
+            "data"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/remote/dto/UpdateStatusRequestDto.kt",
+      "language": "kotlin",
+      "lines": 8,
+      "imports": [
+        "kotlinx.serialization.Serializable"
+      ],
+      "symbols": [
+        {
+          "name": "UpdateStatusRequestDto",
+          "kind": "class",
+          "line": 6,
+          "modifiers": [
+            "data"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/remote/dto/UpsertDeviceTokenRequest.kt",
+      "language": "kotlin",
+      "lines": 11,
+      "imports": [
+        "kotlinx.serialization.Serializable"
+      ],
+      "symbols": [
+        {
+          "name": "UpsertDeviceTokenRequest",
+          "kind": "class",
+          "line": 6,
+          "modifiers": [
+            "data"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/remote/socket/SemaphoreSocket.kt",
+      "language": "kotlin",
+      "lines": 127,
+      "imports": [
+        "android.util.Log",
+        "es.cronos.duo.data.local.TokenStore",
+        "es.cronos.duo.data.network.ClientInstanceIdProvider",
+        "es.cronos.duo.data.network.NetworkEndpointConfig",
+        "io.ktor.client.HttpClient",
+        "io.ktor.client.plugins.websocket.webSocketSession",
+        "io.ktor.http.takeFrom",
+        "io.ktor.websocket.close",
+        "io.ktor.websocket.Frame",
+        "io.ktor.websocket.readText",
+        "kotlinx.coroutines.flow.Flow",
+        "kotlinx.coroutines.flow.flow",
+        "kotlinx.coroutines.flow.mapNotNull",
+        "kotlinx.serialization.json.Json",
+        "kotlinx.serialization.json.JsonPrimitive",
+        "kotlinx.serialization.json.contentOrNull",
+        "kotlinx.serialization.json.jsonObject"
+      ],
+      "symbols": [
+        {
+          "name": "SemaphoreSocketEvent",
+          "kind": "interface",
+          "line": 21,
+          "modifiers": [
+            "sealed"
+          ]
+        },
+        {
+          "name": "PartnerSocketEvent",
+          "kind": "interface",
+          "line": 22,
+          "modifiers": [
+            "sealed"
+          ]
+        },
+        {
+          "name": "PartnerStatusChangedSocketEvent",
+          "kind": "class",
+          "line": 24,
+          "modifiers": [
+            "data"
+          ]
+        },
+        {
+          "name": "SelfStatusChangedSocketEvent",
+          "kind": "class",
+          "line": 31,
+          "modifiers": [
+            "data"
+          ]
+        },
+        {
+          "name": "PartnerUnlinkedSocketEvent",
+          "kind": "class",
+          "line": 38,
+          "modifiers": [
+            "data"
+          ]
+        },
+        {
+          "name": "SemaphoreSocket",
+          "kind": "class",
+          "line": 42
+        },
+        {
+          "name": "observeEvents",
+          "kind": "fun",
+          "line": 51
+        },
+        {
+          "name": "observePartnerEvents",
+          "kind": "fun",
+          "line": 77
+        },
+        {
+          "name": "observePartnerStatusChangedEvents",
+          "kind": "fun",
+          "line": 81
+        },
+        {
+          "name": "observeSelfStatusChangedEvents",
+          "kind": "fun",
+          "line": 85
+        },
+        {
+          "name": "parseEvent",
+          "kind": "fun",
+          "line": 89,
+          "modifiers": [
+            "private"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/repository/AuthRepositoryImpl.kt",
+      "language": "kotlin",
+      "lines": 178,
+      "imports": [
+        "android.util.Log",
+        "es.cronos.duo.data.local.TokenStore",
+        "es.cronos.duo.data.network.NetworkHttpClientProvider",
+        "es.cronos.duo.data.remote.AuthApi",
+        "es.cronos.duo.data.remote.dto.ErrorResponseDto",
+        "es.cronos.duo.domain.model.User",
+        "es.cronos.duo.domain.repository.AuthRepository",
+        "es.cronos.duo.domain.repository.UserRepository",
+        "es.cronos.duo.domain.util.Resource",
+        "io.ktor.client.plugins.ClientRequestException",
+        "io.ktor.client.plugins.ServerResponseException",
+        "io.ktor.client.statement.bodyAsText",
+        "io.ktor.http.HttpStatusCode",
+        "kotlinx.serialization.json.Json",
+        "java.io.IOException"
+      ],
+      "symbols": [
+        {
+          "name": "AuthRepositoryImpl",
+          "kind": "class",
+          "line": 19
+        },
+        {
+          "name": "login",
+          "kind": "fun",
+          "line": 33,
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        },
+        {
+          "name": "register",
+          "kind": "fun",
+          "line": 56,
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        },
+        {
+          "name": "isLoggedIn",
+          "kind": "fun",
+          "line": 84,
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "logout",
+          "kind": "fun",
+          "line": 88,
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        },
+        {
+          "name": "refreshSession",
+          "kind": "fun",
+          "line": 98,
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        },
+        {
+          "name": "testProtectedEndpoint",
+          "kind": "fun",
+          "line": 119,
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        },
+        {
+          "name": "parseErrorMessage",
+          "kind": "fun",
+          "line": 136,
+          "modifiers": [
+            "private",
+            "suspend"
+          ]
+        },
+        {
+          "name": "mapLoginError",
+          "kind": "fun",
+          "line": 144,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "mapRegisterError",
+          "kind": "fun",
+          "line": 153,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "storeSessionTokens",
+          "kind": "fun",
+          "line": 162,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "clearSessionTokens",
+          "kind": "fun",
+          "line": 168,
+          "modifiers": [
+            "private"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/repository/HealthRepositoryImpl.kt",
+      "language": "kotlin",
+      "lines": 12,
+      "imports": [
+        "es.cronos.duo.data.remote.HealthApi",
+        "es.cronos.duo.domain.repository.HealthRepository"
+      ],
+      "symbols": [
+        {
+          "name": "HealthRepositoryImpl",
+          "kind": "class",
+          "line": 6
+        },
+        {
+          "name": "getHealth",
+          "kind": "fun",
+          "line": 9,
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/repository/QrCodeRepositoryImpl.kt",
+      "language": "kotlin",
+      "lines": 51,
+      "imports": [
+        "es.cronos.duo.data.remote.PairingApi",
+        "es.cronos.duo.domain.model.LinkSession",
+        "es.cronos.duo.domain.model.LinkSessionStatus",
+        "es.cronos.duo.domain.repository.QrCodeRepository",
+        "io.ktor.client.plugins.ClientRequestException"
+      ],
+      "symbols": [
+        {
+          "name": "QrCodeRepositoryImpl",
+          "kind": "class",
+          "line": 9
+        },
+        {
+          "name": "generateUniqueCode",
+          "kind": "fun",
+          "line": 13,
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        },
+        {
+          "name": "linkPartner",
+          "kind": "fun",
+          "line": 22,
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        },
+        {
+          "name": "getLinkSessionStatus",
+          "kind": "fun",
+          "line": 31,
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        },
+        {
+          "name": "deleteSession",
+          "kind": "fun",
+          "line": 48,
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/repository/UserRepositoryImpl.kt",
+      "language": "kotlin",
+      "lines": 232,
+      "imports": [
+        "android.util.Log",
+        "com.google.firebase.messaging.FirebaseMessaging",
+        "es.cronos.duo.BuildConfig",
+        "es.cronos.duo.data.local.TokenStore",
+        "es.cronos.duo.data.network.ClientInstanceIdProvider",
+        "es.cronos.duo.data.remote.DeviceApi",
+        "es.cronos.duo.data.remote.MeApi",
+        "es.cronos.duo.data.remote.PartnerApi",
+        "es.cronos.duo.data.remote.StatusApi",
+        "es.cronos.duo.data.remote.dto.UpsertDeviceTokenRequest",
+        "es.cronos.duo.data.remote.socket.PartnerStatusChangedSocketEvent",
+        "es.cronos.duo.data.remote.socket.PartnerUnlinkedSocketEvent",
+        "es.cronos.duo.data.remote.socket.SemaphoreSocket",
+        "es.cronos.duo.domain.model.SemaphoreStatus",
+        "es.cronos.duo.domain.model.User",
+        "es.cronos.duo.domain.repository.UserRepository",
+        "io.ktor.client.plugins.ClientRequestException",
+        "io.ktor.http.HttpStatusCode",
+        "kotlinx.coroutines.channels.awaitClose",
+        "kotlinx.coroutines.currentCoroutineContext",
+        "kotlinx.coroutines.delay",
+        "kotlinx.coroutines.flow.Flow",
+        "kotlinx.coroutines.flow.MutableStateFlow",
+        "kotlinx.coroutines.flow.channelFlow",
+        "kotlinx.coroutines.flow.flow",
+        "kotlinx.coroutines.flow.update",
+        "kotlinx.coroutines.isActive",
+        "kotlinx.coroutines.launch",
+        "kotlinx.coroutines.tasks.await",
+        "java.util.concurrent.CancellationException"
+      ],
+      "symbols": [
+        {
+          "name": "UserRepositoryImpl",
+          "kind": "class",
+          "line": 34
+        },
+        {
+          "name": "getUser",
+          "kind": "fun",
+          "line": 46,
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        },
+        {
+          "name": "observeUser",
+          "kind": "fun",
+          "line": 52,
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "unlinkPartner",
+          "kind": "fun",
+          "line": 84,
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        },
+        {
+          "name": "updateUserStatus",
+          "kind": "fun",
+          "line": 91,
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        },
+        {
+          "name": "getPartnerStatus",
+          "kind": "fun",
+          "line": 104,
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "registerOrUpdateDeviceToken",
+          "kind": "fun",
+          "line": 137,
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        },
+        {
+          "name": "syncFcmToken",
+          "kind": "fun",
+          "line": 161,
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        },
+        {
+          "name": "deactivateDeviceToken",
+          "kind": "fun",
+          "line": 174,
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        },
+        {
+          "name": "fetchCurrentUser",
+          "kind": "fun",
+          "line": 184,
+          "modifiers": [
+            "private",
+            "suspend"
+          ]
+        },
+        {
+          "name": "fetchPartnerUser",
+          "kind": "fun",
+          "line": 198,
+          "modifiers": [
+            "private",
+            "suspend"
+          ]
+        },
+        {
+          "name": "toSemaphoreStatus",
+          "kind": "fun",
+          "line": 220,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "isAuthenticated",
+          "kind": "fun",
+          "line": 229,
+          "modifiers": [
+            "private"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/data/service/SignusMessagingService.kt",
+      "language": "kotlin",
+      "lines": 95,
+      "imports": [
+        "android.app.NotificationChannel",
+        "android.app.NotificationManager",
+        "android.app.PendingIntent",
+        "android.content.Context",
+        "android.content.Intent",
+        "android.media.RingtoneManager",
+        "android.os.Build",
+        "androidx.core.app.NotificationCompat",
+        "com.google.firebase.messaging.FirebaseMessagingService",
+        "com.google.firebase.messaging.RemoteMessage",
+        "es.cronos.duo.MainActivity",
+        "es.cronos.duo.R",
+        "es.cronos.duo.domain.repository.UserRepository",
+        "kotlinx.coroutines.CoroutineScope",
+        "kotlinx.coroutines.Dispatchers",
+        "kotlinx.coroutines.SupervisorJob",
+        "kotlinx.coroutines.cancel",
+        "kotlinx.coroutines.launch",
+        "org.koin.core.component.KoinComponent",
+        "org.koin.core.component.inject"
+      ],
+      "symbols": [
+        {
+          "name": "SignusMessagingService",
+          "kind": "class",
+          "line": 24
+        },
+        {
+          "name": "onNewToken",
+          "kind": "fun",
+          "line": 29,
+          "container": "SignusMessagingService",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "onMessageReceived",
+          "kind": "fun",
+          "line": 37,
+          "container": "SignusMessagingService",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "onDestroy",
+          "kind": "fun",
+          "line": 56,
+          "container": "SignusMessagingService",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "sendNotification",
+          "kind": "fun",
+          "line": 61,
+          "container": "SignusMessagingService",
+          "modifiers": [
+            "private"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/di/AppModule.kt",
+      "language": "kotlin",
+      "lines": 85,
+      "imports": [
+        "android.content.Context",
+        "com.google.firebase.auth.FirebaseAuth",
+        "com.google.firebase.messaging.FirebaseMessaging",
+        "es.cronos.duo.data.local.TokenStore",
+        "es.cronos.duo.data.network.NetworkHttpClientProvider",
+        "es.cronos.duo.data.network.NetworkEndpointConfig",
+        "es.cronos.duo.data.network.ClientInstanceIdProvider",
+        "es.cronos.duo.data.remote.AuthApi",
+        "es.cronos.duo.data.remote.DeviceApi",
+        "es.cronos.duo.data.remote.HealthApi",
+        "es.cronos.duo.data.remote.MeApi",
+        "es.cronos.duo.data.remote.PartnerApi",
+        "es.cronos.duo.data.remote.PairingApi",
+        "es.cronos.duo.data.remote.StatusApi",
+        "es.cronos.duo.data.remote.socket.SemaphoreSocket",
+        "es.cronos.duo.data.repository.AuthRepositoryImpl",
+        "es.cronos.duo.data.repository.HealthRepositoryImpl",
+        "es.cronos.duo.data.repository.QrCodeRepositoryImpl",
+        "es.cronos.duo.data.repository.UserRepositoryImpl",
+        "es.cronos.duo.domain.repository.AuthRepository",
+        "es.cronos.duo.domain.repository.HealthRepository",
+        "es.cronos.duo.domain.repository.QrCodeRepository",
+        "es.cronos.duo.domain.repository.UserRepository",
+        "es.cronos.duo.domain.usecase.*",
+        "io.ktor.client.HttpClient",
+        "es.cronos.duo.presentation.login.LoginViewModel",
+        "es.cronos.duo.presentation.pairing.PairingViewModel",
+        "es.cronos.duo.presentation.semaphore.SemaphoreViewModel",
+        "es.cronos.duo.presentation.settings.SettingsViewModel",
+        "org.koin.core.module.dsl.factoryOf",
+        "org.koin.core.module.dsl.singleOf",
+        "org.koin.core.module.dsl.viewModelOf",
+        "org.koin.dsl.bind",
+        "org.koin.dsl.module"
+      ],
+      "symbols": []
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/domain/model/LinkSession.kt",
+      "language": "kotlin",
+      "lines": 7,
+      "imports": [],
+      "symbols": [
+        {
+          "name": "LinkSession",
+          "kind": "class",
+          "line": 3,
+          "modifiers": [
+            "data"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/domain/model/LinkSessionStatus.kt",
+      "language": "kotlin",
+      "lines": 7,
+      "imports": [],
+      "symbols": [
+        {
+          "name": "LinkSessionStatus",
+          "kind": "class",
+          "line": 3,
+          "modifiers": [
+            "enum"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/domain/model/SemaphoreStatus.kt",
+      "language": "kotlin",
+      "lines": 13,
+      "imports": [],
+      "symbols": [
+        {
+          "name": "SemaphoreStatus",
+          "kind": "class",
+          "line": 3,
+          "modifiers": [
+            "enum"
+          ]
+        },
+        {
+          "name": "next",
+          "kind": "fun",
+          "line": 7,
+          "container": "SemaphoreStatus"
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/domain/model/User.kt",
+      "language": "kotlin",
+      "lines": 11,
+      "imports": [],
+      "symbols": [
+        {
+          "name": "User",
+          "kind": "class",
+          "line": 3,
+          "modifiers": [
+            "data"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/domain/repository/AuthRepository.kt",
+      "language": "kotlin",
+      "lines": 14,
+      "imports": [
+        "es.cronos.duo.domain.model.User",
+        "es.cronos.duo.domain.util.Resource"
+      ],
+      "symbols": [
+        {
+          "name": "AuthRepository",
+          "kind": "interface",
+          "line": 6
+        },
+        {
+          "name": "login",
+          "kind": "fun",
+          "line": 8,
+          "container": "AuthRepository",
+          "modifiers": [
+            "suspend"
+          ]
+        },
+        {
+          "name": "register",
+          "kind": "fun",
+          "line": 9,
+          "container": "AuthRepository",
+          "modifiers": [
+            "suspend"
+          ]
+        },
+        {
+          "name": "isLoggedIn",
+          "kind": "fun",
+          "line": 10,
+          "container": "AuthRepository"
+        },
+        {
+          "name": "logout",
+          "kind": "fun",
+          "line": 11,
+          "container": "AuthRepository",
+          "modifiers": [
+            "suspend"
+          ]
+        },
+        {
+          "name": "refreshSession",
+          "kind": "fun",
+          "line": 12,
+          "container": "AuthRepository",
+          "modifiers": [
+            "suspend"
+          ]
+        },
+        {
+          "name": "testProtectedEndpoint",
+          "kind": "fun",
+          "line": 13,
+          "container": "AuthRepository",
+          "modifiers": [
+            "suspend"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/domain/repository/HealthRepository.kt",
+      "language": "kotlin",
+      "lines": 5,
+      "imports": [],
+      "symbols": [
+        {
+          "name": "HealthRepository",
+          "kind": "interface",
+          "line": 3
+        },
+        {
+          "name": "getHealth",
+          "kind": "fun",
+          "line": 4,
+          "container": "HealthRepository",
+          "modifiers": [
+            "suspend"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/domain/repository/QrCodeRepository.kt",
+      "language": "kotlin",
+      "lines": 11,
+      "imports": [
+        "es.cronos.duo.domain.model.LinkSession",
+        "es.cronos.duo.domain.model.LinkSessionStatus"
+      ],
+      "symbols": [
+        {
+          "name": "QrCodeRepository",
+          "kind": "interface",
+          "line": 6
+        },
+        {
+          "name": "generateUniqueCode",
+          "kind": "fun",
+          "line": 7,
+          "container": "QrCodeRepository",
+          "modifiers": [
+            "suspend"
+          ]
+        },
+        {
+          "name": "linkPartner",
+          "kind": "fun",
+          "line": 8,
+          "container": "QrCodeRepository",
+          "modifiers": [
+            "suspend"
+          ]
+        },
+        {
+          "name": "getLinkSessionStatus",
+          "kind": "fun",
+          "line": 9,
+          "container": "QrCodeRepository",
+          "modifiers": [
+            "suspend"
+          ]
+        },
+        {
+          "name": "deleteSession",
+          "kind": "fun",
+          "line": 10,
+          "container": "QrCodeRepository",
+          "modifiers": [
+            "suspend"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/domain/repository/UserRepository.kt",
+      "language": "kotlin",
+      "lines": 16,
+      "imports": [
+        "es.cronos.duo.domain.model.SemaphoreStatus",
+        "es.cronos.duo.domain.model.User",
+        "kotlinx.coroutines.flow.Flow"
+      ],
+      "symbols": [
+        {
+          "name": "UserRepository",
+          "kind": "interface",
+          "line": 7
+        },
+        {
+          "name": "getUser",
+          "kind": "fun",
+          "line": 8,
+          "container": "UserRepository",
+          "modifiers": [
+            "suspend"
+          ]
+        },
+        {
+          "name": "observeUser",
+          "kind": "fun",
+          "line": 9,
+          "container": "UserRepository"
+        },
+        {
+          "name": "unlinkPartner",
+          "kind": "fun",
+          "line": 10,
+          "container": "UserRepository",
+          "modifiers": [
+            "suspend"
+          ]
+        },
+        {
+          "name": "updateUserStatus",
+          "kind": "fun",
+          "line": 11,
+          "container": "UserRepository",
+          "modifiers": [
+            "suspend"
+          ]
+        },
+        {
+          "name": "getPartnerStatus",
+          "kind": "fun",
+          "line": 12,
+          "container": "UserRepository"
+        },
+        {
+          "name": "registerOrUpdateDeviceToken",
+          "kind": "fun",
+          "line": 13,
+          "container": "UserRepository",
+          "modifiers": [
+            "suspend"
+          ]
+        },
+        {
+          "name": "syncFcmToken",
+          "kind": "fun",
+          "line": 14,
+          "container": "UserRepository",
+          "modifiers": [
+            "suspend"
+          ]
+        },
+        {
+          "name": "deactivateDeviceToken",
+          "kind": "fun",
+          "line": 15,
+          "container": "UserRepository",
+          "modifiers": [
+            "suspend"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/domain/usecase/GenerateQrCodeUseCase.kt",
+      "language": "kotlin",
+      "lines": 10,
+      "imports": [
+        "es.cronos.duo.domain.model.LinkSession",
+        "es.cronos.duo.domain.repository.QrCodeRepository"
+      ],
+      "symbols": [
+        {
+          "name": "GenerateQrCodeUseCase",
+          "kind": "class",
+          "line": 6
+        },
+        {
+          "name": "invoke",
+          "kind": "fun",
+          "line": 7,
+          "container": "GenerateQrCodeUseCase",
+          "modifiers": [
+            "suspend",
+            "operator"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/domain/usecase/GetHealthUseCase.kt",
+      "language": "kotlin",
+      "lines": 9,
+      "imports": [
+        "es.cronos.duo.domain.repository.HealthRepository"
+      ],
+      "symbols": [
+        {
+          "name": "GetHealthUseCase",
+          "kind": "class",
+          "line": 5
+        },
+        {
+          "name": "invoke",
+          "kind": "fun",
+          "line": 8,
+          "modifiers": [
+            "suspend",
+            "operator"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/domain/usecase/GetLinkSessionStatusUseCase.kt",
+      "language": "kotlin",
+      "lines": 12,
+      "imports": [
+        "es.cronos.duo.domain.model.LinkSessionStatus",
+        "es.cronos.duo.domain.repository.QrCodeRepository"
+      ],
+      "symbols": [
+        {
+          "name": "GetLinkSessionStatusUseCase",
+          "kind": "class",
+          "line": 6
+        },
+        {
+          "name": "invoke",
+          "kind": "fun",
+          "line": 9,
+          "modifiers": [
+            "suspend",
+            "operator"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/domain/usecase/GetPartnerStatusUseCase.kt",
+      "language": "kotlin",
+      "lines": 9,
+      "imports": [
+        "es.cronos.duo.domain.model.User",
+        "es.cronos.duo.domain.repository.UserRepository",
+        "kotlinx.coroutines.flow.Flow"
+      ],
+      "symbols": [
+        {
+          "name": "GetPartnerStatusUseCase",
+          "kind": "class",
+          "line": 7
+        },
+        {
+          "name": "invoke",
+          "kind": "fun",
+          "line": 8,
+          "container": "GetPartnerStatusUseCase",
+          "modifiers": [
+            "operator"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/domain/usecase/GetUserUseCase.kt",
+      "language": "kotlin",
+      "lines": 8,
+      "imports": [
+        "es.cronos.duo.domain.model.User",
+        "es.cronos.duo.domain.repository.UserRepository"
+      ],
+      "symbols": [
+        {
+          "name": "GetUserUseCase",
+          "kind": "class",
+          "line": 6
+        },
+        {
+          "name": "invoke",
+          "kind": "fun",
+          "line": 7,
+          "container": "GetUserUseCase",
+          "modifiers": [
+            "suspend",
+            "operator"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/domain/usecase/LinkPartnerUseCase.kt",
+      "language": "kotlin",
+      "lines": 9,
+      "imports": [
+        "es.cronos.duo.domain.repository.QrCodeRepository"
+      ],
+      "symbols": [
+        {
+          "name": "LinkPartnerUseCase",
+          "kind": "class",
+          "line": 5
+        },
+        {
+          "name": "invoke",
+          "kind": "fun",
+          "line": 6,
+          "container": "LinkPartnerUseCase",
+          "modifiers": [
+            "suspend",
+            "operator"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/domain/usecase/LoginWithEmailUseCase.kt",
+      "language": "kotlin",
+      "lines": 16,
+      "imports": [
+        "es.cronos.duo.domain.model.User",
+        "es.cronos.duo.domain.repository.AuthRepository",
+        "es.cronos.duo.domain.util.Resource",
+        "kotlinx.coroutines.flow.Flow",
+        "kotlinx.coroutines.flow.flow"
+      ],
+      "symbols": [
+        {
+          "name": "LoginWithEmailUseCase",
+          "kind": "class",
+          "line": 9
+        },
+        {
+          "name": "invoke",
+          "kind": "fun",
+          "line": 10,
+          "container": "LoginWithEmailUseCase",
+          "modifiers": [
+            "operator"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/domain/usecase/ObserveUserUseCase.kt",
+      "language": "kotlin",
+      "lines": 9,
+      "imports": [
+        "es.cronos.duo.domain.model.User",
+        "es.cronos.duo.domain.repository.UserRepository",
+        "kotlinx.coroutines.flow.Flow"
+      ],
+      "symbols": [
+        {
+          "name": "ObserveUserUseCase",
+          "kind": "class",
+          "line": 7
+        },
+        {
+          "name": "invoke",
+          "kind": "fun",
+          "line": 8,
+          "container": "ObserveUserUseCase",
+          "modifiers": [
+            "operator"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/domain/usecase/RegisterWithEmailUseCase.kt",
+      "language": "kotlin",
+      "lines": 20,
+      "imports": [
+        "es.cronos.duo.domain.model.User",
+        "es.cronos.duo.domain.repository.AuthRepository",
+        "es.cronos.duo.domain.util.Resource",
+        "kotlinx.coroutines.flow.Flow",
+        "kotlinx.coroutines.flow.flow"
+      ],
+      "symbols": [
+        {
+          "name": "RegisterWithEmailUseCase",
+          "kind": "class",
+          "line": 9
+        },
+        {
+          "name": "invoke",
+          "kind": "fun",
+          "line": 10,
+          "container": "RegisterWithEmailUseCase",
+          "modifiers": [
+            "operator"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/domain/usecase/TestProtectedEndpointUseCase.kt",
+      "language": "kotlin",
+      "lines": 9,
+      "imports": [
+        "es.cronos.duo.domain.repository.AuthRepository"
+      ],
+      "symbols": [
+        {
+          "name": "TestProtectedEndpointUseCase",
+          "kind": "class",
+          "line": 5
+        },
+        {
+          "name": "invoke",
+          "kind": "fun",
+          "line": 8,
+          "modifiers": [
+            "suspend",
+            "operator"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/domain/usecase/UnlinkPartnerUseCase.kt",
+      "language": "kotlin",
+      "lines": 9,
+      "imports": [
+        "es.cronos.duo.domain.repository.UserRepository"
+      ],
+      "symbols": [
+        {
+          "name": "UnlinkPartnerUseCase",
+          "kind": "class",
+          "line": 5
+        },
+        {
+          "name": "invoke",
+          "kind": "fun",
+          "line": 6,
+          "container": "UnlinkPartnerUseCase",
+          "modifiers": [
+            "suspend",
+            "operator"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/domain/usecase/UpdateUserStatusUseCase.kt",
+      "language": "kotlin",
+      "lines": 9,
+      "imports": [
+        "es.cronos.duo.domain.model.SemaphoreStatus",
+        "es.cronos.duo.domain.repository.UserRepository"
+      ],
+      "symbols": [
+        {
+          "name": "UpdateUserStatusUseCase",
+          "kind": "class",
+          "line": 6
+        },
+        {
+          "name": "invoke",
+          "kind": "fun",
+          "line": 7,
+          "container": "UpdateUserStatusUseCase",
+          "modifiers": [
+            "suspend",
+            "operator"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/domain/util/Resource.kt",
+      "language": "kotlin",
+      "lines": 7,
+      "imports": [],
+      "symbols": [
+        {
+          "name": "Resource",
+          "kind": "class",
+          "line": 3,
+          "modifiers": [
+            "sealed"
+          ]
+        },
+        {
+          "name": "Success",
+          "kind": "class",
+          "line": 4,
+          "container": "Resource"
+        },
+        {
+          "name": "Error",
+          "kind": "class",
+          "line": 5,
+          "container": "Resource"
+        },
+        {
+          "name": "Loading",
+          "kind": "class",
+          "line": 6,
+          "container": "Resource"
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/presentation/login/LoginScreen.kt",
+      "language": "kotlin",
+      "lines": 332,
+      "imports": [
+        "androidx.compose.foundation.background",
+        "androidx.compose.foundation.layout.Box",
+        "androidx.compose.foundation.layout.Column",
+        "androidx.compose.foundation.layout.Spacer",
+        "androidx.compose.foundation.layout.fillMaxSize",
+        "androidx.compose.foundation.layout.fillMaxWidth",
+        "androidx.compose.foundation.layout.height",
+        "androidx.compose.foundation.layout.padding",
+        "androidx.compose.foundation.layout.size",
+        "androidx.compose.foundation.layout.width",
+        "androidx.compose.foundation.rememberScrollState",
+        "androidx.compose.foundation.shape.RoundedCornerShape",
+        "androidx.compose.foundation.text.KeyboardOptions",
+        "androidx.compose.foundation.verticalScroll",
+        "androidx.compose.material.icons.Icons",
+        "androidx.compose.material.icons.automirrored.filled.ArrowBack",
+        "androidx.compose.material.icons.automirrored.filled.Login",
+        "androidx.compose.material.icons.filled.AppRegistration",
+        "androidx.compose.material.icons.filled.Email",
+        "androidx.compose.material.icons.filled.Visibility",
+        "androidx.compose.material.icons.filled.VisibilityOff",
+        "androidx.compose.material3.AlertDialog",
+        "androidx.compose.material3.Button",
+        "androidx.compose.material3.CircularProgressIndicator",
+        "androidx.compose.material3.Icon",
+        "androidx.compose.material3.IconButton",
+        "androidx.compose.material3.MaterialTheme",
+        "androidx.compose.material3.OutlinedTextField",
+        "androidx.compose.material3.Text",
+        "androidx.compose.material3.TextButton",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.LaunchedEffect",
+        "androidx.compose.runtime.collectAsState",
+        "androidx.compose.runtime.getValue",
+        "androidx.compose.runtime.mutableStateOf",
+        "androidx.compose.runtime.remember",
+        "androidx.compose.runtime.setValue",
+        "androidx.compose.ui.Alignment",
+        "androidx.compose.ui.Modifier",
+        "androidx.compose.ui.platform.LocalContext",
+        "androidx.compose.ui.platform.testTag",
+        "androidx.compose.ui.res.stringResource",
+        "androidx.compose.ui.text.font.FontWeight",
+        "androidx.compose.ui.text.input.KeyboardType",
+        "androidx.compose.ui.text.input.PasswordVisualTransformation",
+        "androidx.compose.ui.text.input.VisualTransformation",
+        "androidx.compose.ui.text.style.TextAlign",
+        "androidx.compose.ui.tooling.preview.Preview",
+        "androidx.compose.ui.unit.dp",
+        "androidx.compose.ui.unit.sp",
+        "androidx.navigation.NavController",
+        "es.cronos.duo.BuildConfig",
+        "es.cronos.duo.R",
+        "es.cronos.duo.components.CentralImage",
+        "es.cronos.duo.components.PartnerLinkButton",
+        "es.cronos.duo.components.PrivacyIndicator",
+        "es.cronos.duo.components.TitleApp",
+        "es.cronos.duo.presentation.navigation.Login",
+        "es.cronos.duo.presentation.navigation.Splash",
+        "org.koin.androidx.compose.koinViewModel"
+      ],
+      "symbols": [
+        {
+          "name": "LoginScreen",
+          "kind": "fun",
+          "line": 65
+        },
+        {
+          "name": "LoginSelectionButtons",
+          "kind": "fun",
+          "line": 206
+        },
+        {
+          "name": "EmailLoginForm",
+          "kind": "fun",
+          "line": 224
+        },
+        {
+          "name": "LoginScreenPreview",
+          "kind": "fun",
+          "line": 330
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/presentation/login/LoginState.kt",
+      "language": "kotlin",
+      "lines": 10,
+      "imports": [
+        "es.cronos.duo.domain.model.User"
+      ],
+      "symbols": [
+        {
+          "name": "LoginState",
+          "kind": "class",
+          "line": 5,
+          "modifiers": [
+            "data"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/presentation/login/LoginViewModel.kt",
+      "language": "kotlin",
+      "lines": 54,
+      "imports": [
+        "androidx.lifecycle.ViewModel",
+        "androidx.lifecycle.viewModelScope",
+        "es.cronos.duo.domain.model.User",
+        "es.cronos.duo.domain.usecase.LoginWithEmailUseCase",
+        "es.cronos.duo.domain.usecase.RegisterWithEmailUseCase",
+        "es.cronos.duo.domain.util.Resource",
+        "kotlinx.coroutines.flow.MutableStateFlow",
+        "kotlinx.coroutines.flow.StateFlow",
+        "kotlinx.coroutines.flow.asStateFlow",
+        "kotlinx.coroutines.launch"
+      ],
+      "symbols": [
+        {
+          "name": "LoginViewModel",
+          "kind": "class",
+          "line": 14
+        },
+        {
+          "name": "login",
+          "kind": "fun",
+          "line": 22
+        },
+        {
+          "name": "register",
+          "kind": "fun",
+          "line": 30
+        },
+        {
+          "name": "handleAuthResult",
+          "kind": "fun",
+          "line": 38,
+          "modifiers": [
+            "private"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/presentation/navigation/AppNavigation.kt",
+      "language": "kotlin",
+      "lines": 25,
+      "imports": [
+        "androidx.compose.runtime.Composable",
+        "androidx.navigation.compose.NavHost",
+        "androidx.navigation.compose.composable",
+        "androidx.navigation.compose.rememberNavController",
+        "es.cronos.duo.presentation.login.LoginScreen",
+        "es.cronos.duo.presentation.pairing.PairingScreen",
+        "es.cronos.duo.presentation.semaphore.SemaphoreScreen",
+        "es.cronos.duo.presentation.settings.SettingsScreen",
+        "es.cronos.duo.presentation.splash.SplashScreen",
+        "es.cronos.duo.presentation.welcome.WelcomeScreen"
+      ],
+      "symbols": [
+        {
+          "name": "AppNavigation",
+          "kind": "fun",
+          "line": 15
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/presentation/navigation/Routes.kt",
+      "language": "kotlin",
+      "lines": 21,
+      "imports": [
+        "kotlinx.serialization.Serializable"
+      ],
+      "symbols": [
+        {
+          "name": "Splash",
+          "kind": "object",
+          "line": 6
+        },
+        {
+          "name": "Welcome",
+          "kind": "object",
+          "line": 9
+        },
+        {
+          "name": "Login",
+          "kind": "object",
+          "line": 12
+        },
+        {
+          "name": "Pairing",
+          "kind": "object",
+          "line": 15
+        },
+        {
+          "name": "Semaphore",
+          "kind": "object",
+          "line": 18
+        },
+        {
+          "name": "Settings",
+          "kind": "object",
+          "line": 21
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/presentation/pairing/PairingScreen.kt",
+      "language": "kotlin",
+      "lines": 210,
+      "imports": [
+        "androidx.compose.foundation.background",
+        "androidx.compose.foundation.layout.Box",
+        "androidx.compose.foundation.layout.Column",
+        "androidx.compose.foundation.layout.Spacer",
+        "androidx.compose.foundation.layout.fillMaxSize",
+        "androidx.compose.foundation.layout.height",
+        "androidx.compose.foundation.layout.padding",
+        "androidx.compose.material.icons.Icons",
+        "androidx.compose.material.icons.filled.CenterFocusWeak",
+        "androidx.compose.material.icons.filled.Close",
+        "androidx.compose.material.icons.filled.Keyboard",
+        "androidx.compose.material.icons.filled.QrCode2",
+        "androidx.compose.material.icons.filled.Settings",
+        "androidx.compose.material3.Icon",
+        "androidx.compose.material3.IconButton",
+        "androidx.compose.material3.MaterialTheme",
+        "androidx.compose.material3.Text",
+        "androidx.compose.material3.TextButton",
+        "androidx.compose.material3.AlertDialog",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.LaunchedEffect",
+        "androidx.compose.runtime.collectAsState",
+        "androidx.compose.runtime.getValue",
+        "androidx.compose.runtime.mutableStateOf",
+        "androidx.compose.runtime.remember",
+        "androidx.compose.runtime.setValue",
+        "androidx.compose.ui.Alignment",
+        "androidx.compose.ui.Modifier",
+        "androidx.compose.ui.platform.LocalContext",
+        "androidx.compose.ui.platform.testTag",
+        "androidx.compose.ui.res.stringResource",
+        "androidx.compose.ui.text.font.FontWeight",
+        "androidx.compose.ui.text.style.TextAlign",
+        "androidx.compose.ui.tooling.preview.Preview",
+        "androidx.compose.ui.unit.dp",
+        "androidx.compose.ui.unit.sp",
+        "androidx.navigation.NavController",
+        "es.cronos.duo.R",
+        "es.cronos.duo.components.CentralImage",
+        "es.cronos.duo.components.ManualLinkDialog",
+        "es.cronos.duo.components.PartnerLinkButton",
+        "es.cronos.duo.components.PrivacyIndicator",
+        "es.cronos.duo.components.QrCodeDialog",
+        "es.cronos.duo.components.QrCodeScanner",
+        "es.cronos.duo.components.TitleApp",
+        "es.cronos.duo.presentation.navigation.Pairing",
+        "es.cronos.duo.presentation.navigation.Semaphore",
+        "es.cronos.duo.presentation.navigation.Settings",
+        "org.koin.androidx.compose.koinViewModel"
+      ],
+      "symbols": [
+        {
+          "name": "PairingScreen",
+          "kind": "fun",
+          "line": 54
+        },
+        {
+          "name": "PairingScreenPreview",
+          "kind": "fun",
+          "line": 208
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/presentation/pairing/PairingState.kt",
+      "language": "kotlin",
+      "lines": 10,
+      "imports": [],
+      "symbols": [
+        {
+          "name": "PairingState",
+          "kind": "class",
+          "line": 3,
+          "modifiers": [
+            "data"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/presentation/pairing/PairingViewModel.kt",
+      "language": "kotlin",
+      "lines": 139,
+      "imports": [
+        "androidx.lifecycle.ViewModel",
+        "androidx.lifecycle.viewModelScope",
+        "es.cronos.duo.domain.model.LinkSessionStatus",
+        "es.cronos.duo.domain.usecase.GenerateQrCodeUseCase",
+        "es.cronos.duo.domain.usecase.GetUserUseCase",
+        "es.cronos.duo.domain.usecase.GetLinkSessionStatusUseCase",
+        "es.cronos.duo.domain.usecase.LinkPartnerUseCase",
+        "kotlinx.coroutines.Job",
+        "kotlinx.coroutines.delay",
+        "kotlinx.coroutines.flow.MutableStateFlow",
+        "kotlinx.coroutines.flow.StateFlow",
+        "kotlinx.coroutines.flow.asStateFlow",
+        "kotlinx.coroutines.flow.update",
+        "kotlinx.coroutines.launch"
+      ],
+      "symbols": [
+        {
+          "name": "PairingViewModel",
+          "kind": "class",
+          "line": 18
+        },
+        {
+          "name": "onGenerateQrClick",
+          "kind": "fun",
+          "line": 29
+        },
+        {
+          "name": "onDismissQr",
+          "kind": "fun",
+          "line": 52
+        },
+        {
+          "name": "onCodeScanned",
+          "kind": "fun",
+          "line": 57
+        },
+        {
+          "name": "clearError",
+          "kind": "fun",
+          "line": 70
+        },
+        {
+          "name": "onCleared",
+          "kind": "fun",
+          "line": 74,
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "startSessionStatusPolling",
+          "kind": "fun",
+          "line": 79,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "stopSessionStatusPolling",
+          "kind": "fun",
+          "line": 114,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "syncPairedUserState",
+          "kind": "fun",
+          "line": 119,
+          "modifiers": [
+            "private",
+            "suspend"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/presentation/semaphore/SemaphoreScreen.kt",
+      "language": "kotlin",
+      "lines": 301,
+      "imports": [
+        "android.media.RingtoneManager",
+        "androidx.compose.foundation.background",
+        "androidx.compose.foundation.layout.Box",
+        "androidx.compose.foundation.layout.Column",
+        "androidx.compose.foundation.layout.Row",
+        "androidx.compose.foundation.layout.Spacer",
+        "androidx.compose.foundation.layout.aspectRatio",
+        "androidx.compose.foundation.layout.fillMaxSize",
+        "androidx.compose.foundation.layout.fillMaxWidth",
+        "androidx.compose.foundation.layout.height",
+        "androidx.compose.foundation.layout.padding",
+        "androidx.compose.material.icons.Icons",
+        "androidx.compose.material.icons.filled.AccessTime",
+        "androidx.compose.material.icons.filled.CheckCircle",
+        "androidx.compose.material.icons.filled.DoNotDisturb",
+        "androidx.compose.material.icons.filled.Settings",
+        "androidx.compose.material3.AlertDialog",
+        "androidx.compose.material3.Button",
+        "androidx.compose.material3.ButtonDefaults",
+        "androidx.compose.material3.Icon",
+        "androidx.compose.material3.IconButton",
+        "androidx.compose.material3.MaterialTheme",
+        "androidx.compose.material3.Text",
+        "androidx.compose.material3.TextButton",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.LaunchedEffect",
+        "androidx.compose.runtime.collectAsState",
+        "androidx.compose.runtime.getValue",
+        "androidx.compose.runtime.mutableLongStateOf",
+        "androidx.compose.runtime.mutableStateOf",
+        "androidx.compose.runtime.remember",
+        "androidx.compose.runtime.setValue",
+        "androidx.compose.ui.Alignment",
+        "androidx.compose.ui.Modifier",
+        "androidx.compose.ui.graphics.Color",
+        "androidx.compose.ui.platform.LocalContext",
+        "androidx.compose.ui.platform.testTag",
+        "androidx.compose.ui.res.stringResource",
+        "androidx.compose.ui.text.TextStyle",
+        "androidx.compose.ui.text.font.FontWeight",
+        "androidx.compose.ui.tooling.preview.Preview",
+        "androidx.compose.ui.unit.dp",
+        "androidx.navigation.NavController",
+        "es.cronos.duo.R",
+        "es.cronos.duo.components.PartnerLinkButton",
+        "es.cronos.duo.components.PrivacyIndicator",
+        "es.cronos.duo.components.TimerPickerDialog",
+        "es.cronos.duo.components.TitleApp",
+        "es.cronos.duo.components.TrafficLight",
+        "es.cronos.duo.domain.model.SemaphoreStatus",
+        "es.cronos.duo.presentation.navigation.Pairing",
+        "es.cronos.duo.presentation.navigation.Semaphore",
+        "es.cronos.duo.presentation.navigation.Settings",
+        "java.util.concurrent.TimeUnit",
+        "java.util.Locale",
+        "kotlinx.coroutines.flow.collectLatest",
+        "org.koin.androidx.compose.koinViewModel"
+      ],
+      "symbols": [
+        {
+          "name": "SemaphoreScreen",
+          "kind": "fun",
+          "line": 62
+        },
+        {
+          "name": "CountdownTimer",
+          "kind": "fun",
+          "line": 262
+        },
+        {
+          "name": "SemaphoreScreenPreview",
+          "kind": "fun",
+          "line": 299
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/presentation/semaphore/SemaphoreState.kt",
+      "language": "kotlin",
+      "lines": 13,
+      "imports": [
+        "es.cronos.duo.domain.model.SemaphoreStatus"
+      ],
+      "symbols": [
+        {
+          "name": "SemaphoreState",
+          "kind": "class",
+          "line": 5,
+          "modifiers": [
+            "data"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/presentation/semaphore/SemaphoreViewModel.kt",
+      "language": "kotlin",
+      "lines": 216,
+      "imports": [
+        "androidx.lifecycle.ViewModel",
+        "androidx.lifecycle.viewModelScope",
+        "es.cronos.duo.domain.model.SemaphoreStatus",
+        "es.cronos.duo.domain.repository.UserRepository",
+        "es.cronos.duo.domain.usecase.GetPartnerStatusUseCase",
+        "es.cronos.duo.domain.usecase.ObserveUserUseCase",
+        "es.cronos.duo.domain.usecase.UpdateUserStatusUseCase",
+        "kotlinx.coroutines.Job",
+        "kotlinx.coroutines.delay",
+        "kotlinx.coroutines.flow.MutableSharedFlow",
+        "kotlinx.coroutines.flow.MutableStateFlow",
+        "kotlinx.coroutines.flow.StateFlow",
+        "kotlinx.coroutines.flow.asSharedFlow",
+        "kotlinx.coroutines.flow.asStateFlow",
+        "kotlinx.coroutines.flow.collectLatest",
+        "kotlinx.coroutines.flow.update",
+        "kotlinx.coroutines.launch"
+      ],
+      "symbols": [
+        {
+          "name": "SemaphoreViewModel",
+          "kind": "class",
+          "line": 21
+        },
+        {
+          "name": "checkExpiration",
+          "kind": "fun",
+          "line": 68,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "revertStatus",
+          "kind": "fun",
+          "line": 83,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "onUserStatusClick",
+          "kind": "fun",
+          "line": 94
+        },
+        {
+          "name": "onTimerSelected",
+          "kind": "fun",
+          "line": 119
+        },
+        {
+          "name": "onShowTimerDialog",
+          "kind": "fun",
+          "line": 128
+        },
+        {
+          "name": "onDismissTimerDialog",
+          "kind": "fun",
+          "line": 129
+        },
+        {
+          "name": "onCleared",
+          "kind": "fun",
+          "line": 131,
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "updateOwnStatusLocally",
+          "kind": "fun",
+          "line": 137,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "startPartnerStatusSubscription",
+          "kind": "fun",
+          "line": 158,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "clearPartnerState",
+          "kind": "fun",
+          "line": 192,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "UiEvent",
+          "kind": "class",
+          "line": 210,
+          "modifiers": [
+            "sealed"
+          ]
+        },
+        {
+          "name": "PlayNotificationSound",
+          "kind": "object",
+          "line": 211,
+          "container": "UiEvent"
+        },
+        {
+          "name": "ShowTimerDialog",
+          "kind": "object",
+          "line": 212,
+          "container": "UiEvent"
+        },
+        {
+          "name": "HideTimerDialog",
+          "kind": "object",
+          "line": 213,
+          "container": "UiEvent"
+        },
+        {
+          "name": "ShowUnlinkedDialog",
+          "kind": "object",
+          "line": 214,
+          "container": "UiEvent"
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/presentation/settings/SettingsScreen.kt",
+      "language": "kotlin",
+      "lines": 191,
+      "imports": [
+        "androidx.compose.foundation.background",
+        "androidx.compose.foundation.layout.Box",
+        "androidx.compose.foundation.layout.Column",
+        "androidx.compose.foundation.layout.Spacer",
+        "androidx.compose.foundation.layout.fillMaxSize",
+        "androidx.compose.foundation.layout.height",
+        "androidx.compose.foundation.layout.padding",
+        "androidx.compose.material.icons.Icons",
+        "androidx.compose.material.icons.automirrored.filled.ArrowBack",
+        "androidx.compose.material.icons.automirrored.filled.Logout",
+        "androidx.compose.material.icons.filled.LinkOff",
+        "androidx.compose.material3.AlertDialog",
+        "androidx.compose.material3.Button",
+        "androidx.compose.material3.ButtonDefaults",
+        "androidx.compose.material3.Icon",
+        "androidx.compose.material3.IconButton",
+        "androidx.compose.material3.MaterialTheme",
+        "androidx.compose.material3.Text",
+        "androidx.compose.material3.TextButton",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.LaunchedEffect",
+        "androidx.compose.runtime.getValue",
+        "androidx.compose.runtime.mutableStateOf",
+        "androidx.compose.runtime.remember",
+        "androidx.compose.runtime.setValue",
+        "androidx.compose.ui.Alignment",
+        "androidx.compose.ui.Modifier",
+        "androidx.compose.ui.platform.testTag",
+        "androidx.compose.ui.res.stringResource",
+        "androidx.compose.ui.text.font.FontWeight",
+        "androidx.compose.ui.text.style.TextAlign",
+        "androidx.compose.ui.tooling.preview.Preview",
+        "androidx.compose.ui.unit.dp",
+        "androidx.compose.ui.unit.sp",
+        "androidx.navigation.NavController",
+        "es.cronos.duo.R",
+        "es.cronos.duo.components.CentralImage",
+        "es.cronos.duo.components.PartnerLinkButton",
+        "es.cronos.duo.components.PrivacyIndicator",
+        "es.cronos.duo.components.TitleApp",
+        "es.cronos.duo.presentation.navigation.Pairing",
+        "es.cronos.duo.presentation.navigation.Semaphore",
+        "es.cronos.duo.presentation.navigation.Welcome",
+        "kotlinx.coroutines.flow.collect",
+        "org.koin.androidx.compose.koinViewModel"
+      ],
+      "symbols": [
+        {
+          "name": "SettingsScreen",
+          "kind": "fun",
+          "line": 50
+        },
+        {
+          "name": "SettingsScreenContent",
+          "kind": "fun",
+          "line": 107
+        },
+        {
+          "name": "SettingsScreenPreview",
+          "kind": "fun",
+          "line": 185
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/presentation/settings/SettingsViewModel.kt",
+      "language": "kotlin",
+      "lines": 49,
+      "imports": [
+        "androidx.lifecycle.ViewModel",
+        "androidx.lifecycle.viewModelScope",
+        "es.cronos.duo.domain.repository.AuthRepository",
+        "es.cronos.duo.domain.usecase.GetHealthUseCase",
+        "es.cronos.duo.domain.usecase.UnlinkPartnerUseCase",
+        "kotlinx.coroutines.flow.MutableSharedFlow",
+        "kotlinx.coroutines.flow.asSharedFlow",
+        "kotlinx.coroutines.launch"
+      ],
+      "symbols": [
+        {
+          "name": "SettingsViewModel",
+          "kind": "class",
+          "line": 12
+        },
+        {
+          "name": "onLogout",
+          "kind": "fun",
+          "line": 24
+        },
+        {
+          "name": "onUnlinkPartner",
+          "kind": "fun",
+          "line": 30
+        },
+        {
+          "name": "checkBackendHealth",
+          "kind": "fun",
+          "line": 40,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "UiEvent",
+          "kind": "class",
+          "line": 46,
+          "modifiers": [
+            "sealed"
+          ]
+        },
+        {
+          "name": "UnlinkCompleted",
+          "kind": "object",
+          "line": 47,
+          "container": "UiEvent"
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/presentation/splash/SplashScreen.kt",
+      "language": "kotlin",
+      "lines": 62,
+      "imports": [
+        "androidx.compose.foundation.layout.Box",
+        "androidx.compose.foundation.layout.fillMaxSize",
+        "androidx.compose.material3.CircularProgressIndicator",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.LaunchedEffect",
+        "androidx.compose.ui.Alignment",
+        "androidx.compose.ui.Modifier",
+        "androidx.navigation.NavController",
+        "es.cronos.duo.domain.repository.AuthRepository",
+        "es.cronos.duo.domain.repository.UserRepository",
+        "es.cronos.duo.presentation.navigation.Pairing",
+        "es.cronos.duo.presentation.navigation.Semaphore",
+        "es.cronos.duo.presentation.navigation.Splash",
+        "es.cronos.duo.presentation.navigation.Welcome",
+        "org.koin.compose.koinInject"
+      ],
+      "symbols": [
+        {
+          "name": "SplashScreen",
+          "kind": "fun",
+          "line": 20
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/presentation/util/QrCodeGenerator.kt",
+      "language": "kotlin",
+      "lines": 35,
+      "imports": [
+        "android.graphics.Bitmap",
+        "androidx.compose.ui.graphics.ImageBitmap",
+        "androidx.compose.ui.graphics.asImageBitmap",
+        "com.google.zxing.BarcodeFormat",
+        "com.google.zxing.MultiFormatWriter",
+        "com.google.zxing.common.BitMatrix"
+      ],
+      "symbols": [
+        {
+          "name": "QrCodeGenerator",
+          "kind": "object",
+          "line": 10
+        },
+        {
+          "name": "generateQrBitmap",
+          "kind": "fun",
+          "line": 11,
+          "container": "QrCodeGenerator"
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/presentation/welcome/WelcomeScreen.kt",
+      "language": "kotlin",
+      "lines": 89,
+      "imports": [
+        "androidx.compose.foundation.background",
+        "androidx.compose.foundation.layout.Box",
+        "androidx.compose.foundation.layout.Column",
+        "androidx.compose.foundation.layout.Spacer",
+        "androidx.compose.foundation.layout.fillMaxSize",
+        "androidx.compose.foundation.layout.height",
+        "androidx.compose.foundation.layout.padding",
+        "androidx.compose.material.icons.Icons",
+        "androidx.compose.material.icons.filled.AddLink",
+        "androidx.compose.material3.MaterialTheme",
+        "androidx.compose.material3.Text",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.ui.Alignment",
+        "androidx.compose.ui.Modifier",
+        "androidx.compose.ui.platform.LocalContext",
+        "androidx.compose.ui.platform.testTag",
+        "androidx.compose.ui.res.stringResource",
+        "androidx.compose.ui.text.font.FontWeight",
+        "androidx.compose.ui.text.style.TextAlign",
+        "androidx.compose.ui.tooling.preview.Preview",
+        "androidx.compose.ui.unit.dp",
+        "androidx.compose.ui.unit.sp",
+        "androidx.navigation.NavController",
+        "es.cronos.duo.R",
+        "es.cronos.duo.components.CentralImage",
+        "es.cronos.duo.components.PartnerLinkButton",
+        "es.cronos.duo.components.PrivacyIndicator",
+        "es.cronos.duo.components.TitleApp",
+        "es.cronos.duo.presentation.navigation.Login"
+      ],
+      "symbols": [
+        {
+          "name": "WelcomeScreen",
+          "kind": "fun",
+          "line": 34
+        },
+        {
+          "name": "WelcomeScreenPreview",
+          "kind": "fun",
+          "line": 87
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/ui/theme/Color.kt",
+      "language": "kotlin",
+      "lines": 29,
+      "imports": [
+        "androidx.compose.ui.graphics.Color"
+      ],
+      "symbols": []
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/ui/theme/Theme.kt",
+      "language": "kotlin",
+      "lines": 62,
+      "imports": [
+        "android.os.Build",
+        "androidx.compose.foundation.isSystemInDarkTheme",
+        "androidx.compose.material3.MaterialTheme",
+        "androidx.compose.material3.darkColorScheme",
+        "androidx.compose.material3.dynamicDarkColorScheme",
+        "androidx.compose.material3.dynamicLightColorScheme",
+        "androidx.compose.material3.lightColorScheme",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.ui.platform.LocalContext"
+      ],
+      "symbols": [
+        {
+          "name": "DuoTheme",
+          "kind": "fun",
+          "line": 40
+        }
+      ]
+    },
+    {
+      "path": "app/src/main/java/es/cronos/duo/ui/theme/Type.kt",
+      "language": "kotlin",
+      "lines": 40,
+      "imports": [
+        "androidx.compose.material3.Typography",
+        "androidx.compose.ui.text.TextStyle",
+        "androidx.compose.ui.text.font.Font",
+        "androidx.compose.ui.text.font.FontFamily",
+        "androidx.compose.ui.text.font.FontWeight",
+        "androidx.compose.ui.unit.sp",
+        "es.cronos.duo.R"
+      ],
+      "symbols": []
+    },
+    {
+      "path": "app/src/test/java/es/cronos/duo/ExampleUnitTest.kt",
+      "language": "kotlin",
+      "lines": 17,
+      "imports": [
+        "org.junit.Test",
+        "org.junit.Assert.*"
+      ],
+      "symbols": [
+        {
+          "name": "ExampleUnitTest",
+          "kind": "class",
+          "line": 12
+        },
+        {
+          "name": "addition_isCorrect",
+          "kind": "fun",
+          "line": 14,
+          "container": "ExampleUnitTest"
+        }
+      ]
+    },
+    {
+      "path": "app/src/test/java/es/cronos/duo/data/repository/AuthRepositoryImplTest.kt",
+      "language": "kotlin",
+      "lines": 267,
+      "imports": [
+        "android.util.Log",
+        "es.cronos.duo.data.local.TokenStore",
+        "es.cronos.duo.data.network.NetworkHttpClientProvider",
+        "es.cronos.duo.data.remote.AuthApi",
+        "es.cronos.duo.data.remote.dto.AuthResponseDto",
+        "es.cronos.duo.domain.repository.UserRepository",
+        "es.cronos.duo.domain.util.Resource",
+        "io.ktor.client.call.HttpClientCall",
+        "io.ktor.client.plugins.ClientRequestException",
+        "io.ktor.http.HttpStatusCode",
+        "io.ktor.client.statement.HttpResponse",
+        "io.ktor.client.statement.bodyAsText",
+        "io.mockk.coEvery",
+        "io.mockk.coVerify",
+        "io.mockk.every",
+        "io.mockk.mockk",
+        "io.mockk.mockkStatic",
+        "io.mockk.verify",
+        "java.io.IOException",
+        "kotlinx.coroutines.test.runTest",
+        "org.amshove.kluent.shouldBeEqualTo",
+        "org.amshove.kluent.shouldBeInstanceOf",
+        "org.junit.Before",
+        "org.junit.Test"
+      ],
+      "symbols": [
+        {
+          "name": "AuthRepositoryImplTest",
+          "kind": "class",
+          "line": 28
+        },
+        {
+          "name": "setup",
+          "kind": "fun",
+          "line": 38,
+          "container": "AuthRepositoryImplTest"
+        },
+        {
+          "name": "clientRequestException",
+          "kind": "fun",
+          "line": 257,
+          "container": "AuthRepositoryImplTest",
+          "modifiers": [
+            "private"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/test/java/es/cronos/duo/data/repository/QrCodeRepositoryImplTest.kt",
+      "language": "kotlin",
+      "lines": 60,
+      "imports": [
+        "es.cronos.duo.data.remote.PairingApi",
+        "es.cronos.duo.data.remote.dto.CreatePairingSessionResponseDto",
+        "es.cronos.duo.data.remote.dto.GetLinkSessionStatusResponseDto",
+        "es.cronos.duo.domain.model.LinkSession",
+        "es.cronos.duo.domain.model.LinkSessionStatus",
+        "io.mockk.coEvery",
+        "io.mockk.mockk",
+        "kotlinx.coroutines.test.runTest",
+        "org.amshove.kluent.shouldBeEqualTo",
+        "org.junit.Test"
+      ],
+      "symbols": [
+        {
+          "name": "QrCodeRepositoryImplTest",
+          "kind": "class",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "path": "app/src/test/java/es/cronos/duo/data/repository/UserRepositoryImplTest.kt",
+      "language": "kotlin",
+      "lines": 192,
+      "imports": [
+        "android.util.Log",
+        "com.google.firebase.messaging.FirebaseMessaging",
+        "es.cronos.duo.data.local.TokenStore",
+        "es.cronos.duo.data.network.ClientInstanceIdProvider",
+        "es.cronos.duo.data.remote.DeviceApi",
+        "es.cronos.duo.data.remote.MeApi",
+        "es.cronos.duo.data.remote.PartnerApi",
+        "es.cronos.duo.data.remote.StatusApi",
+        "es.cronos.duo.data.remote.dto.MeResponseDto",
+        "es.cronos.duo.data.remote.dto.PartnerResponseDto",
+        "es.cronos.duo.data.remote.socket.PartnerUnlinkedSocketEvent",
+        "es.cronos.duo.data.remote.socket.SemaphoreSocket",
+        "es.cronos.duo.data.remote.socket.SelfStatusChangedSocketEvent",
+        "es.cronos.duo.domain.model.SemaphoreStatus",
+        "io.mockk.coEvery",
+        "io.mockk.coVerify",
+        "io.mockk.every",
+        "io.mockk.mockk",
+        "kotlinx.coroutines.flow.emptyFlow",
+        "io.mockk.mockkStatic",
+        "kotlinx.coroutines.flow.flowOf",
+        "kotlinx.coroutines.flow.first",
+        "kotlinx.coroutines.flow.take",
+        "kotlinx.coroutines.flow.toList",
+        "kotlinx.coroutines.test.runTest",
+        "org.amshove.kluent.shouldBeEqualTo",
+        "org.junit.Before",
+        "org.junit.Test"
+      ],
+      "symbols": [
+        {
+          "name": "UserRepositoryImplTest",
+          "kind": "class",
+          "line": 32
+        },
+        {
+          "name": "setup",
+          "kind": "fun",
+          "line": 45,
+          "container": "UserRepositoryImplTest"
+        }
+      ]
+    },
+    {
+      "path": "app/src/test/java/es/cronos/duo/domain/usecase/GenerateQrCodeUseCaseTest.kt",
+      "language": "kotlin",
+      "lines": 32,
+      "imports": [
+        "es.cronos.duo.domain.model.LinkSession",
+        "es.cronos.duo.domain.repository.QrCodeRepository",
+        "io.mockk.coEvery",
+        "io.mockk.mockk",
+        "kotlinx.coroutines.test.runTest",
+        "org.amshove.kluent.shouldBeEqualTo",
+        "org.junit.Test"
+      ],
+      "symbols": [
+        {
+          "name": "GenerateQrCodeUseCaseTest",
+          "kind": "class",
+          "line": 11
+        }
+      ]
+    },
+    {
+      "path": "app/src/test/java/es/cronos/duo/domain/usecase/GetPartnerStatusUseCaseTest.kt",
+      "language": "kotlin",
+      "lines": 44,
+      "imports": [
+        "es.cronos.duo.domain.model.User",
+        "es.cronos.duo.domain.repository.UserRepository",
+        "io.mockk.every",
+        "io.mockk.mockk",
+        "kotlinx.coroutines.flow.flowOf",
+        "kotlinx.coroutines.flow.toList",
+        "kotlinx.coroutines.test.runTest",
+        "org.amshove.kluent.shouldBeEqualTo",
+        "org.junit.Test"
+      ],
+      "symbols": [
+        {
+          "name": "GetPartnerStatusUseCaseTest",
+          "kind": "class",
+          "line": 13
+        }
+      ]
+    },
+    {
+      "path": "app/src/test/java/es/cronos/duo/domain/usecase/GetUserUseCaseTest.kt",
+      "language": "kotlin",
+      "lines": 40,
+      "imports": [
+        "es.cronos.duo.domain.model.User",
+        "es.cronos.duo.domain.repository.UserRepository",
+        "io.mockk.coEvery",
+        "io.mockk.mockk",
+        "kotlinx.coroutines.test.runTest",
+        "org.amshove.kluent.shouldBeEqualTo",
+        "org.junit.Test"
+      ],
+      "symbols": [
+        {
+          "name": "GetUserUseCaseTest",
+          "kind": "class",
+          "line": 11
+        }
+      ]
+    },
+    {
+      "path": "app/src/test/java/es/cronos/duo/domain/usecase/LinkPartnerUseCaseTest.kt",
+      "language": "kotlin",
+      "lines": 40,
+      "imports": [
+        "es.cronos.duo.domain.repository.QrCodeRepository",
+        "io.mockk.coEvery",
+        "io.mockk.mockk",
+        "kotlinx.coroutines.test.runTest",
+        "org.amshove.kluent.shouldBeEqualTo",
+        "org.junit.Test"
+      ],
+      "symbols": [
+        {
+          "name": "LinkPartnerUseCaseTest",
+          "kind": "class",
+          "line": 10
+        }
+      ]
+    },
+    {
+      "path": "app/src/test/java/es/cronos/duo/domain/usecase/LoginWithEmailUseCaseTest.kt",
+      "language": "kotlin",
+      "lines": 49,
+      "imports": [
+        "es.cronos.duo.domain.model.User",
+        "es.cronos.duo.domain.repository.AuthRepository",
+        "es.cronos.duo.domain.util.Resource",
+        "io.mockk.coEvery",
+        "io.mockk.coVerify",
+        "io.mockk.mockk",
+        "kotlinx.coroutines.flow.toList",
+        "kotlinx.coroutines.test.runTest",
+        "org.amshove.kluent.shouldBeEqualTo",
+        "org.amshove.kluent.shouldBeInstanceOf",
+        "org.junit.Test"
+      ],
+      "symbols": [
+        {
+          "name": "LoginWithEmailUseCaseTest",
+          "kind": "class",
+          "line": 15
+        }
+      ]
+    },
+    {
+      "path": "app/src/test/java/es/cronos/duo/domain/usecase/ObserveUserUseCaseTest.kt",
+      "language": "kotlin",
+      "lines": 30,
+      "imports": [
+        "es.cronos.duo.domain.model.User",
+        "es.cronos.duo.domain.repository.UserRepository",
+        "io.mockk.every",
+        "io.mockk.mockk",
+        "kotlinx.coroutines.flow.flowOf",
+        "kotlinx.coroutines.flow.toList",
+        "kotlinx.coroutines.test.runTest",
+        "org.amshove.kluent.shouldBeEqualTo",
+        "org.junit.Test"
+      ],
+      "symbols": [
+        {
+          "name": "ObserveUserUseCaseTest",
+          "kind": "class",
+          "line": 13
+        }
+      ]
+    },
+    {
+      "path": "app/src/test/java/es/cronos/duo/domain/usecase/RegisterWithEmailUseCaseTest.kt",
+      "language": "kotlin",
+      "lines": 51,
+      "imports": [
+        "es.cronos.duo.domain.model.User",
+        "es.cronos.duo.domain.repository.AuthRepository",
+        "es.cronos.duo.domain.util.Resource",
+        "io.mockk.coEvery",
+        "io.mockk.coVerify",
+        "io.mockk.mockk",
+        "kotlinx.coroutines.flow.toList",
+        "kotlinx.coroutines.test.runTest",
+        "org.amshove.kluent.shouldBeEqualTo",
+        "org.amshove.kluent.shouldBeInstanceOf",
+        "org.junit.Test"
+      ],
+      "symbols": [
+        {
+          "name": "RegisterWithEmailUseCaseTest",
+          "kind": "class",
+          "line": 15
+        }
+      ]
+    },
+    {
+      "path": "app/src/test/java/es/cronos/duo/domain/usecase/UpdateUserStatusUseCaseTest.kt",
+      "language": "kotlin",
+      "lines": 43,
+      "imports": [
+        "es.cronos.duo.domain.model.SemaphoreStatus",
+        "es.cronos.duo.domain.repository.UserRepository",
+        "io.mockk.coEvery",
+        "io.mockk.coVerify",
+        "io.mockk.mockk",
+        "kotlinx.coroutines.test.runTest",
+        "org.junit.Test"
+      ],
+      "symbols": [
+        {
+          "name": "UpdateUserStatusUseCaseTest",
+          "kind": "class",
+          "line": 11
+        }
+      ]
+    },
+    {
+      "path": "app/src/test/java/es/cronos/duo/presentation/login/LoginViewModelTest.kt",
+      "language": "kotlin",
+      "lines": 227,
+      "imports": [
+        "es.cronos.duo.domain.model.User",
+        "es.cronos.duo.domain.usecase.LoginWithEmailUseCase",
+        "es.cronos.duo.domain.usecase.RegisterWithEmailUseCase",
+        "es.cronos.duo.domain.util.Resource",
+        "io.mockk.every",
+        "io.mockk.mockk",
+        "kotlinx.coroutines.Dispatchers",
+        "kotlinx.coroutines.ExperimentalCoroutinesApi",
+        "kotlinx.coroutines.flow.flowOf",
+        "kotlinx.coroutines.flow.take",
+        "kotlinx.coroutines.flow.toList",
+        "kotlinx.coroutines.launch",
+        "kotlinx.coroutines.test.StandardTestDispatcher",
+        "kotlinx.coroutines.test.UnconfinedTestDispatcher",
+        "kotlinx.coroutines.test.advanceUntilIdle",
+        "kotlinx.coroutines.test.resetMain",
+        "kotlinx.coroutines.test.runTest",
+        "kotlinx.coroutines.test.setMain",
+        "org.amshove.kluent.shouldBeEqualTo",
+        "org.junit.After",
+        "org.junit.Before",
+        "org.junit.Test"
+      ],
+      "symbols": [
+        {
+          "name": "LoginViewModelTest",
+          "kind": "class",
+          "line": 27
+        },
+        {
+          "name": "setUp",
+          "kind": "fun",
+          "line": 37,
+          "container": "LoginViewModelTest"
+        },
+        {
+          "name": "tearDown",
+          "kind": "fun",
+          "line": 46,
+          "container": "LoginViewModelTest"
+        }
+      ]
+    },
+    {
+      "path": "app/src/test/java/es/cronos/duo/presentation/pairing/PairingViewModelTest.kt",
+      "language": "kotlin",
+      "lines": 88,
+      "imports": [
+        "es.cronos.duo.domain.model.LinkSession",
+        "es.cronos.duo.domain.model.LinkSessionStatus",
+        "es.cronos.duo.domain.model.User",
+        "es.cronos.duo.domain.usecase.GenerateQrCodeUseCase",
+        "es.cronos.duo.domain.usecase.GetUserUseCase",
+        "es.cronos.duo.domain.usecase.GetLinkSessionStatusUseCase",
+        "es.cronos.duo.domain.usecase.LinkPartnerUseCase",
+        "io.mockk.coEvery",
+        "io.mockk.coVerify",
+        "io.mockk.mockk",
+        "kotlinx.coroutines.Dispatchers",
+        "kotlinx.coroutines.ExperimentalCoroutinesApi",
+        "kotlinx.coroutines.test.StandardTestDispatcher",
+        "kotlinx.coroutines.test.advanceUntilIdle",
+        "kotlinx.coroutines.test.resetMain",
+        "kotlinx.coroutines.test.runTest",
+        "kotlinx.coroutines.test.setMain",
+        "org.amshove.kluent.shouldBeEqualTo",
+        "org.junit.After",
+        "org.junit.Before",
+        "org.junit.Test"
+      ],
+      "symbols": [
+        {
+          "name": "PairingViewModelTest",
+          "kind": "class",
+          "line": 26
+        },
+        {
+          "name": "setUp",
+          "kind": "fun",
+          "line": 38,
+          "container": "PairingViewModelTest"
+        },
+        {
+          "name": "tearDown",
+          "kind": "fun",
+          "line": 49,
+          "container": "PairingViewModelTest"
+        }
+      ]
+    },
+    {
+      "path": "app/src/test/java/es/cronos/duo/presentation/semaphore/SemaphoreViewModelTest.kt",
+      "language": "kotlin",
+      "lines": 186,
+      "imports": [
+        "es.cronos.duo.domain.model.SemaphoreStatus",
+        "es.cronos.duo.domain.model.User",
+        "es.cronos.duo.domain.repository.UserRepository",
+        "es.cronos.duo.domain.usecase.GetPartnerStatusUseCase",
+        "es.cronos.duo.domain.usecase.ObserveUserUseCase",
+        "es.cronos.duo.domain.usecase.UpdateUserStatusUseCase",
+        "io.mockk.coEvery",
+        "io.mockk.coVerify",
+        "io.mockk.every",
+        "io.mockk.mockk",
+        "kotlinx.coroutines.Dispatchers",
+        "kotlinx.coroutines.ExperimentalCoroutinesApi",
+        "kotlinx.coroutines.async",
+        "kotlinx.coroutines.flow.MutableSharedFlow",
+        "kotlinx.coroutines.flow.first",
+        "kotlinx.coroutines.flow.flowOf",
+        "kotlinx.coroutines.test.StandardTestDispatcher",
+        "kotlinx.coroutines.test.advanceUntilIdle",
+        "kotlinx.coroutines.test.resetMain",
+        "kotlinx.coroutines.test.runTest",
+        "kotlinx.coroutines.test.setMain",
+        "org.amshove.kluent.shouldBeEqualTo",
+        "org.junit.After",
+        "org.junit.Before",
+        "org.junit.Test"
+      ],
+      "symbols": [
+        {
+          "name": "SemaphoreViewModelTest",
+          "kind": "class",
+          "line": 30
+        },
+        {
+          "name": "setUp",
+          "kind": "fun",
+          "line": 45,
+          "container": "SemaphoreViewModelTest"
+        },
+        {
+          "name": "tearDown",
+          "kind": "fun",
+          "line": 52,
+          "container": "SemaphoreViewModelTest"
+        },
+        {
+          "name": "initViewModel",
+          "kind": "fun",
+          "line": 56,
+          "container": "SemaphoreViewModelTest",
+          "modifiers": [
+            "private"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "app/src/test/java/es/cronos/duo/presentation/settings/SettingsViewModelTest.kt",
+      "language": "kotlin",
+      "lines": 60,
+      "imports": [
+        "es.cronos.duo.domain.repository.AuthRepository",
+        "es.cronos.duo.domain.usecase.GetHealthUseCase",
+        "es.cronos.duo.domain.usecase.UnlinkPartnerUseCase",
+        "io.mockk.coEvery",
+        "io.mockk.coVerify",
+        "io.mockk.mockk",
+        "kotlinx.coroutines.Dispatchers",
+        "kotlinx.coroutines.ExperimentalCoroutinesApi",
+        "kotlinx.coroutines.test.StandardTestDispatcher",
+        "kotlinx.coroutines.test.advanceUntilIdle",
+        "kotlinx.coroutines.test.resetMain",
+        "kotlinx.coroutines.test.runTest",
+        "kotlinx.coroutines.test.setMain",
+        "org.junit.After",
+        "org.junit.Before",
+        "org.junit.Test"
+      ],
+      "symbols": [
+        {
+          "name": "SettingsViewModelTest",
+          "kind": "class",
+          "line": 21
+        },
+        {
+          "name": "setUp",
+          "kind": "fun",
+          "line": 32,
+          "container": "SettingsViewModelTest"
+        },
+        {
+          "name": "tearDown",
+          "kind": "fun",
+          "line": 39,
+          "container": "SettingsViewModelTest"
+        }
+      ]
+    }
+  ]
+}

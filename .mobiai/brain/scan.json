@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "project_name": "Duo",
+  "project_type": "android",
+  "platforms": [
+    "android"
+  ],
+  "build_systems": [
+    "gradle"
+  ],
+  "ui": [
+    "compose"
+  ],
+  "di": [
+    "koin"
+  ],
+  "network": [
+    "ktor"
+  ],
+  "persistence": [],
+  "serialization": [
+    "kotlinx.serialization"
+  ],
+  "testing": [
+    "espresso",
+    "mockk"
+  ],
+  "integrations": [
+    "firebase"
+  ],
+  "ci_cd": [],
+  "detected_files": {
+    "android_manifest": "app/src/main/AndroidManifest.xml",
+    "settings_gradle": "settings.gradle.kts"
+  },
+  "warnings": [
+    "sensitive file detected: app/google-services.json (not read)",
+    "sensitive file detected: app/src/debug/google-services.json (not read)",
+    "sensitive file detected: app/src/release/google-services.json (not read)"
+  ],
+  "created_at": "2026-05-28T10:04:30Z",
+  "updated_at": "2026-05-28T10:04:30Z"
+}

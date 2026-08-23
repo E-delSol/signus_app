@@ -1,0 +1,45 @@
+schema: spec-driven
+
+context: |
+  Platform: Android (minSdk 26, targetSdk 36, compileSdk 36)
+  Language: Kotlin 2.2.10
+  UI: Jetpack Compose + Material3
+  Architecture: MVVM + Clean Architecture (presentation/domain/data)
+  DI: Koin 4.1.1
+  Networking: Ktor 2.3.12 (OkHttp engine)
+  Serialization: Kotlinx Serialization 1.6.3
+  Firebase: Auth, Crashlytics, Firestore, Messaging
+  Camera: CameraX 1.3.1
+  Auth: Google Identity + Credentials API
+  QR: ZXing 3.5.3
+  Build: Gradle Kotlin DSL, AGP 9.0.1
+  Single module, no modularization
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Consider impact on existing MVVM + Clean Architecture layers
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+    - Respect existing presentation/domain/data layer boundaries
+  design:
+    - Include sequence diagrams for complex flows
+    - Document architecture decisions with rationale
+    - Follow existing Koin DI patterns
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+    - Respect existing test patterns (MockK + Kluent)
+  apply:
+    - Follow existing code patterns in ARCHITECTURE.md
+    - Use TDD when modifying use cases or repositories
+    - Maintain Koin module registration
+    tdd: true
+    test_command: "./gradlew test"
+  verify:
+    test_command: "./gradlew test"
+    build_command: "./gradlew assembleDebug"
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas

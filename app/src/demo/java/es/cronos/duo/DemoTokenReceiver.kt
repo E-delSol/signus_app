@@ -33,7 +33,7 @@ class DemoTokenReceiver : BroadcastReceiver(), KoinComponent {
             return
         }
 
-        tokenStore.restoreToken(token)
+        tokenStore.saveToken(token)
         Log.i(TAG, "Demo token injected successfully")
     }
 

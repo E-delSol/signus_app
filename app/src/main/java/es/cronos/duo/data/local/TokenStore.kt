@@ -24,10 +24,6 @@ class TokenStore(
         preferences.edit().putString(KEY_ACCESS_TOKEN, token).apply()
     }
 
-    fun restoreToken(token: String) {
-        preferences.edit().putString(KEY_ACCESS_TOKEN, token).apply()
-    }
-
     fun getToken(): String? {
         return preferences.getString(KEY_ACCESS_TOKEN, null)
     }
