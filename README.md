@@ -8,9 +8,9 @@ Android client for a real-time system designed to help couples communicate avail
 
 This application is part of the **Signus ecosystem**, a real-time system composed of:
 
-* [signus_app](https://github.com/E-delSol/signus_app) — Android client (this repository)
+* **signus_app** — Android client (this repository)
 * [signus_back](https://github.com/E-delSol/signus_back) — Backend API (Ktor + WebSockets)
-* signus_infra — Infrastructure and deployment
+* [signus_infra](https://github.com/E-delSol/signus_infra) — Infrastructure and deployment
 
 The app provides a shared **“traffic light” style status** between two users, allowing lightweight communication without replacing conversation.
 
