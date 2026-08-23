@@ -27,3 +27,16 @@ firebase.json
 
 **/serviceAccount*.json
 **/*secret*.json
+
+# AI tooling (local only)
+.atl/
+.codex
+.mobiai/
+openspec/
+openspec.zip
+
+# Local docs / plans
+NOTIFICATION_ARCHITECTURE_REVIEW.md
+NOTIFICATION_AUDIT.md
+NOTIFICATION_VALIDATION.md
+docs/plans/
