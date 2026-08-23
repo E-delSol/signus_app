@@ -130,6 +130,22 @@ app/
 3. Configure Firebase Cloud Messaging
 4. Run on emulator or device
 
+### Quick Demo
+
+Want to try it immediately? Use the one-command demo launcher:
+
+```bash
+git clone https://github.com/E-delSol/signus_infra.git
+cd signus_infra
+./demo/demo.sh
+```
+
+This sets up the backend, creates two linked users (Alice & Bob),
+builds the APK, and launches two emulators ready to use.
+
+See [signus_infra/demo](https://github.com/E-delSol/signus_infra/tree/main/demo)
+for details.
+
 ---
 
 ## 🔗 Backend Configuration
