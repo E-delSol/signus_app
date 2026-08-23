@@ -1,9 +1,8 @@
 package es.cronos.duo.data.repository
 
 import android.util.Log
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
 import es.cronos.duo.data.local.TokenStore
+import es.cronos.duo.data.network.NetworkHttpClientProvider
 import es.cronos.duo.data.remote.AuthApi
 import es.cronos.duo.data.remote.dto.ErrorResponseDto
 import es.cronos.duo.domain.model.User
@@ -14,80 +13,77 @@ import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.ServerResponseException
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
-import kotlinx.coroutines.tasks.await
 import kotlinx.serialization.json.Json
 import java.io.IOException
-import kotlin.coroutines.cancellation.CancellationException
 
 class AuthRepositoryImpl(
     private val authApi: AuthApi,
     private val tokenStore: TokenStore,
-    private val firebaseAuth: FirebaseAuth,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val networkHttpClientProvider: NetworkHttpClientProvider
 ) : AuthRepository {
 
     override val currentUser: User?
-        get() {
-            if (isLoggedIn()) {
-                return User(id = "backend_user")
+        get() = if (isLoggedIn()) {
+            tokenStore.getToken()?.let {
+                User(id = "backend_user")
             }
-            return try {
-                firebaseAuth.currentUser?.let {
-                    User(it.uid, it.email, it.displayName)
-                }
-            } catch (_: Exception) {
-                null
-            }
-        }
+        } else null
 
     override suspend fun login(email: String, password: String): Resource<User> {
-        try {
-            val response = authApi.login(email = email, password = password)
-            tokenStore.saveToken(response.accessToken)
+        return safeAuthCall(
+            errorMapper = { status, msg -> mapLoginError(status, msg) }
+        ) {
+            val response = authApi.login(email, password)
+
+            val access = response.accessToken
+            val refresh = response.refreshToken
+
+            if (access.isBlank()) {
+                throw IllegalStateException("Missing accessToken from login response")
+            }
+
+            persistSession(access, refresh)
+
             userRepository.syncFcmToken()
-            return Resource.Success(
+
+            Resource.Success(
                 User(
                     id = "backend_user",
                     email = email
                 )
             )
-        } catch (e: ClientRequestException) {
-            return Resource.Error(mapLoginError(e.response.status, parseErrorMessage(e)))
-        } catch (e: ServerResponseException) {
-            return Resource.Error("Error inesperado del servidor (${e.response.status.value})")
-        } catch (_: IOException) {
-            return Resource.Error("Error de red")
-        } catch (e: Exception) {
-            Log.w(TAG, "Unexpected login error", e)
-            return Resource.Error("No se pudo iniciar sesión")
         }
     }
 
-    override suspend fun register(email: String, password: String, displayName: String): Resource<User> {
-        try {
-            val response = authApi.register(
-                email = email,
-                password = password,
-                displayName = displayName
-            )
-            tokenStore.saveToken(response.accessToken)
+    override suspend fun register(
+        email: String,
+        password: String,
+        displayName: String
+    ): Resource<User> {
+        return safeAuthCall(
+            errorMapper = { status, msg -> mapRegisterError(status, msg) }
+        ) {
+            val response = authApi.register(email, password, displayName)
+
+            val access = response.accessToken
+            val refresh = response.refreshToken
+
+            if (access.isBlank()) {
+                throw IllegalStateException("Missing accessToken from register response")
+            }
+
+            persistSession(access, refresh)
+
             userRepository.syncFcmToken()
-            return Resource.Success(
+
+            Resource.Success(
                 User(
                     id = "backend_user",
                     email = email,
                     displayName = displayName
                 )
             )
-        } catch (e: ClientRequestException) {
-            return Resource.Error(mapRegisterError(e.response.status, parseErrorMessage(e)))
-        } catch (e: ServerResponseException) {
-            return Resource.Error("Error inesperado del servidor (${e.response.status.value})")
-        } catch (_: IOException) {
-            return Resource.Error("Error de red")
-        } catch (e: Exception) {
-            Log.w(TAG, "Unexpected register error", e)
-            return Resource.Error("No se pudo completar el registro")
         }
     }
 
@@ -97,15 +93,60 @@ class AuthRepositoryImpl(
 
     override suspend fun logout() {
         runCatching {
-            if (isLoggedIn()) {
-                val deviceId = tokenStore.getOrCreateDeviceId()
-                userRepository.deactivateDeviceToken(deviceId)
-            }
+            val deviceId = tokenStore.getOrCreateDeviceId()
+            userRepository.deactivateDeviceToken(deviceId)
         }
-        tokenStore.clearToken()
-        try {
-            firebaseAuth.signOut()
-        } catch (_: Exception) {}
+
+        clearSession()
+    }
+
+    override suspend fun refreshSession(): Boolean {
+        val refreshToken = tokenStore.getRefreshToken() ?: return false
+
+        return try {
+            val response = authApi.refreshSession(refreshToken)
+
+            val newAccess = response.accessToken
+            val newRefresh = response.refreshToken
+
+            if (newAccess.isBlank()) {
+                clearSession()
+                return false
+            }
+
+            persistSession(newAccess, newRefresh) // puede ser null válido
+            true
+
+        } catch (e: Exception) {
+            clearSession()
+            false
+        }
+    }
+
+    override suspend fun startupCheck(): Resource<Unit> {
+        return try {
+
+            val refreshed = if (isLoggedIn()) {
+                refreshSession()
+            } else {
+                false
+            }
+
+            val bootstrap = runCatching {
+                authApi.bootstrap()
+            }.isSuccess
+
+            return if (isLoggedIn() && (refreshed || bootstrap)) {
+                Resource.Success(Unit)
+            } else {
+                clearSession()
+                Resource.Error("Sesión inválida")
+            }
+
+        } catch (e: Exception) {
+            clearSession()
+            Resource.Error("Error en startup")
+        }
     }
 
     override suspend fun testProtectedEndpoint(): Resource<String> {
@@ -113,6 +154,7 @@ class AuthRepositoryImpl(
             Resource.Success(authApi.testProtected())
         } catch (e: ClientRequestException) {
             if (e.response.status == HttpStatusCode.Unauthorized) {
+                clearSession()
                 Resource.Error("Token inválido o expirado")
             } else {
                 Resource.Error("Error inesperado en endpoint protegido")
@@ -125,38 +167,44 @@ class AuthRepositoryImpl(
         }
     }
 
-    override suspend fun signInWithGoogle(idToken: String): Resource<User> {
+    private inline suspend fun <T> safeAuthCall(
+        crossinline errorMapper: (HttpStatusCode, String?) -> String,
+        crossinline block: suspend () -> Resource<T>
+    ): Resource<T> {
         return try {
-            val credential = GoogleAuthProvider.getCredential(idToken, null)
-            val authResult = firebaseAuth.signInWithCredential(credential).await()
-            val user = authResult.user
-            if (user != null) {
-                Resource.Success(User(user.uid, user.email, user.displayName))
-            } else {
-                Resource.Error("Error desconocido con Google Sign-In")
-            }
-        } catch (e: CancellationException) {
-            throw e
+            block()
+        } catch (e: ClientRequestException) {
+            Resource.Error(errorMapper(e.response.status, parseErrorMessage(e)))
+        } catch (e: ServerResponseException) {
+            Resource.Error("Error del servidor (${e.response.status.value})")
+        } catch (_: IOException) {
+            Resource.Error("Error de red")
         } catch (e: Exception) {
-            Log.w(TAG, "Google Sign-In failed", e)
-            Resource.Error("No se pudo iniciar sesión con Google")
+            Log.w(TAG, "Unexpected auth error", e)
+            Resource.Error("Error inesperado")
         }
     }
 
-    override fun signOut() {
-        runCatching {
-            kotlinx.coroutines.runBlocking { logout() }
-        }.onFailure {
-            tokenStore.clearToken()
-            try {
-                firebaseAuth.signOut()
-            } catch (_: Exception) {}
+    private fun persistSession(accessToken: String, refreshToken: String?) {
+        tokenStore.saveToken(accessToken)
+
+        if (!refreshToken.isNullOrBlank()) {
+            tokenStore.saveRefreshToken(refreshToken)
         }
+
+        networkHttpClientProvider.clearBearerTokenCache()
+    }
+
+    private fun clearSession() {
+        tokenStore.clearToken()
+        tokenStore.clearRefreshToken()
+        networkHttpClientProvider.clearBearerTokenCache()
     }
 
     private suspend fun parseErrorMessage(e: ClientRequestException): String? {
         val body = e.response.bodyAsText().trim()
         if (body.isEmpty()) return null
+
         return runCatching {
             json.decodeFromString(ErrorResponseDto.serializer(), body).error
         }.getOrNull()
@@ -167,7 +215,7 @@ class AuthRepositoryImpl(
             HttpStatusCode.Unauthorized -> backendMessage ?: "Credenciales inválidas"
             HttpStatusCode.BadRequest -> backendMessage ?: "Datos inválidos"
             HttpStatusCode.Conflict -> backendMessage ?: "Conflicto al iniciar sesión"
-            else -> "Error inesperado al iniciar sesión (${status.value})"
+            else -> "Error inesperado (${status.value})"
         }
     }
 
@@ -176,7 +224,7 @@ class AuthRepositoryImpl(
             HttpStatusCode.BadRequest -> backendMessage ?: "Datos inválidos"
             HttpStatusCode.Conflict -> backendMessage ?: "Conflicto al registrarse"
             HttpStatusCode.Unauthorized -> backendMessage ?: "No autorizado"
-            else -> "Error inesperado al registrarse (${status.value})"
+            else -> "Error inesperado (${status.value})"
         }
     }
 

@@ -47,6 +47,7 @@ import es.cronos.duo.R
 import es.cronos.duo.components.PartnerLinkButton
 import es.cronos.duo.components.PrivacyIndicator
 import es.cronos.duo.components.TimerPickerDialog
+import es.cronos.duo.components.NotificationPermissionRequest
 import es.cronos.duo.components.TitleApp
 import es.cronos.duo.components.TrafficLight
 import es.cronos.duo.domain.model.SemaphoreStatus
@@ -65,6 +66,8 @@ fun SemaphoreScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+
+    NotificationPermissionRequest()
     
     var showTimerDialog by remember { mutableStateOf(false) }
     var showUnlinkedDialog by remember { mutableStateOf(false) }

@@ -4,9 +4,12 @@ import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessaging
 import es.cronos.duo.data.local.TokenStore
+import es.cronos.duo.data.network.AppVersionProvider
 import es.cronos.duo.data.network.NetworkHttpClientProvider
 import es.cronos.duo.data.network.NetworkEndpointConfig
 import es.cronos.duo.data.network.ClientInstanceIdProvider
+import es.cronos.duo.data.network.VersionEnforcementState
+import es.cronos.duo.data.network.VersionEnforcementInterceptor
 import es.cronos.duo.data.remote.AuthApi
 import es.cronos.duo.data.remote.DeviceApi
 import es.cronos.duo.data.remote.HealthApi
@@ -46,6 +49,9 @@ val appModule = module {
     // Networking
     singleOf(::NetworkEndpointConfig)
     singleOf(::ClientInstanceIdProvider)
+    singleOf(::AppVersionProvider)
+    singleOf(::VersionEnforcementState)
+    singleOf(::VersionEnforcementInterceptor)
     singleOf(::NetworkHttpClientProvider)
     single<HttpClient> { get<NetworkHttpClientProvider>().client }
     singleOf(::AuthApi)
@@ -66,7 +72,6 @@ val appModule = module {
     // Use Cases
     factoryOf(::LoginWithEmailUseCase)
     factoryOf(::RegisterWithEmailUseCase)
-    factoryOf(::SignInWithGoogleUseCase)
     factoryOf(::GenerateQrCodeUseCase)
     factoryOf(::GetLinkSessionStatusUseCase)
     factoryOf(::LinkPartnerUseCase)
@@ -77,6 +82,7 @@ val appModule = module {
     factoryOf(::GetUserUseCase)
     factoryOf(::GetHealthUseCase)
     factoryOf(::TestProtectedEndpointUseCase)
+    factoryOf(::AppStartupUseCase)
 
     // ViewModels
     viewModelOf(::LoginViewModel)

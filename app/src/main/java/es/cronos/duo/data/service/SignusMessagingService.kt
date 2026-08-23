@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.media.RingtoneManager
+import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
@@ -36,19 +37,22 @@ class SignusMessagingService : FirebaseMessagingService(), KoinComponent {
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
-        
+
+        val data = remoteMessage.data
+        val navigateTo = if (data.isNotEmpty()) data["navigateTo"] else null
+
         // Check if message contains a notification payload.
         remoteMessage.notification?.let {
-            sendNotification(it.title, it.body)
+            sendNotification(it.title, it.body, navigateTo)
         }
-        
+
         // Check if message contains a data payload.
-        if (remoteMessage.data.isNotEmpty()) {
-            val title = remoteMessage.data["title"]
-            val body = remoteMessage.data["body"]
+        if (data.isNotEmpty()) {
+            val title = data["title"]
+            val body = data["body"]
             // Only send if not handled by notification payload
             if (remoteMessage.notification == null && title != null && body != null) {
-                sendNotification(title, body)
+                sendNotification(title, body, navigateTo)
             }
         }
     }
@@ -58,11 +62,15 @@ class SignusMessagingService : FirebaseMessagingService(), KoinComponent {
         super.onDestroy()
     }
 
-    private fun sendNotification(title: String?, messageBody: String?) {
-        val intent = Intent(this, MainActivity::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+    private fun sendNotification(title: String?, messageBody: String?, navigateTo: String? = null) {
+        val intent = Intent(this, MainActivity::class.java).apply {
+            if (navigateTo != null) {
+                data = Uri.parse("signus://$navigateTo")
+            }
+            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        }
         val pendingIntent = PendingIntent.getActivity(
-            this, 0, intent,
+            this, System.currentTimeMillis().toInt(), intent,
             PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
         )
 

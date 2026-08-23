@@ -94,4 +94,14 @@
     <string name="default_web_client_id">932600907616-965o0aeipebasilp1gi626822qm12uhd.apps.googleusercontent.com</string>
     <string name="begin">Comenzar</string>
     <string name="begin_description">Inicia el proceso para vincularte con tu pareja</string>
+
+    <!-- Notification Permission -->
+    <string name="notification_permission_title">Notificaciones</string>
+    <string name="notification_permission_message">Queremos avisarte cuando tu pareja cambie de estado. ¿Permitimos las notificaciones?</string>
+
+    <!-- Force Update -->
+    <string name="force_update_title">Actualización requerida</string>
+    <string name="force_update_message_with_version">Tu versión de la app ya no es compatible. La versión mínima requerida es %1$s. Por favor, actualiza la aplicación para continuar.</string>
+    <string name="force_update_message_without_version">Tu versión de la app ya no es compatible. Por favor, actualiza la aplicación para continuar.</string>
+    <string name="force_update_button">Actualizar en Google Play</string>
 </resources>

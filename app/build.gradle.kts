@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.kotlin.serialization)
 }
 
@@ -15,7 +16,7 @@ android {
         minSdk = 26
         targetSdk = 36
         versionCode = 1
-        versionName = "1.0"
+        versionName = "2.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -23,11 +24,11 @@ android {
     buildTypes {
         debug {
             // Se mantiene el applicationId sin sufijo para que coincida con el google-services.json actual
-            applicationIdSuffix = ""
+            applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
             isMinifyEnabled = false
             manifestPlaceholders["appName"] = "Signus Debug"
-            buildConfigField("String", "BASE_URL", "\"http://79.72.50.123\"")
+            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080\"")
         }
         create("demo") {
             initWith(buildTypes.getByName("debug"))
@@ -75,6 +76,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.auth)
     implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.client.websockets)
@@ -105,6 +107,7 @@ dependencies {
     // Firebase Dependencies
     implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
+    implementation(libs.firebase.crashlytics.ktx)
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-messaging-ktx")
 
@@ -112,6 +115,7 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.kluent)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.ktor.client.mock)
 
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

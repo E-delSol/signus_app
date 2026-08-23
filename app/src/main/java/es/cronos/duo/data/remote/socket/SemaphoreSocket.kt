@@ -4,9 +4,12 @@ import android.util.Log
 import es.cronos.duo.data.local.TokenStore
 import es.cronos.duo.data.network.ClientInstanceIdProvider
 import es.cronos.duo.data.network.NetworkEndpointConfig
+import es.cronos.duo.data.network.VersionEnforcementContract
+import es.cronos.duo.data.network.VersionEnforcementState
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.webSocketSession
 import io.ktor.http.takeFrom
+import io.ktor.websocket.CloseReason
 import io.ktor.websocket.close
 import io.ktor.websocket.Frame
 import io.ktor.websocket.readText
@@ -43,7 +46,8 @@ class SemaphoreSocket(
     private val httpClient: HttpClient,
     private val tokenStore: TokenStore,
     private val endpointConfig: NetworkEndpointConfig,
-    private val clientInstanceIdProvider: ClientInstanceIdProvider
+    private val clientInstanceIdProvider: ClientInstanceIdProvider,
+    private val versionEnforcementState: VersionEnforcementState
 ) {
     private val json = Json { ignoreUnknownKeys = true }
     private val websocketUrl = endpointConfig.webSocketUrl
@@ -69,6 +73,11 @@ class SemaphoreSocket(
                 }
             }
         } finally {
+            val closeReason = runCatching { session.closeReason.await() }.getOrNull()
+            if (closeReason?.code == CloseReason.Codes.VIOLATED_POLICY.code) {
+                Log.w(TAG, "Websocket closed due to policy violation client=$clientLabel")
+                versionEnforcementState.setUnsupportedVersion(VersionEnforcementContract.UNKNOWN_VERSION)
+            }
             Log.d(TAG, "Closing websocket client=$clientLabel")
             session.close()
         }

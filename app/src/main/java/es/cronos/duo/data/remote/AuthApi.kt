@@ -9,6 +9,7 @@ import io.ktor.client.plugins.expectSuccess
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import kotlinx.coroutines.withTimeout
 
 class AuthApi(
     private val httpClient: HttpClient
@@ -33,9 +34,24 @@ class AuthApi(
         }.body()
     }
 
+    suspend fun refreshSession(refreshToken: String): AuthResponseDto {
+        return httpClient.post("/auth/refresh") {
+            expectSuccess = true
+            setBody(mapOf("refreshToken" to refreshToken))
+        }.body()
+    }
+
     suspend fun testProtected(): String {
         return httpClient.get("/auth/test") {
             expectSuccess = true
         }.body()
+    }
+
+    suspend fun bootstrap(): String {
+        return withTimeout(5_000)  {
+            httpClient.get("/auth/bootstrap") {
+                expectSuccess = true
+            }.body()
+        }
     }
 }

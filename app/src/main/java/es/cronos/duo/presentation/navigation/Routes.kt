@@ -19,3 +19,6 @@ object Semaphore
 
 @Serializable
 object Settings
+
+@Serializable
+object ForceUpdate
