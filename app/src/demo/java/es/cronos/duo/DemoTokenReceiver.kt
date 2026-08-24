@@ -34,6 +34,7 @@ class DemoTokenReceiver : BroadcastReceiver(), KoinComponent {
         }
 
         tokenStore.saveToken(token)
+        tokenStore.saveRefreshToken(token)
         Log.i(TAG, "Demo token injected successfully")
     }
 
