@@ -16,14 +16,13 @@ class AppStartupUseCaseTest {
     private val useCase = AppStartupUseCase(authRepository)
 
     @Test
-    fun `when user is logged in then calls refreshSession and returns Authenticated`() = runTest {
+    fun `when user is logged in then returns Authenticated without refresh`() = runTest {
         every { authRepository.isLoggedIn() } returns true
-        coEvery { authRepository.refreshSession() } returns true
 
         val result = useCase()
 
         result shouldBeEqualTo AppStartupUseCase.Result.Authenticated
-        coVerify(exactly = 1) { authRepository.refreshSession() }
+        coVerify(exactly = 0) { authRepository.refreshSession() }
         coVerify(exactly = 0) { authRepository.startupCheck() }
     }
 

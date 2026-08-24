@@ -12,7 +12,6 @@ class AppStartupUseCase(
 
     suspend operator fun invoke(): Result {
         if (authRepository.isLoggedIn()) {
-            authRepository.refreshSession()
             return Result.Authenticated
         }
         authRepository.startupCheck()
