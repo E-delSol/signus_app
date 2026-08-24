@@ -32,6 +32,8 @@ android {
         }
         create("demo") {
             initWith(buildTypes.getByName("debug"))
+            applicationIdSuffix = ""
+            versionNameSuffix = ""
             isMinifyEnabled = false
             manifestPlaceholders["appName"] = "Signus Demo"
             buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080\"")
