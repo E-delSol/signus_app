@@ -11,6 +11,9 @@ This application is part of the **Signus ecosystem**, a real-time system compose
 * **signus_app** — Android client (this repository)
 * [signus_back](https://github.com/E-delSol/signus_back) — Backend API (Ktor + WebSockets)
 * [signus_infra](https://github.com/E-delSol/signus_infra) — Infrastructure and deployment
+* [signus_landing](https://github.com/E-delSol/signus_landing) — Landing page
+
+🌐 **Live:** [edelsol.github.io/signus_landing](https://edelsol.github.io/signus_landing/)
 
 The app provides a shared **"traffic light" style status** between two users, allowing lightweight communication without replacing conversation.
 
